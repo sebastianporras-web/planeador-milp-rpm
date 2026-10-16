@@ -44,23 +44,23 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-BG = "#FFFFFF"
-CARD = "#F3F5F7"
-CARD_2 = "#FFFFFF"
-GRID = "#D5DCE3"
-TEXT = "#182532"
-MUTED = "#475569"
-BLUE = "#5F7D9D"
-TEAL = "#4D8B82"
+BG = "#0B1220"
+CARD = "#172235"
+CARD_2 = "#1E293B"
+GRID = "#475569"
+TEXT = "#F1F5F9"
+MUTED = "#CBD5E1"
+BLUE = "#7FB8E0"
+TEAL = "#76C9BB"
 AMBER = "#B49A5A"
 RED = "#A65F64"
 SLATE = "#718096"
-LIGHT = "#334155"
+LIGHT = "#E2E8F0"
 GREEN = "#688F78"
 st.markdown(
     f"""
     <style>
-      .stApp {{ background: {BG}; color: {TEXT}; color-scheme: light; }}
+      .stApp {{ background: {BG}; color: {TEXT}; color-scheme: dark; }}
       [data-testid="stSidebar"] {{ background: {CARD}; color: {TEXT}; }}
       .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label,
       .stApp [data-testid="stMarkdownContainer"], .stApp summary {{ color: {TEXT}; }}
@@ -68,8 +68,8 @@ st.markdown(
       .stApp input::placeholder, .stApp textarea::placeholder {{ color: {MUTED} !important; opacity: 1; }}
       .stApp button {{ color: {TEXT}; }}
       .stApp button:disabled {{ color: #CBD5E1 !important; opacity: 1; background-color: #334155; }}
-      .stApp [data-testid="stCaptionContainer"] {{ color: {MUTED} !important; }}
-      .stApp a {{ color: #245475; }}
+      .stApp [data-testid="stCaptionContainer"], .stApp [data-testid="stCaptionContainer"] p {{ color: {MUTED} !important; opacity: 1; }}
+      .stApp a {{ color: #B9DEFA; }}
       .block-container {{ padding-top: 1.25rem; padding-bottom: 2rem; max-width: 1500px; }}
       h1, h2, h3 {{ letter-spacing: -0.015em; }}
       h1 {{ font-weight: 650 !important; }}
@@ -92,9 +92,9 @@ st.markdown(
       }}
       .badge {{ display:inline-block; padding:4px 10px; border-radius:999px;
                 font-size:0.82rem; font-weight:600; margin-right:6px; }}
-      .ok {{ background:rgba(91,154,117,.17); color:#245B36; border:1px solid rgba(91,154,117,.4); }}
-      .warn {{ background:rgba(212,167,44,.15); color:#775800; border:1px solid rgba(212,167,44,.4); }}
-      .bad {{ background:rgba(201,93,99,.15); color:#922E35; border:1px solid rgba(201,93,99,.4); }}
+      .ok {{ background:rgba(91,154,117,.17); color:#A7E6B8; border:1px solid rgba(91,154,117,.4); }}
+      .warn {{ background:rgba(212,167,44,.15); color:#F3D786; border:1px solid rgba(212,167,44,.4); }}
+      .bad {{ background:rgba(201,93,99,.15); color:#F5ADB3; border:1px solid rgba(201,93,99,.4); }}
       .muted {{ color:{MUTED}; }}
     </style>
     """,
@@ -122,7 +122,7 @@ def badge(texto: str, tipo: str = "ok"):
     st.markdown(f'<span class="badge {tipo}">{texto}</span>', unsafe_allow_html=True)
 def fig_layout(fig, title=None, height=390, legend=True, **kwargs):
     fig.update_layout(
-        template="plotly_white",
+        template="plotly_dark",
         paper_bgcolor=CARD,
         plot_bgcolor=CARD,
         font=dict(family="Inter, Segoe UI, sans-serif", color=TEXT, size=12),
@@ -130,7 +130,7 @@ def fig_layout(fig, title=None, height=390, legend=True, **kwargs):
         margin=kwargs.pop("margin", dict(l=45, r=25, t=58 if title else 25, b=45)),
         showlegend=legend,
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=LIGHT)),
-        hoverlabel=dict(bgcolor="#FFFFFF", font_color=TEXT),
+        hoverlabel=dict(bgcolor="#172235", font_color=TEXT),
         **kwargs,
     )
     if title:

@@ -10,6 +10,17 @@ from comparacion_solvers import renderizar
 
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title='RPM Colombia | Planeación',page_icon='🏭',layout='wide')
+st.markdown("""
+<style>
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] p,
+[data-testid="stMetricLabel"] {color: #CBD5E1 !important; opacity: 1 !important;}
+input::placeholder, textarea::placeholder {color: #CBD5E1 !important; opacity: 1 !important;}
+button:disabled {opacity: 1 !important; color: #CBD5E1 !important; background-color: #334155 !important;}
+[data-testid="stSidebar"] a {color: #B9DEFA;}
+</style>
+""", unsafe_allow_html=True)
+
 st.title('Planeación de producción | RPM Colombia')
 st.caption('Asignación de referencias a diez máquinas. Objetivo: minimizar los minutos de producción y preparación, cumpliendo demanda y capacidad.')
 st.sidebar.header('Datos de entrada')
