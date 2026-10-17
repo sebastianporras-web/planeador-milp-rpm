@@ -42,6 +42,11 @@ def progreso(path, solver):
             if pair:ub,lb=map(float,pair.groups())
             elif inc:ub=float(inc.group(1))
             elif root:lb=float(root.group(1))
+    elif solver=='Gurobi':
+        # Sólo cotas impresas por Gurobi; nunca inferir un certificado del progreso.
+        for line in text.splitlines():
+            match=re.search(rf'Best objective ({NUM}), best bound ({NUM}), gap',line)
+            if match: ub,lb=map(float,match.groups())
     else:
         for line in text.splitlines():
             match=re.match(r'^\s*(?:[A-Za-z]\s+)?\d+\s+\d+\s+\d+\s+[\d.]+%\s+(\S+)\s+(\S+)\s+(?:[\d.]+%|inf)',line)

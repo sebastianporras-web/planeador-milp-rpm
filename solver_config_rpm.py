@@ -70,14 +70,16 @@ def resolver(prob, nombre, log, threads=1, seed=42, perfil='base', limite=None):
         env = gp.Env(empty=True)
         env.setParam('OutputFlag', 0)
         keys = ['WLSACCESSID', 'WLSSECRET', 'LICENSEID']
-        vals = [os.environ.get(k, '').strip() for k in keys]
+        from gurobi_rpm import credenciales
+        credentials = credenciales()
+        vals = [credentials[k] for k in keys]
         if any(vals) and not all(vals):
             env.dispose(); raise ValueError('Faltan credenciales WLS; revisar los tres Secrets')
         if os.environ.get('GITHUB_ACTIONS') and not all(vals):
             env.dispose(); raise ValueError('Configura WLSACCESSID, WLSSECRET y LICENSEID en GitHub Secrets')
-        if all(vals):
-            for k, v in zip(keys, vals): env.setParam(k, int(v) if k == 'LICENSEID' else v)
         try:
+            if all(vals):
+                for k, v in zip(keys, vals): env.setParam(k, int(v) if k == 'LICENSEID' else v)
             env.start()
         except Exception:
             env.dispose()
@@ -135,6 +137,13 @@ def resolver(prob, nombre, log, threads=1, seed=42, perfil='base', limite=None):
         r['certificado']=bool(ok and prob.status==pulp.LpStatusOptimal and
                     prob.sol_status==pulp.LpSolutionOptimal and r['factible'])
         return r
+    except Exception:
+        if nombre == 'Gurobi':
+            raise RuntimeError('Gurobi no completó la resolución. Revisa la licencia y el registro del modelo.') from None
+        raise
     finally:
         if nombre == 'Gurobi':
-            solver.close(); env.dispose()
+            try:
+                solver.close()
+            finally:
+                env.dispose()

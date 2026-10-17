@@ -31,7 +31,7 @@ st.sidebar.download_button('Instructivo de carga · PDF',(ROOT/'Instructivo_carg
 source_mode = st.sidebar.radio('Fuente de datos',['Datos del estudio','Mi plantilla completada'],index=1 if uploaded else 0)
 cap = st.sidebar.number_input('Capacidad por máquina y día (min)',min_value=1.0,max_value=1440.0,value=1440.0,step=30.0)
 st.sidebar.caption('Usa minutos netos disponibles. La capacidad es igual para M1 a M10 y para todos los días del horizonte.')
-st.sidebar.caption('CBC / HiGHS: sin límite interno de tiempo. GAP relativo y absoluto solicitados: 0. La plataforma puede interrumpir una sesión o reiniciar el servidor.')
+st.sidebar.caption('CBC / HiGHS / Gurobi: sin límite interno de tiempo. GAP relativo y absoluto solicitados: 0. La plataforma puede interrumpir una sesión o reiniciar el servidor.')
 try:
     if source_mode == 'Mi plantilla completada':
         if uploaded is None:

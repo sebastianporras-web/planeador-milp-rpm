@@ -1,4 +1,4 @@
-"""Experimento secuencial aislado: dos instancias, dos solvers, diez semillas."""
+"""Experimento secuencial aislado: dos instancias, hasta tres solvers, diez semillas."""
 from pathlib import Path
 import hashlib
 import io
@@ -61,9 +61,12 @@ def ejecutar(carpeta):
                 pulp=pulp.__version__, highs=highspy.Highs().version(), cbc=identidad(), hilos=1,
                 limite_tiempo=None, gap_relativo=0, gap_absoluto=0, warm_start=cfg.get("warm_start",False),
                 codigo_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                               for p in [ROOT/n for n in ['rpm_core.py','comparacion_solvers.py','integracion_selectiva.py','optimizar_rpm.py','solver_config_rpm.py','cbc_actual.py','poda_lagrangiana.py','carga_limpia.py','presentacion_resultados.py']]},
+                               for p in [ROOT/n for n in ['rpm_core.py','comparacion_solvers.py','integracion_selectiva.py','optimizar_rpm.py','solver_config_rpm.py','cbc_actual.py','poda_lagrangiana.py','carga_limpia.py','presentacion_resultados.py','gurobi_rpm.py']]},
                 criterio='Estado óptimo, GAP solicitado cero y residuo máximo <= 1e-5; tolerancias numéricas.',
                 orden='Primero horizonte diario completo, luego tres días; alternado por repetición; semillas no equivalen a trayectorias aleatorias idénticas.')
+    if 'Gurobi' in cfg['solvers']:
+        import gurobipy as gp
+        meta['gurobi']='.'.join(map(str,gp.gurobi.version()))
     guardar(carpeta/'protocolo.json', meta)
     for h, (C,D,S) in datos.items():
         C.to_csv(carpeta/f'C_{h}d.csv'); D.to_csv(carpeta/f'D_{h}d.csv'); S.to_csv(carpeta/f'S_{h}d.csv')
@@ -141,17 +144,21 @@ def resumen(df):
     return base
 
 def pares(df):
+    from itertools import combinations
     ok=df.loc[df.certificado.eq(True)]
     if ok.empty: return pd.DataFrame()
     keys=['horizonte_dias','repeticion','semilla']
-    a=ok[ok.optimizador.eq('CBC')]; b=ok[ok.optimizador.eq('HiGHS')]
-    joined=a.merge(b,on=keys,suffixes=('_CBC','_HiGHS'))
-    if joined.empty: return pd.DataFrame()
-    out=joined[keys].copy()
-    out['diferencia_objetivo_min']=joined.objetivo_min_CBC-joined.objetivo_min_HiGHS
-    out['coinciden_objetivos']=out.diferencia_objetivo_min.abs() <= 1e-5
-    out['razon_tiempo_CBC_HiGHS']=joined.segundos_totales_CBC/joined.segundos_totales_HiGHS
-    return out
+    result=[]
+    for a,b in combinations(sorted(ok.optimizador.unique()),2):
+        joined=ok[ok.optimizador.eq(a)].merge(ok[ok.optimizador.eq(b)],on=keys,suffixes=('_A','_B'))
+        if joined.empty: continue
+        out=joined[keys].copy()
+        out['optimizador_A']=a; out['optimizador_B']=b
+        out['diferencia_objetivo_min']=joined.objetivo_min_A-joined.objetivo_min_B
+        out['coinciden_objetivos']=out.diferencia_objetivo_min.abs() <= 1e-5
+        out['razon_tiempo_A_B']=joined.segundos_totales_A/joined.segundos_totales_B.replace(0,float('nan'))
+        result.append(out)
+    return pd.concat(result,ignore_index=True) if result else pd.DataFrame()
 
 def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparadas=None):
     import streamlit as st
@@ -163,24 +170,30 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     if 'bench_h' in st.session_state and any(h not in disponibles for h in st.session_state['bench_h']):
         st.session_state['bench_h']=[h for h in st.session_state['bench_h'] if h in disponibles]
     hsel=st.multiselect('Horizontes (días)', disponibles, default=None if 'bench_h' in st.session_state else disponibles, key='bench_h')
-    solvers=st.multiselect('Optimizadores', ['HiGHS','CBC'],default=['HiGHS'],key='bench_solvers')
+    from gurobi_rpm import disponibles as solvers_disponibles, entorno_worker
+    opciones=solvers_disponibles()
+    if 'Gurobi' not in opciones:
+        st.caption('Gurobi se habilita al instalar gurobipy y configurar los tres Secrets WLS. CBC y HiGHS siguen disponibles.')
+    if 'bench_solvers' in st.session_state and any(v not in opciones for v in st.session_state['bench_solvers']):
+        st.session_state['bench_solvers']=[v for v in st.session_state['bench_solvers'] if v in opciones]
+    solvers=st.multiselect('Optimizadores', opciones,default=['HiGHS'],key='bench_solvers')
     reps=st.number_input('Repeticiones por optimizador y horizonte',1,10,1,key='bench_reps')
-    warm=st.checkbox('Usar la misma solución inicial factible en ambos optimizadores',value=True,key='bench_warm')
+    warm=st.checkbox('Usar la misma solución inicial factible en los optimizadores seleccionados',value=True,key='bench_warm')
     st.caption(f'{len(hsel)*len(solvers)*int(reps)} ejecuciones programadas. Si eliges ambos horizontes, el caso diario se completa primero.')
     habiles=180
     if instancias_preparadas is None:
         habiles=st.number_input('Días hábiles para demanda del catálogo extendido',60,300,180,10,key='bench_days')
-    st.caption('Versión 7 · Motor certificado v6. CBC y HiGHS sin límite interno de tiempo; GAP relativo y absoluto solicitados: 0.')
+    st.caption('Versión 8 · CBC, HiGHS y Gurobi sin límite interno de tiempo; GAP relativo y absoluto solicitados: 0.')
     st.caption('Una repetición genera un plan. Diez repeticiones permiten evaluar la estabilidad del tiempo. La comparación no reutiliza certificados previos.')
     with st.expander('Protocolo y lectura académica'):
         st.markdown('''- Según el número de repeticiones, las semillas a partir de 42 cambian la búsqueda, no la demanda. Son repeticiones de dos instancias, no veinte instancias distintas.
-- Ambos solvers reciben el mismo modelo por horizonte, incluida la reducción de simetría en tres días. El orden alterna entre repeticiones.
+- Los solvers reciben el mismo modelo por horizonte, incluida la reducción de simetría en tres días. El orden alterna entre repeticiones.
 - La plantilla operativa utiliza las demandas explícitas de cada horizonte. El modo Datos del estudio conserva la instancia diaria y el catálogo extendido histórico calibrado; no son comparables como efecto aislado del horizonte.
-- La poda y la desagregación de tres días son comunes a ambos solvers. La poda usa CBC/CLP y programación dinámica; el tiempo total incluye esa preparación.
+- La poda y la desagregación de tres días son comunes a todos los solvers. La poda usa CBC/CLP y programación dinámica; el tiempo total incluye esa preparación.
 - Si el plan previo de HiGHS coincide con los datos y es factible, puede servir de inicio común. Cada solver obtiene su propia cota para certificar el óptimo.
 - La igualdad del objetivo no exige planes idénticos: pueden existir óptimos alternativos.
 - Las estadísticas de tiempo incluyen solo ejecuciones certificadas y muestran cuántas completaron. Un lote incompleto no permite declarar un ganador.
-- La razón CBC/HiGHS mayor que 1 indica menor tiempo de HiGHS para ese par. Los nodos son descriptivos: cada solver aplica estrategias distintas.
+- La razón de tiempos A/B mayor que 1 indica menor tiempo del optimizador B para ese par. Los nodos son descriptivos: cada solver aplica estrategias distintas.
 - El tiempo total incluye construcción, preprocesamiento, resolución y validación de cada corrida. Excluye la carga inicial del Excel y la obtención del inicio común anterior al lote.
 - La certificación opera con tolerancias numéricas; no equivale a una prueba con aritmética exacta. Un reinicio del servidor puede interrumpir el lote; descarga la evidencia al terminar.''')
         st.latex(r"\operatorname{GAP}_{abs}=|UB-LB|,\qquad \operatorname{GAP}_{rel}(\%)=100\frac{|UB-LB|}{|UB|}")
@@ -211,7 +224,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
             guardar(folder/'config.json',cfg); guardar(folder/'estado.json',programa(inst,int(reps),solvers))
             with (folder/'worker.log').open('w') as log:
                 proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),str(folder)],
-                    stdout=log,stderr=subprocess.STDOUT,start_new_session=(os.name!='nt'))
+                    stdout=log,stderr=subprocess.STDOUT,env=entorno_worker(),start_new_session=(os.name!='nt'))
             st.session_state['rpm_benchmark']={'folder':str(folder),'process':proc}
             st.rerun()
         except Exception as exc: st.error(str(exc))
@@ -272,7 +285,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
         st.caption('Celdas vacías = dato no disponible; nunca equivalen a GAP cero. Objetivos y cotas en minutos; tiempos de cómputo en segundos.')
     rs=resumen(df); ps=pares(df)
     nombres_resumen={'horizonte_dias':'Días','optimizador':'Solver','programadas':'Programadas','certificadas':'Certificadas','objetivo_min':'Objetivo mínimo (min)','objetivo_max':'Objetivo máximo (min)','tiempo_media_s':'Tiempo medio (s)','tiempo_mediana_s':'Tiempo mediano (s)','tiempo_sd_s':'Desviación del tiempo (s)','tiempo_min_s':'Tiempo mínimo (s)','tiempo_max_s':'Tiempo máximo (s)','CV_tiempo_pct':'CV del tiempo (%)','avance_certificado_pct':'Certificación del lote (%)'}
-    nombres_pares={'horizonte_dias':'Días','repeticion':'Repetición','semilla':'Semilla','diferencia_objetivo_min':'Diferencia CBC - HiGHS (min)','coinciden_objetivos':'Objetivos coinciden','razon_tiempo_CBC_HiGHS':'Tiempo CBC / HiGHS'}
+    nombres_pares={'horizonte_dias':'Días','repeticion':'Repetición','semilla':'Semilla','diferencia_objetivo_min':'Diferencia A - B (min)','coinciden_objetivos':'Objetivos coinciden','optimizador_A':'Optimizador A','optimizador_B':'Optimizador B','razon_tiempo_A_B':'Tiempo A / B'}
     rs=rs.rename(columns=nombres_resumen);ps=ps.rename(columns=nombres_pares)
     with t2:
         st.dataframe(rs,hide_index=True,width="stretch")
@@ -282,7 +295,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
         ok=df[df.certificado.eq(True)]
         if ok.empty: st.info('Los gráficos aparecerán al completar ejecuciones certificadas.')
         else:
-            palette={'CBC':'#B76643','HiGHS':'#397F83'}
+            palette={'CBC':'#E5A07D','HiGHS':'#76C9BB','Gurobi':'#AFA5F5'}
             st.plotly_chart(px.box(ok,x='optimizador',y='segundos_totales',color='optimizador',
                 facet_col='horizonte_dias',points='all',color_discrete_map=palette,
                 title='Dispersión del tiempo hasta certificar optimalidad'),width="stretch")
@@ -295,7 +308,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     with t5:
         mostrar_planes(st,folder,df)
     with t4:
-        st.download_button('Descargar tabla CSV',tabla(df).to_csv(index=False).encode('utf-8-sig'),'comparacion_CBC_HiGHS.csv','text/csv')
+        st.download_button('Descargar tabla CSV',tabla(df).to_csv(index=False).encode('utf-8-sig'),'comparacion_optimizadores.csv','text/csv')
         book=io.BytesIO()
         with pd.ExcelWriter(book,engine='openpyxl') as writer:
             tabla(df).to_excel(writer,sheet_name='Certificacion',index=False)
@@ -306,7 +319,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
                 sheet.freeze_panes='A2'; sheet.auto_filter.ref=sheet.dimensions
                 for column in sheet.columns:
                     sheet.column_dimensions[column[0].column_letter].width=min(42,max(16,len(str(column[0].value))+3))
-        st.download_button('Descargar Excel comparativo',book.getvalue(),'comparacion_CBC_HiGHS.xlsx')
+        st.download_button('Descargar Excel comparativo',book.getvalue(),'comparacion_optimizadores.xlsx')
         if True:
             archive=io.BytesIO()
             with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
@@ -317,7 +330,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
                 z.writestr('comparacion.csv',df.to_csv(index=False))
                 z.writestr('certificacion.csv',tabla(df).to_csv(index=False))
                 z.writestr('comparacion.xlsx',book.getvalue())
-            st.download_button('Descargar evidencia y registros',archive.getvalue(),'evidencia_CBC_HiGHS.zip','application/zip')
+            st.download_button('Descargar evidencia y registros',archive.getvalue(),'evidencia_optimizadores.zip','application/zip')
         st.caption('La descarga es una instantánea. Durante una ejecución, los registros pueden contener avances posteriores a la tabla.')
 
 if __name__=='__main__': ejecutar(sys.argv[1])

@@ -372,6 +372,20 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
     tag = run_context.get("run_id", os.environ.get("RPM_RUN_ID", str(time.time_ns())))
     log_path = log_dir / (tag + ".log")
     solver_name = run_context.get("solver", os.environ.get("RPM_SOLVER", "HiGHS"))
+    if solver_name == "Gurobi":
+        from solver_config_rpm import resolver
+        ULTIMA_AUDITORIA = {}
+        r = resolver(prob, "Gurobi", log_path, threads=1, seed=seed)
+        info = dict(solver=solver_name, variables=r['variables'], constraints=r['restricciones'],
+                    proven_optimal=r['certificado'], termination_known=True,
+                    elapsed_s=r['segundos'], log_path=str(log_path), seed=seed,
+                    max_residual=r['residual_max'], lower_bound=r.get('lb'),
+                    upper_bound=r.get('ub'), gap_pct=100*r['gap_solver'] if r.get('gap_solver') is not None else None,
+                    nodes=r.get('nodos'), solver_version=r['version'])
+        ULTIMA_AUDITORIA = info.copy()
+        if not r['certificado']:
+            raise RuntimeError("Gurobi no certificó optimalidad y factibilidad. Revisa el registro; no se reporta GAP=0.")
+        return info
     if solver_name not in ("CBC", "HiGHS"):
         raise ValueError("Optimizador desconocido")
     ULTIMA_AUDITORIA = {}

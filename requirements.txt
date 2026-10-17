@@ -10,3 +10,5 @@ plotly>=5.24,<7
 highspy==1.15.1
 
 cbcbox==2.924
+
+gurobipy==13.0.3

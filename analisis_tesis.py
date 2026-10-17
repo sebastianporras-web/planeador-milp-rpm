@@ -248,7 +248,8 @@ with datos_plantilla:
         st.caption("Falta el archivo Plantilla_datos_RPM.xlsx en la app.")
 usar_ejemplo = st.sidebar.checkbox("Usar AnexodeDatosxlsx.xlsx", value=archivo is None)
 st.sidebar.header("Optimización")
-solver_operativo = st.sidebar.selectbox("Optimizador del plan", ["HiGHS", "CBC"], index=0)
+from gurobi_rpm import disponibles as solvers_disponibles
+solver_operativo = st.sidebar.selectbox("Optimizador del plan", solvers_disponibles(), index=0)
 usar_guardada = st.sidebar.checkbox("Reutilizar óptimo para datos idénticos", value=True)
 usar_inicio = st.sidebar.checkbox("Usar plan previo factible como inicio", value=True)
 st.sidebar.caption("Solo planificación. La comparación CBC–HiGHS ejecuta cada caso de nuevo y permite elegir un inicio común.")
