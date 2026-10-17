@@ -57,11 +57,11 @@ def ejecutar(carpeta):
     carpeta = Path(carpeta)
     cfg = json.loads((carpeta/'config.json').read_text())
     datos = {int(h): desempacar(d) for h, d in cfg['instancias'].items()}
-    meta = dict(cfg, python=sys.version, sistema=platform.platform(), cpu=platform.processor(),
+    meta = dict(cfg, version_app='9', cpu_logicas=os.cpu_count(), tolerancia_validacion=1e-5, python=sys.version, sistema=platform.platform(), cpu=platform.processor(),
                 pulp=pulp.__version__, highs=highspy.Highs().version(), cbc=identidad(), hilos=1,
                 limite_tiempo=None, gap_relativo=0, gap_absoluto=0, warm_start=cfg.get("warm_start",False),
                 codigo_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                               for p in [ROOT/n for n in ['rpm_core.py','comparacion_solvers.py','integracion_selectiva.py','optimizar_rpm.py','solver_config_rpm.py','cbc_actual.py','poda_lagrangiana.py','carga_limpia.py','presentacion_resultados.py','gurobi_rpm.py']]},
+                               for p in [ROOT/n for n in ['rpm_core.py','comparacion_solvers.py','integracion_selectiva.py','optimizar_rpm.py','solver_config_rpm.py','cbc_actual.py','poda_lagrangiana.py','carga_limpia.py','presentacion_resultados.py','gurobi_rpm.py','validacion_tecnica.py']]},
                 criterio='Estado óptimo, GAP solicitado cero y residuo máximo <= 1e-5; tolerancias numéricas.',
                 orden='Primero horizonte diario completo, luego tres días; alternado por repetición; semillas no equivalen a trayectorias aleatorias idénticas.')
     if 'Gurobi' in cfg['solvers']:
@@ -90,6 +90,23 @@ def ejecutar(carpeta):
             res = (core.resolver_asignacion(C,D,S,cfg['capacidad'],plan_inicial=starts.get(h)) if h == 1 else
                    core.resolver_multidia(C,D,S,h,cap_minutos=cfg['capacidad'],plan_inicial=starts.get(h)))
             audit = core.ULTIMA_AUDITORIA
+            # Conservar también planes rechazados para diagnosticar la validación.
+            if h == 1:
+                res['asignacion'].to_csv(carpeta/f'{tag}_plan.csv')
+                res['setups'].to_csv(carpeta/f'{tag}_preparaciones.csv')
+            else:
+                res['plan'].to_csv(carpeta/f'{tag}_plan.csv',index=False)
+            from validacion_tecnica import verificar
+            validation=verificar(C,D,S,h,cfg['capacidad'],res)
+            audit['validacion_plan']=validation
+            row.update({k:v for k,v in validation.items() if k not in ('alcance','criterio_demanda')})
+            guardar(carpeta/f'{tag}_validacion.json',validation)
+            if not validation['plan_verificado']:
+                raise RuntimeError('El plan no superó la validación independiente. Revisa los residuos de validación.')
+            native_residual=float(audit.get('max_residual',float('inf')))
+            lb=float(audit.get('lower_bound',float('nan'))); ub=float(audit.get('upper_bound',float('nan')))
+            if not all(math.isfinite(v) for v in (native_residual,lb,ub)) or abs(ub-lb)>1e-5 or abs(ub-res['valor_objetivo'])>1e-5:
+                raise RuntimeError('Cotas ausentes, no finitas o incompatibles con la certificación del plan.')
             if not res.get('gap_certificado') or not audit.get('proven_optimal') or audit.get('max_residual', float('inf')) > 1e-5:
                 raise RuntimeError('La ejecución no satisface el criterio de certificación.')
             row.update(estado='Óptimo certificado', certificado=True,
@@ -99,11 +116,9 @@ def ejecutar(carpeta):
             if h == 1:
                 prod=res['tiempo_produccion_min']; setup=res['tiempo_setup_min']
                 util=res['utilizacion_min']; ns=res['n_setups']
-                res['asignacion'].to_csv(carpeta/f'{tag}_plan.csv')
             else:
                 prod=res['tiempo_produccion_dia_maquina']; setup=res['tiempo_setup_dia_maquina']
                 util=res['utilizacion_dia_maquina']; ns=res['setups_dia_maquina']
-                res['plan'].to_csv(carpeta/f'{tag}_plan.csv', index=False)
             import numpy as np
             row.update(produccion_min=float(np.asarray(prod).sum()), setup_min=float(np.asarray(setup).sum()),
                        setups_activos=int(np.asarray(ns).sum()),
@@ -111,12 +126,15 @@ def ejecutar(carpeta):
                        utilizacion_max_pct=float(np.asarray(util).max()/cfg['capacidad']*100),
                        holgura_total_min=float(h*len(S)*cfg['capacidad']-np.asarray(util).sum()),
                        participacion_setup_pct=float(np.asarray(setup).sum()/res['valor_objetivo']*100) if res['valor_objetivo'] else None,
-                       demanda_cumplida_pct=100.0, origen_inicio=cfg.get('origen_inicial',{}).get(str(h),'Sin inicio'))
+                       origen_inicio=cfg.get('origen_inicial',{}).get(str(h),'Sin inicio'))
         except Exception as exc:
             row.update(estado='Sin certificado / error', error=str(exc), certificado=False)
         audit = core.ULTIMA_AUDITORIA
+        plan_path=carpeta/f'{tag}_plan.csv'
+        if plan_path.exists():
+            row['plan_sha256']=hashlib.sha256(plan_path.read_bytes()).hexdigest()
         row.update(segundos_totales=time.perf_counter()-inicio,
-                   segundos_solver=audit.get('elapsed_s'), residuo_max=audit.get('max_residual'),
+                   segundos_solver=audit.get('segundos_fases_solver',audit.get('elapsed_s')), residuo_max=audit.get('max_residual'),
                    nodos=audit.get('nodes'), variables=audit.get('variables'), restricciones=audit.get('constraints'),
                    version_solver=audit.get('solver_version'),metodo=audit.get('metodo','MILP diario'),
                    iteraciones_selectivas=audit.get('iteraciones'))
@@ -183,7 +201,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     habiles=180
     if instancias_preparadas is None:
         habiles=st.number_input('Días hábiles para demanda del catálogo extendido',60,300,180,10,key='bench_days')
-    st.caption('Versión 8 · CBC, HiGHS y Gurobi sin límite interno de tiempo; GAP relativo y absoluto solicitados: 0.')
+    st.caption('Versión 9 · CBC, HiGHS y Gurobi sin límite interno de tiempo; GAP relativo y absoluto solicitados: 0.')
     st.caption('Una repetición genera un plan. Diez repeticiones permiten evaluar la estabilidad del tiempo. La comparación no reutiliza certificados previos.')
     with st.expander('Protocolo y lectura académica'):
         st.markdown('''- Según el número de repeticiones, las semillas a partir de 42 cambian la búsqueda, no la demanda. Son repeticiones de dos instancias, no veinte instancias distintas.
@@ -213,13 +231,16 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
                     inst['3']=empacar(ext['cij'],core.demanda_entera(cal['demanda_calibrada']*3),ext['setup'])
             cfg={'instancias':inst,'capacidad':float(capacidad),'matriz_diaria':modo,'dias_habiles':int(habiles),
                  'solvers':solvers,'repeticiones':int(reps),'warm_start':warm,'planes_iniciales':{},'origen_inicial':{}}
+            inicio_comun=time.perf_counter()
             if warm:
                 for h,data in inst.items():
                     C,D,S=desempacar(data)
                     plan,origen=plan_comun(C,D,S,int(h),float(capacidad))
                     cfg['planes_iniciales'][h]=plan.to_json(orient='split',double_precision=15)
                     cfg['origen_inicial'][h]=origen
-            cfg['datos_sha256']=hashlib.sha256(json.dumps(cfg,sort_keys=True).encode()).hexdigest()
+            cfg['segundos_inicio_comun']=time.perf_counter()-inicio_comun if warm else 0.
+            cfg['datos_sha256']=hashlib.sha256(json.dumps({'instancias':inst,'capacidad':float(capacidad)},sort_keys=True).encode()).hexdigest()
+            cfg['config_sha256']=hashlib.sha256(json.dumps(cfg,sort_keys=True).encode()).hexdigest()
             folder=Path(tempfile.mkdtemp(prefix='rpm_benchmark_'))
             guardar(folder/'config.json',cfg); guardar(folder/'estado.json',programa(inst,int(reps),solvers))
             with (folder/'worker.log').open('w') as log:
@@ -272,11 +293,15 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
         st.error('El proceso terminó con error. Descarga la evidencia para revisar worker.log.')
     from presentacion_resultados import tabla, indicadores, mostrar_planes
     indicadores(st,df)
-    t1,t2,t3,t4,t5=st.tabs(['Certificación','Resumen comparativo','Gráficos','Descargas','Planes'])
+    from validacion_tecnica import mostrar_validacion, tabla_validacion, protocolo_visible
+    t1,tv,t2,t3,t4,t5=st.tabs(['Certificación','Validación técnica','Resumen comparativo','Gráficos','Descargas','Planes'])
+    with tv:
+        mostrar_validacion(st,df,folder)
     with t1:
         st.dataframe(tabla(df),hide_index=True,width="stretch", column_config={
             "Objetivo (min)": st.column_config.NumberColumn(format="%.6f"),
             "Cota inferior (min)": st.column_config.NumberColumn(format="%.6f"),
+            "Cota superior (min)": st.column_config.NumberColumn(format="%.6f"),
             "GAP (%)": st.column_config.NumberColumn(format="%.8g"),
             "Diferencia absoluta (min)": st.column_config.NumberColumn(format="%.3e"),
             "Tiempo total (s)": st.column_config.NumberColumn(format="%.2f")})
@@ -288,6 +313,9 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     nombres_pares={'horizonte_dias':'Días','repeticion':'Repetición','semilla':'Semilla','diferencia_objetivo_min':'Diferencia A - B (min)','coinciden_objetivos':'Objetivos coinciden','optimizador_A':'Optimizador A','optimizador_B':'Optimizador B','razon_tiempo_A_B':'Tiempo A / B'}
     rs=rs.rename(columns=nombres_resumen);ps=ps.rename(columns=nombres_pares)
     with t2:
+        if done<len(df) or not bool(df.certificado.all()):
+            st.info('Resumen provisional: hay corridas pendientes, interrumpidas o sin certificado. Los tiempos describen únicamente las corridas certificadas.')
+        st.caption('Desviación estándar muestral y CV requieren al menos dos corridas certificadas. Los tiempos se comparan dentro del mismo horizonte; las semillas no crean nuevas instancias de demanda.')
         st.dataframe(rs,hide_index=True,width="stretch")
         if not ps.empty: st.dataframe(ps,hide_index=True,width="stretch")
         else: st.info('La comparación por pares aparecerá cuando ambos solvers certifiquen una misma repetición.')
@@ -315,6 +343,8 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
             tabla(df,detalle=True).to_excel(writer,sheet_name='Detalle',index=False)
             rs.to_excel(writer,sheet_name='Resumen',index=False)
             ps.to_excel(writer,sheet_name='Pares',index=False)
+            tabla_validacion(df).to_excel(writer,sheet_name='Validacion',index=False)
+            protocolo_visible(folder).to_excel(writer,sheet_name='Protocolo',index=False)
             for sheet in writer.book:
                 sheet.freeze_panes='A2'; sheet.auto_filter.ref=sheet.dimensions
                 for column in sheet.columns:
@@ -329,6 +359,7 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
                         except FileNotFoundError:pass
                 z.writestr('comparacion.csv',df.to_csv(index=False))
                 z.writestr('certificacion.csv',tabla(df).to_csv(index=False))
+                z.writestr('validacion.csv',tabla_validacion(df).to_csv(index=False))
                 z.writestr('comparacion.xlsx',book.getvalue())
             st.download_button('Descargar evidencia y registros',archive.getvalue(),'evidencia_optimizadores.zip','application/zip')
         st.caption('La descarga es una instantánea. Durante una ejecución, los registros pueden contener avances posteriores a la tabla.')

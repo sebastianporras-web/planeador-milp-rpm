@@ -5,8 +5,8 @@ import pandas as pd
 
 PRINCIPALES = {
     'horizonte_dias':'Días','optimizador':'Solver','repeticion':'Repetición',
-    'estado':'Estado','certificado':'Certificado','objetivo_min':'Objetivo (min)',
-    'LB_min':'Cota inferior (min)','GAP_pct':'GAP (%)',
+    'semilla':'Semilla','estado':'Estado','certificado':'Certificado','objetivo_min':'Objetivo (min)',
+    'LB_min':'Cota inferior (min)','UB_min':'Cota superior (min)','GAP_pct':'GAP (%)',
     'GAP_abs_min':'Diferencia absoluta (min)','segundos_totales':'Tiempo total (s)',
 }
 DETALLE = {
@@ -19,6 +19,8 @@ DETALLE = {
     'residuo_max':'Residuo máximo','nodos':'Nodos acumulados','variables':'Variables del último modelo',
     'restricciones':'Restricciones del último modelo','version_solver':'Versión del solver',
     'metodo':'Método','warm_start':'Con inicio factible','origen_inicio':'Origen del inicio',
+    'segundos_solver':'Tiempo llamadas al solver (s)',
+    'plan_sha256':'SHA-256 del plan',
     'error':'Detalle del error',
 }
 
@@ -33,7 +35,7 @@ def indicadores(st, df):
     cols = st.columns(3)
     cols[0].metric('Óptimos certificados', f'{len(ok)} / {len(df)}')
     cols[1].metric('Tiempo acumulado', f"{df.get('segundos_totales',pd.Series(dtype=float)).sum()/60:.2f} min")
-    cols[2].metric('Tasa de certificación del lote', f'{100*len(ok)/len(df):.1f}%')
+    cols[2].metric('Tasa de certificación del lote', f'{100*len(ok)/len(df):.1f}%' if len(df) else 'N/D')
     st.caption('Tiempo total: preparación, resolución y validación. Una celda vacía significa dato no disponible. GAP cero requiere certificado; la diferencia absoluta conserva el residuo numérico sin ocultarlo.')
 
 
@@ -77,6 +79,8 @@ def mostrar_planes(st, folder, df):
         plan.to_excel(writer,sheet_name='Plan',index=False)
         load.reset_index().to_excel(writer,sheet_name='Capacidad',index=False)
         tabla(pd.DataFrame([r])).to_excel(writer,sheet_name='Certificacion',index=False)
+        from validacion_tecnica import tabla_validacion
+        tabla_validacion(pd.DataFrame([r])).to_excel(writer,sheet_name='Validacion',index=False)
         for sheet in writer.book:
             sheet.freeze_panes='A2'
             for col in sheet.columns:
