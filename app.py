@@ -22,13 +22,32 @@ button:disabled {opacity: 1 !important; color: #CBD5E1 !important; background-co
 """, unsafe_allow_html=True)
 
 st.title('Planeación de producción | RPM Colombia')
-st.caption('Asignación de referencias a diez máquinas. Objetivo: minimizar los minutos de producción y preparación, cumpliendo demanda y capacidad.')
+st.caption('Asignación de referencias a las máquinas disponibles. Objetivo: minimizar los minutos de producción y preparación, cumpliendo demanda y capacidad.')
+st.sidebar.caption('RPM · versión 11')
 st.sidebar.header('Datos de entrada')
-left,right = st.sidebar.columns([1,1])
-uploaded = left.file_uploader('Cargar Excel',type=['xlsx'],key='entrada_limpia_v7')
-right.download_button('Plantilla vacía',(ROOT/'Plantilla_datos_RPM.xlsx').read_bytes(),'Plantilla_datos_RPM.xlsx',mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',width='stretch')
-st.sidebar.download_button('Instructivo de carga · PDF',(ROOT/'Instructivo_carga_RPM.pdf').read_bytes(),'Instructivo_carga_RPM.pdf',mime='application/pdf',width='stretch')
-source_mode = st.sidebar.radio('Fuente de datos',['Datos del estudio','Mi plantilla completada'],index=1 if uploaded else 0)
+uploaded = st.sidebar.file_uploader('Cargar Excel',type=['xlsx'],key='entrada_limpia_v7')
+options=['Datos del estudio','Mi plantilla completada','Demanda total · horizonte automático']
+file_hash=hashlib.sha256(uploaded.getvalue()).hexdigest() if uploaded else ''
+if st.session_state.get('archivo_flexible_v10') != file_hash:
+    st.session_state['archivo_flexible_v10']=file_hash
+    default=options[0]
+    if uploaded:
+        default=options[1]
+        try:
+            sheets=set(pd.ExcelFile(io.BytesIO(uploaded.getvalue())).sheet_names)
+            if {'Demanda','Maquinas'}<=sheets or {'Referencias','Recursos'}<=sheets:default=options[2]
+        except Exception:pass
+    st.session_state['modo_flexible_v10']=default
+source_mode = st.sidebar.radio('Fuente de datos',options,key='modo_flexible_v10')
+st.sidebar.caption('CBC / HiGHS / Gurobi: sin límite interno de tiempo. La plataforma puede interrumpir la sesión o reiniciar el servidor.')
+if source_mode==options[2]:
+    from operacion_flexible import renderizar as renderizar_flexible
+    renderizar_flexible(st,uploaded.getvalue() if uploaded else None)
+    st.stop()
+if any(j and j['process'].poll() is None for j in [st.session_state.get('flex_search'),st.session_state.get('flex_batch')]):
+    st.info('Hay una planificación de demanda total activa. Selecciona Demanda total · horizonte automático para consultar su avance.');st.stop()
+st.sidebar.download_button('Plantilla del estudio',(ROOT/'Plantilla_datos_RPM.xlsx').read_bytes(),'Plantilla_datos_RPM.xlsx')
+st.sidebar.download_button('Instructivo de carga · PDF',(ROOT/'Instructivo_carga_RPM.pdf').read_bytes(),'Instructivo_carga_RPM.pdf',mime='application/pdf')
 cap = st.sidebar.number_input('Capacidad por máquina y día (min)',min_value=1.0,max_value=1440.0,value=1440.0,step=30.0)
 st.sidebar.caption('Usa minutos netos disponibles. La capacidad es igual para M1 a M10 y para todos los días del horizonte.')
 st.sidebar.caption('CBC / HiGHS / Gurobi: sin límite interno de tiempo. GAP relativo y absoluto solicitados: 0. La plataforma puede interrumpir una sesión o reiniciar el servidor.')
