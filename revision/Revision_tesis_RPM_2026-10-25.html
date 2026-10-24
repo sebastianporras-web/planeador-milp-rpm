@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Tesis RPM</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (72ch) con tablas de verificación a ancho completo; hallazgos como fichas numeradas con casilla de decisión. */
+:root{
+  --bg:#f7f6f2; --panel:#ffffff; --ink:#1d2426; --muted:#5d6a6e; --line:#d9ddd6;
+  --accent:#0f5f68; --accent-soft:#dcecec;
+  --ok:#2f7a4b; --ok-soft:#e1f0e5; --warn:#9a6a08; --warn-soft:#fbefd0; --bad:#a53b2e; --bad-soft:#f7e1dc; --info:#3c5a8a; --info-soft:#e2e9f5;
+  --display:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a1c; --panel:#1c2427; --ink:#e8ebe6; --muted:#a3adb0; --line:#33403f;
+  --accent:#6fc2c8; --accent-soft:#1f3a3d;
+  --ok:#7fd09a; --ok-soft:#1f3b2a; --warn:#e9bd5a; --warn-soft:#3f3417; --bad:#f09a8c; --bad-soft:#4a2520; --info:#9fb8e4; --info-soft:#23324a;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a1c; --panel:#1c2427; --ink:#e8ebe6; --muted:#a3adb0; --line:#33403f;
+  --accent:#6fc2c8; --accent-soft:#1f3a3d;
+  --ok:#7fd09a; --ok-soft:#1f3b2a; --warn:#e9bd5a; --warn-soft:#3f3417; --bad:#f09a8c; --bad-soft:#4a2520; --info:#9fb8e4; --info-soft:#23324a;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+header.top{padding-block:40px 24px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.15;margin:8px 0 10px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:26px;margin:48px 0 12px;text-wrap:balance}
+h3{font-family:var(--body);font-weight:600;font-size:17px;margin:24px 0 8px}
+p{max-width:72ch;margin:8px 0}
+.lead{font-size:18px;color:var(--muted);max-width:72ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0 0}
+.kpi{border-top:2px solid var(--accent);padding-top:8px}
+.kpi b{display:block;font-family:var(--display);font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;font-size:14px}
+nav.toc a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+nav.toc a:hover{border-color:var(--accent)}
+.chip{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.c-ok{background:var(--ok-soft);color:var(--ok)} .c-warn{background:var(--warn-soft);color:var(--warn)} .c-bad{background:var(--bad-soft);color:var(--bad)} .c-info{background:var(--info-soft);color:var(--info)} .c-acc{background:var(--accent-soft);color:var(--accent)}
+.tablewrap{overflow-x:auto;margin:12px 0 4px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:720px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-weight:600;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--bg);position:sticky;top:0}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap}
+td.src{color:var(--muted);font-size:13px}
+.note{font-size:13.5px;color:var(--muted);max-width:80ch}
+.finding{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin:14px 0;display:grid;grid-template-columns:1fr auto;gap:6px 18px}
+.finding.sev-alta{border-left:4px solid var(--bad)} .finding.sev-media{border-left:4px solid var(--warn)} .finding.sev-baja{border-left:4px solid var(--info)} .finding.sev-info{border-left:4px solid var(--ok)}
+.finding .head{grid-column:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.finding .id{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.finding h3{margin:0;font-size:18px;font-family:var(--display);font-weight:600}
+.finding .body{grid-column:1;min-width:0}
+.finding .body p{max-width:80ch}
+.finding .decide{grid-column:2;grid-row:1 / span 2;align-self:start;display:flex;flex-direction:column;gap:8px;min-width:160px}
+.decide label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+.decide label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.decide input{width:16px;height:16px;accent-color:var(--accent)}
+.decide textarea{font:13px var(--body);width:100%;min-height:56px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);padding:6px 8px;resize:vertical}
+dl.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0;font-size:14.5px;max-width:80ch}
+dl.kv dt{color:var(--muted);font-weight:500} dl.kv dd{margin:0;min-width:0}
+code{font-family:var(--mono);font-size:.92em;background:var(--accent-soft);padding:1px 5px;border-radius:3px}
+.bar{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px));margin:32px calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-size:14px}
+.bar button{font:14px/1 var(--body);font-weight:600;padding:10px 14px;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.bar button.ghost{background:transparent;color:var(--accent)}
+.bar button:focus-visible,.decide label:focus-within,nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar .count{font-family:var(--mono)}
+.bar output{font-size:13px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.cols>div{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.cols h3{margin-top:0}
+ol.steps{margin:6px 0 0 0;padding-left:20px;font-size:14.5px}
+ol.steps li{margin:6px 0}
+ol.steps small{display:block;color:var(--muted);font-size:13px}
+ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5px 0}
+.err{font-family:var(--mono);font-size:13px}
+@media (max-width:720px){
+  .finding{grid-template-columns:1fr} .finding .decide{grid-column:1;grid-row:auto}
+  .cols{grid-template-columns:1fr}
+  h2{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Trabajo_RPM.pdf · 48 páginas · generado 22 oct 2026</div>
+  <h1>Revisión de la tesis: cifras, trazabilidad y estructura</h1>
+  <p class="lead">Contrasté cada cifra del documento contra el código y los datos del repositorio, reejecutando los modelos donde fue posible. Cada hallazgo trae una casilla para marcar si se envía como issue a Sebastian.</p>
+  <div class="kpis">
+    <div class="kpi"><b>61</b><span>cifras verificadas contra código y datos</span></div>
+    <div class="kpi"><b>59</b><span>reproducidas con exactitud</span></div>
+    <div class="kpi"><b>2</b><span>históricas ya superables por la certificación</span></div>
+    <div class="kpi"><b>10</b><span>hallazgos para decidir</span></div>
+  </div>
+  <nav class="toc">
+    <a href="#veredicto">Veredicto</a><a href="#verificacion">Tabla de verificación</a><a href="#hallazgos">Hallazgos</a><a href="#mapa">Mapa metodológico vs. tesis</a><a href="#erratas">Erratas</a><a href="#metodo">Cómo se verificó</a>
+  </nav>
+</header>
+
+<h2 id="veredicto">Veredicto sobre los «valores quemados»</h2>
+<p>Las cifras del documento no son valores inventados ni copiados sin respaldo. Con el libro <code>AnexodeDatosxlsx.xlsx</code> y el código actual reproduje el óptimo diario, la heurística, la mejora del 15,6168 %, el lote de tres días, la cota de dos días, la poda lagrangiana, los dos maestros de la desagregación selectiva, la matriz reconstruida, la validación de imputación con 100 particiones y hasta el SHA-256 de los datos que imprime el anexo E. Todo coincide dígito a dígito.</p>
+<p>Lo que sí está «quemado» es otra cosa: el documento cita un expediente digital (60 corridas, 1.000 escenarios, auditorías, scripts) que no está en el repositorio, de modo que un lector no puede comprobar las tablas 5, 11, 12, 15 y 16 ni la sección de Monte Carlo. Además conviven dos generaciones de resultados históricos (sensibilidad y Monte Carlo) que hoy podrían recalcularse con el protocolo certificado en segundos, y la presentación arrastra referencias a una edición anterior de 125 páginas.</p>
+<p>Sobre la estructura: el mapa metodológico de la presentación no existe en la tesis. El documento habla de «cinco fases» en la sección 2 y nunca vuelve a usarlas; la heurística, pieza central de la comparación, vive en el anexo F.2. Detalle en la sección <a href="#mapa">Mapa metodológico vs. tesis</a>.</p>
+
+<h2 id="verificacion">Tabla de verificación</h2>
+<p class="note">«Reproducido» significa que el valor salió del código del repositorio sobre los datos del Excel, en esta máquina, el 25 de octubre. «Histórico» marca valores que la propia tesis declara como provenientes de una ejecución anterior con límite de tiempo.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Dónde</th><th>Afirmación de la tesis</th><th class="num">Reproducido</th><th>Estado</th></tr></thead>
+<tbody>
+<tr><td class="src">Resumen · Tabla 1</td><td>99 referencias, 14.188 unidades, 990 pares, 819 observados (82,73 %), 171 sin observación</td><td class="num">99 · 14.188 · 819/990 · 82,73 %</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">Tabla 7</td><td>Pares observados por máquina 35/67/89/74/83/93/97/95/95/91</td><td class="num">idénticos · suma 819</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.1 · A.3</td><td>174 celdas distintas entre matriz publicada y reconstruida: 171 sin observar y 3 observadas; ninguna imputación coincide con la media por máquina</td><td class="num">174 = 171 + 3 · 0 coincidencias</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">Tabla 9</td><td>Pares 0,392222→0,405747 · 0,075→0,45 · 1,147407→0,562222</td><td class="num">idénticos</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.2 · Tabla 8</td><td>Media por máquina mejor en 96/100 particiones, MAE 0,1888, IC [0,1869; 0,1906]; global 0,1992; aditivo 0,2066; por referencia 0,2180</td><td class="num">96/100 · 0,188786 · [0,186945; 0,190627] · 0,199243 · 0,206635 · 0,217995</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.2 · §3.5</td><td>1 par activo sin observación con 1.337 unidades: 9,42 % del volumen, 1,01 % de activaciones</td><td class="num">1.337 · 9,42 % · 1/99</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.3</td><td>28 referencias concentran el 80 % de la demanda</td><td class="num">28 → 80,4 %</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.3 · A.4</td><td>Clusters de productos 42/52/5; Silhouette 0,555 (k=3) y 0,709 (k=2); máquinas 1/1/8 con M1 y M10 aislados; ARI K-Means vs Ward = 1,000</td><td class="num">42/52/5 · 0,555 · 0,709 · M1, M10 · ARI 1,0</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§3.4 · F.1</td><td>Factor b = 2,3743174983554183; 200 referencias; Σd̃ = 15.330,4944; D(3) = 45.987</td><td class="num">b idéntico · 200 · 45.991,48/3 = 15.330,49 · 45.987</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§4.2</td><td>1.099 restricciones base + 99 cortes de cobertura = 1.198 filas</td><td class="num">99+10+990 = 1.099 · +99 MinSetups</td><td><span class="chip c-ok">Coincide con el código</span></td></tr>
+<tr><td class="src">§4.3</td><td>Maestro final de 3 días: 5.200 variables y 10.924 restricciones</td><td class="num">5.200 · 10.924</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§5 · B.2</td><td>L(D) = 29.748,4944 &gt; 28.800; margen 948,4944</td><td class="num">26.818,49 + 200·14,65 = 29.748,4944</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§6.2 · B.3 · B.4</td><td>Maestro agregado 34.131,0578; distribución falla en M1; segundo maestro 34.132,1434; cota lagrangiana 34.070,6096; margen 0,000364; 579 pares a cero</td><td class="num">34.131,05783 · M1 infactible · 34.132,14339 · 34.070,60956 · 0,000363983 · 579</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§7.1 · ec. 13</td><td>Z*₁ = 11.547,4126 = 9.147,2106 + 2.400,2020; 99 activaciones; ninguna referencia partida; 80,19 %; holgura 2.852,5874; preparación 20,79 %</td><td class="num">11.547,412556 · 9.147,210556 · 2.400,202 · 99 · 80,19 % · 2.852,5874</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§7.1</td><td>M7, M8 y M9 casi saturadas; M10 con mayor holgura</td><td class="num">99,89 % · 99,57 % · 99,90 % · M10 17,75 %</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§7.1 · F.2</td><td>Heurística 13.684,4886 sin faltantes; mejora 15,6168 %; diferencia 2.137,0760</td><td class="num">13.684,488556 · 15,6168 % · 2.137,076</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">Tabla 4</td><td>Reducciones 120,1660 · 83,7983 · 78,3678 en las tres referencias citadas</td><td class="num">120,166 · 83,7983 · 78,3678</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§7.2 · ec. 15</td><td>Z*₃ = 34.132,1434 = 28.663,9914 + 5.468,1520; 207 activaciones; 79,01 %; holgura 9.067,8566; preparación 16,02 %</td><td class="num">34.132,1434 · 28.663,9914 · 5.468,152 · 207 · 79,01 %</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§7.2</td><td>Valor anterior 34.234,8717; reducción 102,7283 = 0,3001 %</td><td class="num">aritmética correcta</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">Tabla 5 · §8</td><td>Medias, DE y rangos por motor; razones 5,08 y 2,93</td><td class="num">recalculadas desde tablas 11 y 12: idénticas</td><td><span class="chip c-warn">Consistente internamente · sin CSV</span></td></tr>
+<tr><td class="src">Tablas 11, 12, 16</td><td>60 corridas con LB = UB; residuos máximos 7,28e-12 y 1,39e-10</td><td class="num">—</td><td><span class="chip c-bad">No verificable · falta el expediente</span></td></tr>
+<tr><td class="src">§9.1 · Tabla 13</td><td>Matriz reconstruida: 11.429,9804 = 8.913,9684 + 2.516,0120; heurística 13.761,0987; mejora 16,9399 %; 227 unidades sin observación; 21 referencias cambian; plan nominal evaluado 11.972,8010; brecha 542,8206</td><td class="num">todos idénticos</td><td><span class="chip c-ok">Coincide</span></td></tr>
+<tr><td class="src">§9.1 · D.2</td><td>M8 +30 min: beneficio entre 5,4161 y 5,4983 (nominal); 11,4189 a 11,5320 (reconstruida)</td><td class="num">certificado: 5,4161 · 11,4189</td><td><span class="chip c-warn">Histórico · hoy es un valor exacto</span></td></tr>
+<tr><td class="src">Tabla 14</td><td>Sensibilidad 0,8 → 9.508,9380 · 0,9 → 10.517,4874 · 1,1 → 12.585,3792 · 1,2 → UB 13.672,8887 con GAP 0,47 %; faltantes heurísticos 69 y 487</td><td class="num">9.508,938 · 10.517,4874 · 12.585,3792 · <b>13.641,1764</b> · 69 · 487</td><td><span class="chip c-warn">Fila 1,2 no era óptima: 31,71 min menos</span></td></tr>
+<tr><td class="src">§9.2 · §9.4 · Tabla 15</td><td>Monte Carlo revalidado: media 15,1876 %, mediana 15,1681 %, DE 0,7724, rango [12,4763; 17,8972], GAP máx 1,1879 %, IC [15,1397; 15,2355]; totales entre 13.176 y 15.007</td><td class="num">IC consistente con DE · totales 13.176–15.007 con semilla 42</td><td><span class="chip c-warn">Generación reproducida · estadísticos sin CSV</span></td></tr>
+<tr><td class="src">D.3</td><td>Las cifras 15,14 % e IC [15,09; 15,19] son de una ejecución anterior y no se usan</td><td class="num"><code>monte_carlo_reference.json</code> de la app aún trae 15,14 / 15,10 / 0,78 / [15,09; 15,19]</td><td><span class="chip c-bad">App y tesis discrepan</span></td></tr>
+<tr><td class="src">§6.3 · Tabla 10</td><td>Python 3.14.8, PuLP 3.3.0, HiGHS 1.15.1, Gurobi 13.0.3, cbcbox 2.924, 17 oct 2026</td><td class="num">PuLP, HiGHS, Gurobi y cbcbox coinciden con requirements</td><td><span class="chip c-info">Python 3.14.8 por confirmar</span></td></tr>
+<tr><td class="src">E.2</td><td>SHA-256 de datos 576328e9…2223</td><td class="num">576328e9236ca175cc9b30fcd5422204efc4089725d1cf8dc81a410bd2cc2223</td><td><span class="chip c-ok">Coincide</span></td></tr>
+</tbody></table></div>
+
+<h2 id="hallazgos">Hallazgos para decidir</h2>
+<p class="note">Marca los que quieras enviar. La selección se guarda en este navegador. El botón al pie copia el texto de los seleccionados para pegarlo o para que yo los cree como issues.</p>
+
+<article class="finding sev-alta" data-id="T1">
+  <div class="head"><span class="id">T1</span><span class="chip c-bad">Alta</span><h3>El expediente digital que sustenta las tablas no está en el repositorio</h3></div>
+  <div class="body">
+    <p>El anexo E.2 inventaría <code>comparacion.csv</code>, <code>certificaciones_60_corridas.csv</code>, <code>auditoria_independiente.csv</code>, <code>evidencia_optimizadores.zip</code>, <code>validacion_historica.zip</code>, <code>monte_carlo_escenarios.csv</code>, <code>auditar.py</code>, <code>auditar_monte_carlo.py</code>, <code>comparacion_asignaciones.csv</code> y las carpetas <code>tablas/</code> y <code>fuentes_verificadas/</code>. Ninguno existe en el repositorio. Las tablas 5, 11, 12, 15 y 16 y toda la sección 9 dependen de ellos.</p>
+    <p>El contraste: todo lo que sí depende solo del Excel y del código se reproduce, incluido el SHA-256 de los datos. La trazabilidad que la tesis promete está a medio camino.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Publicar la carpeta <code>evidencia/</code> en el repositorio o como release de GitHub, con los SHA-256 que ya imprime el protocolo. Si el ZIP de 1.000 escenarios pesa demasiado, al menos los CSV de resumen y los scripts de auditoría.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T1"> Enviar como issue</label><textarea id="note-T1" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-alta" data-id="T2">
+  <div class="head"><span class="id">T2</span><span class="chip c-bad">Alta</span><h3>Monte Carlo: la app muestra las estadísticas que la tesis descarta</h3></div>
+  <div class="body">
+    <p>La tesis (§9.2, Tabla 15) reporta la revalidación con media 15,1876 %, mediana 15,1681 %, DE 0,7724 y GAP máximo 1,1879 %, y en D.3 dice que las cifras 15,14 % e IC [15,09; 15,19] «son datos de una ejecución anterior y no se emplean». El archivo <code>monte_carlo_reference.json</code> del repositorio, que es lo que la página «Análisis del estudio» muestra como referencia histórica, contiene exactamente esas cifras descartadas y las etiqueta como <code>tesis_documentada</code>.</p>
+    <p>Hoy además ni siquiera se carga por la ruta rota (issue #2). Cuando se corrija la ruta, el jurado vería en la app un 15,14 % frente al 15,19 % del documento.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Reemplazar el JSON por los estadísticos revalidados, conservar los anteriores con fecha en un campo aparte, y citar en la app la misma fuente que la tesis.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T2"> Enviar como issue</label><textarea id="note-T2" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-media" data-id="T3">
+  <div class="head"><span class="id">T3</span><span class="chip c-warn">Media</span><h3>El anexo D conserva cotas históricas que hoy se certifican en segundos</h3></div>
+  <div class="body">
+    <p>La tabla 14 reporta la sensibilidad a la demanda con un presupuesto histórico de 20 s. Con el protocolo actual sin límite los cinco factores certifican en menos de un minuto. Tres filas coinciden con el óptimo, pero la fila 1,2 reportaba UB 13.672,8887 con GAP 0,47 % y el óptimo certificado es 13.641,1764: 31,71 min menos. Lo mismo ocurre con el beneficio de +30 min en M8, reportado como rango [5,4161; 5,4983] cuando el valor exacto es 5,4161 (y 11,4189 con la matriz reconstruida).</p>
+    <p>La tesis es honesta al etiquetarlos como históricos, pero mantener rangos por límite de tiempo cuando el trabajo presume de certificación exacta es una debilidad fácil de señalar por un jurado.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Recalcular tabla 14 y el ensayo de capacidad con el protocolo certificado y reportar valores exactos; dejar los históricos solo si aportan algo (por ejemplo, mostrar cuánto subestimaba el presupuesto de 20 s).</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T3"> Enviar como issue</label><textarea id="note-T3" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-media" data-id="T4">
+  <div class="head"><span class="id">T4</span><span class="chip c-warn">Media</span><h3>La presentación tiene dos capas de resultados y cita una tesis que ya no existe</h3></div>
+  <div class="body">
+    <p>El HTML trae el marcado de la edición de 125 páginas (septiembre) y, al final, un script que al cargar reescribe 11 de las 21 diapositivas y sustituye textos («15,6 %» → «15,62 %», «PuLP + CBC» → «CBC · HiGHS · Gurobi»). Lo proyectado coincide con la tesis de 48 páginas; el marcado no. Si el script falla, se imprime a PDF sin ejecutarlo o alguien lee el código, aparecen 34.234,87 min, GAP ≤ 0,478 % y MAE 0,2127.</p>
+    <p>Las diapositivas no reescritas (2, 6, 7, 8, 11, 12, 13 y 16) conservan pies como «Tabla 7.4, p. 57», «ec. 7.17», «Sección 7.4.9». Esa numeración no existe en <code>Trabajo_RPM.pdf</code>, que tiene secciones 1–12, anexos A–G y tablas 1–17. La diapositiva de imputación sigue mostrando MAE 0,2127 frente al 0,1888 de la tabla 8. Ya dejé esta precisión como comentario en el issue #5.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Consolidar los valores revisados en el marcado, eliminar la capa de reescritura y renumerar todas las fuentes al documento de 48 páginas.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T4"> Enviar como issue</label><textarea id="note-T4" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-media" data-id="T5">
+  <div class="head"><span class="id">T5</span><span class="chip c-warn">Media</span><h3>El mapa metodológico de la presentación no existe en la tesis</h3></div>
+  <div class="body">
+    <p>La presentación organiza el estudio en siete etapas con entradas, procedimiento, resultado, límite y fuente por etapa. La tesis menciona «cinco fases» en la sección 2 (depuración y trazabilidad, caracterización, formulación de instancias, resolución y verificación, comparación de motores) y no vuelve a usarlas. No hay figura metodológica, la heurística que sostiene la comparación está en el anexo F.2, los indicadores de exposición se usan en §3.2 antes de definirse en §3.5, y la justificación del horizonte (§5) queda entre la formulación y la estrategia de resolución. La comparación completa está en la sección <a href="#mapa">Mapa metodológico vs. tesis</a>.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Añadir en §2.3 una figura «Ruta del estudio» con las siete etapas y una tabla que mapee etapa → secciones, anexos y archivos de evidencia (el mapa ya tiene ese campo «fuente»). Alinear el párrafo de las cinco fases con esos nombres. Subir el algoritmo de F.2 a una subsección del cuerpo y mover §3.5 antes de §3.2 o referenciarlo.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T5"> Enviar como issue</label><textarea id="note-T5" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-media" data-id="T6">
+  <div class="head"><span class="id">T6</span><span class="chip c-warn">Media</span><h3>Formato del documento: ¿es la versión de entrega?</h3></div>
+  <div class="body">
+    <p>El PDF tiene 48 páginas en formato de artículo con encabezado «Planificación de la producción»: sin índice, sin lista de figuras y tablas, sin capítulo de metodología separado, sin glosario de notación. La presentación y la propia tesis hablan de una «edición técnica de 125 páginas» previa con capítulos 5 a 9 y tablas como 6.1, 7.4, 7.7, 7.9, 7.14, 7.15 y 7.18. Parte de ese contenido (tabla de carga por máquina, escenarios de demanda, descripción de la app) se comprimió en el anexo D o desapareció.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Confirmar con Sebastian cuál es el documento que se radica y si cumple el formato exigido por la maestría. Si el de 48 páginas es el final, necesita al menos índice, listas y una figura metodológica.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T6"> Enviar como issue</label><textarea id="note-T6" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-baja" data-id="T7">
+  <div class="head"><span class="id">T7</span><span class="chip c-info">Baja</span><h3>Erratas y redacción</h3></div>
+  <div class="body">
+    <p>Trece erratas concretas listadas en la sección <a href="#erratas">Erratas</a>, incluida una frase truncada en §7.3 («…que exhibir un mero 100», falta el signo de porcentaje) y dos párrafos ilegibles en el anexo A. Además, el registro es uniforme y recargado: «se vale de», «da fe de», «de rigor», «hace una distinción» se repiten decenas de veces y el texto se lee como paráfrasis automática. Un jurado lo nota.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Corregir las erratas y hacer una pasada de estilo sobre el cuerpo principal (secciones 1 a 12), priorizando resumen, introducción y conclusiones.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T7"> Enviar como issue</label><textarea id="note-T7" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-baja" data-id="T8">
+  <div class="head"><span class="id">T8</span><span class="chip c-info">Baja</span><h3>Versión de Python por confirmar y README desalineado</h3></div>
+  <div class="body">
+    <p>La tesis registra Python 3.14.8 (§6.3, tabla 10). Con el calendario bimestral de mantenimiento de la serie 3.14, iniciada en octubre de 2025, para el 17 de octubre de 2026 se esperaría a lo sumo 3.14.6 salvo versiones de seguridad extraordinarias. El README del repositorio sigue diciendo «Usar Python 3.12». No puedo verificar la cifra sin el <code>protocolo.json</code> del expediente.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Confirmar la versión contra el protocolo y alinear README y tesis.</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T8"> Enviar como issue</label><textarea id="note-T8" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-baja" data-id="T9">
+  <div class="head"><span class="id">T9</span><span class="chip c-info">Baja</span><h3>El plan de tres días puede describirse con precisión en lugar de evitarse</h3></div>
+  <div class="body">
+    <p>§4.4 dice que «no se trata de siete productos repartidos cuando se registran 207 activaciones para 200 referencias» y que «para saber el número preciso hay que agrupar el plan». El plan certificado está en el repositorio (<code>plan_inicial_3d.csv</code>) y la respuesta es concreta: cinco referencias tienen más de una activación y cuatro de ellas se reparten entre más de una máquina.</p>
+    <dl class="kv"><dt>Propuesta</dt><dd>Dar las cifras en §7.2 y, de paso, aclarar en §8 que el inicio común de tres días es el propio plan óptimo, así que los tiempos miden solo la prueba de cota (hoy está dicho en §6.3 pero no donde se leen los tiempos).</dd></dl>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T9"> Enviar como issue</label><textarea id="note-T9" placeholder="Nota para el issue (opcional)"></textarea></div>
+</article>
+
+<article class="finding sev-info" data-id="T10">
+  <div class="head"><span class="id">T10</span><span class="chip c-ok">Informativo</span><h3>Lo que se defiende bien</h3></div>
+  <div class="body">
+    <p>No es un hallazgo para issue, pero conviene saberlo antes de la sustentación. La cadena de cotas del caso de tres días es correcta y reproducible: maestro agregado como relajación válida, distribución infactible en M1, segundo maestro con M1 detallado igual al plan completo, poda con margen conservador que preserva el incumbente. La cota de dos días (ec. 10) es elemental y robusta. La verificación independiente del plan diario y la separación entre matriz nominal y reconstruida están bien argumentadas. Las tablas 3 y 6 sobre qué afirma cada tipo de evidencia son el mejor material del documento.</p>
+  </div>
+  <div class="decide"><label><input type="checkbox" id="chk-T10"> Enviar como issue</label><textarea id="note-T10" placeholder="Nota (opcional)"></textarea></div>
+</article>
+
+<h2 id="mapa">Mapa metodológico vs. estructura de la tesis</h2>
+<p>El mapa de la presentación es una ruta con siete etapas, cada una con entradas, procedimiento, resultado, límite y fuente documental. La tesis sigue un orden temático razonable pero nunca enuncia esa ruta ni la dibuja. Así se corresponden.</p>
+<div class="cols">
+  <div>
+    <h3>Presentación · siete etapas</h3>
+    <ol class="steps">
+      <li><b>Datos</b> · delimitar la instancia<small>990 pares, 819 observados · lote de 45.987 u.</small></li>
+      <li><b>Preparación</b> · caracterizar y controlar<small>Exposición 9,42 % · clustering descriptivo</small></li>
+      <li><b>Heurística</b> · construir la comparación<small>13.684,49 min, sin faltantes</small></li>
+      <li><b>MILP diario</b> · optimizar la asignación<small>11.547,41 min · GAP 0 · 80,19 %</small></li>
+      <li><b>Multiperiodo</b> · distribuir el lote<small>Cota 29.748 &gt; 28.800 · 34.132,14 min en 3 días</small></li>
+      <li><b>Validación</b> · contrastar la evidencia<small>60 corridas · 1.000 escenarios históricos</small></li>
+      <li><b>Aplicación</b> · entregar el plan<small>Plan + evidencia exportable</small></li>
+    </ol>
+  </div>
+  <div>
+    <h3>Tesis · dónde cae cada etapa</h3>
+    <ol class="steps">
+      <li>§3.1, §3.4, anexo A.1, anexo F.1<small>Completo. La construcción del lote está en el anexo, no en el cuerpo.</small></li>
+      <li>§3.2, §3.3, §3.5, anexos A.2–A.4<small>Los valores 1,01 % y 9,42 % aparecen en §3.2; la definición llega en §3.5.</small></li>
+      <li>§7.1 (resultado) y anexo F.2 (algoritmo)<small>La etapa no existe como tal: el método está en un anexo.</small></li>
+      <li>§4 (formulación), §6.1, §6.5, §7.1<small>Bien cubierto.</small></li>
+      <li>§5 (horizonte), §6.2, §7.2, anexos B y G<small>Repartido en cinco lugares; §5 interrumpe el paso de formulación a resolución.</small></li>
+      <li>§6.3–6.4, §8, §9, anexos C, D y E<small>La tesis separa certificación (8) de simulación (9); es mejor que el mapa, pero sin un párrafo que lo explique.</small></li>
+      <li>§10<small>Bien cubierto. Falta enlazar con el repositorio.</small></li>
+    </ol>
+  </div>
+</div>
+<h3>Qué le falta a la tesis respecto al mapa</h3>
+<ul class="plain">
+  <li><b>Una figura de ruta.</b> La sección 2.3 «Diseño del estudio de caso» tiene tres párrafos y ningún esquema. Es el lugar natural para el diagrama de siete etapas.</li>
+  <li><b>Coherencia con las «cinco fases».</b> El párrafo de §2 enumera cinco fases que no coinciden con las siete etapas ni con los títulos de las secciones. Cualquiera de los dos esquemas sirve, pero debe ser uno.</li>
+  <li><b>Tabla de trazabilidad por etapa.</b> El mapa ya trae, por etapa, el archivo de evidencia. La tesis tiene la tabla 17 (inventario de archivos) pero no la cruza con las secciones. Una tabla etapa → secciones → anexos → archivos cerraría el círculo y respondería al hallazgo T1.</li>
+  <li><b>Límites por etapa.</b> El mapa pone el límite al lado del resultado. La tesis concentra los límites en §11 y en la tabla 3. Repetir una frase de alcance al cierre de cada sección de resultados ayudaría al lector.</li>
+</ul>
+<h3>Qué hace mejor la tesis que el mapa</h3>
+<ul class="plain">
+  <li>Separa la certificación nominal (§8) de la simulación histórica (§9). El mapa las funde en «Validación», lo que invita a creer que los 1.000 escenarios están certificados.</li>
+  <li>Las tablas 3 y 6 explicitan qué afirmación permite cada evidencia. El mapa no tiene equivalente.</li>
+</ul>
+
+<h2 id="erratas">Erratas localizadas</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Página</th><th>Texto</th><th>Observación</th></tr></thead>
+<tbody>
+<tr><td class="num">p. 3</td><td class="err">«se trata de una formulación lineal, sin embargo, al ser…»</td><td>Coma antes de «sin embargo» une dos oraciones; punto y coma o punto.</td></tr>
+<tr><td class="num">p. 4</td><td class="err">«un experimento a parte»</td><td>«aparte».</td></tr>
+<tr><td class="num">p. 5</td><td class="err">«La tabla 2 relacionad estos antecedentes»</td><td>«relaciona».</td></tr>
+<tr><td class="num">p. 5</td><td class="err">«más no se tomarán herramientas»</td><td>«mas» sin tilde (conjunción adversativa).</td></tr>
+<tr><td class="num">p. 9</td><td class="err">«qué coeficianes están detrás»</td><td>«coeficientes».</td></tr>
+<tr><td class="num">p. 17</td><td class="err">«se define la ocupación de una máquina…» (inicio de §7.3)</td><td>Minúscula inicial de sección.</td></tr>
+<tr><td class="num">p. 19</td><td class="err">«una verificación de más peso que exhibir un mero 100»</td><td>Frase truncada: falta «%» (probable <code>\%</code> perdido en LaTeX) y el cierre de la oración.</td></tr>
+<tr><td class="num">p. 18</td><td class="err">«La comparación se hace hincapié en el esfuerzo»</td><td>«La comparación hace hincapié».</td></tr>
+<tr><td class="num">p. 28</td><td class="err">«la demostración de tres días se valen de la cota»</td><td>Concordancia: «se vale».</td></tr>
+<tr><td class="num">p. A-2</td><td class="err">«el tramo resumido no se exclusivamente constituye incertidumbre»</td><td>Oración ilegible; reescribir.</td></tr>
+<tr><td class="num">p. A-2</td><td class="err">«La reconstrucción por las medias positivas de la matriz de INMUTACIONES TRAZADAS que corresponde a la media positiva de la reconstrucción de las matrices de DATOS SIMULADOS en el total de 174 celdas»</td><td>Oración sin verbo principal; además «INMUTACIONES» por «IMPUTACIONES».</td></tr>
+<tr><td class="num">p. 7</td><td class="err">«Las 171 que sobran demandan una hipótesis»</td><td>«sobran» sugiere exceso; «restantes».</td></tr>
+<tr><td class="num">varias</td><td class="err">«se vale de», «da fe de», «de rigor», «hace una distinción», «pone de manifiesto»</td><td>Muletillas repetidas en casi todos los párrafos; pasada de estilo.</td></tr>
+</tbody></table></div>
+
+<h2 id="metodo">Cómo se verificó</h2>
+<ul class="plain">
+  <li>Texto del PDF extraído con PyMuPDF (48 páginas, 81 entradas de índice, creado el 22 de octubre con pdfTeX).</li>
+  <li>Caso diario, heurística, cuello de botella, clustering, imputación y sensibilidad reejecutados con <code>rpm_core.py</code> y HiGHS 1.15.1 sobre <code>AnexodeDatosxlsx.xlsx</code>, sin límite de tiempo y GAP 0.</li>
+  <li>Caso de tres días reejecutado con <code>optimizar_rpm.ejecutar</code> desde <code>plan_inicial_3d.csv</code>: 36,2 s en esta máquina, dos maestros, poda y distribución idénticos a los del anexo B.</li>
+  <li>Generación de los 1.000 vectores de Monte Carlo replicada con semilla 42 para comprobar los totales extremos; los MILP no se reejecutaron.</li>
+  <li>SHA-256 de datos recalculado con la misma serialización que usa <code>comparacion_solvers.py</code>.</li>
+  <li>La presentación se analizó leyendo su HTML; no pude abrirla en un navegador controlado desde esta sesión, así que el efecto de la capa de reescritura se deduce del código, que es determinista al cargar.</li>
+</ul>
+</div>
+
+<div class="bar">
+  <span class="count"><span id="n-sel">0</span> seleccionados</span>
+  <button type="button" id="btn-copy">Copiar selección</button>
+  <button type="button" class="ghost" id="btn-all">Marcar T1–T9</button>
+  <button type="button" class="ghost" id="btn-none">Limpiar</button>
+  <output id="copy-out" aria-live="polite"></output>
+</div>
+
+<script>
+(function(){
+  var KEY='revision-tesis-rpm-v1';
+  var ids=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'];
+  var state={};
+  try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){state={};}
+  function chk(id){return document.getElementById('chk-'+id);}
+  function note(id){return document.getElementById('note-'+id);}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+  function count(){var n=ids.filter(function(i){return chk(i).checked;}).length;document.getElementById('n-sel').textContent=n;}
+  ids.forEach(function(id){
+    var s=state[id]||{};
+    if(s.on) chk(id).checked=true;
+    if(s.note) note(id).value=s.note;
+    chk(id).addEventListener('change',function(){state[id]=state[id]||{};state[id].on=chk(id).checked;save();count();});
+    note(id).addEventListener('input',function(){state[id]=state[id]||{};state[id].note=note(id).value;save();});
+  });
+  count();
+  function text(){
+    var out=[];
+    ids.forEach(function(id){
+      if(!chk(id).checked) return;
+      var art=document.querySelector('[data-id="'+id+'"]');
+      var title=art.querySelector('h3').textContent.trim();
+      var sev=art.querySelector('.head .chip').textContent.trim();
+      var n=note(id).value.trim();
+      out.push(id+' ['+sev+'] '+title+(n?'\n  Nota: '+n:''));
+    });
+    return out.length?out.join('\n'):'(nada seleccionado)';
+  }
+  var outEl=document.getElementById('copy-out');
+  document.getElementById('btn-copy').addEventListener('click',function(){
+    var t=text();
+    function fallback(){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');outEl.textContent='Copiado.';}catch(e){outEl.textContent='Selecciona y copia manualmente: '+t;}document.body.removeChild(ta);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){outEl.textContent='Copiado.';},fallback);}else{fallback();}
+  });
+  document.getElementById('btn-all').addEventListener('click',function(){ids.slice(0,9).forEach(function(id){chk(id).checked=true;state[id]=state[id]||{};state[id].on=true;});save();count();});
+  document.getElementById('btn-none').addEventListener('click',function(){ids.forEach(function(id){chk(id).checked=false;state[id]=state[id]||{};state[id].on=false;});save();count();outEl.textContent='';});
+})();
+</script>
+</body>
+</html>
