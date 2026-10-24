@@ -3,6 +3,8 @@ import math
 import os
 import re
 import tempfile
+from contextvars import ContextVar
+RUN_CONTEXT = ContextVar("rpm_run_context", default={})
 from typing import Iterable
 import numpy as np
 import pandas as pd
@@ -355,31 +357,113 @@ def _parsear_log_cbc(path: str) -> dict:
     elif "gap_raw" in vals:
         out["gap_pct"] = abs(vals["gap_raw"]) * 100
     return out
-def _resolver_prob_cbc(prob: pulp.LpProblem, tiempo_limite_seg: int, gap_rel: float | None = None):
-    log_path = tempfile.NamedTemporaryFile(prefix="rpm_cbc_", suffix=".log", delete=False).name
-    try:
-        try:
-            solver = pulp.PULP_CBC_CMD(msg=False, timeLimit=tiempo_limite_seg, gapRel=gap_rel, logPath=log_path)
-        except TypeError:
-            solver = pulp.PULP_CBC_CMD(msg=False, timeLimit=tiempo_limite_seg, gapRel=gap_rel)
-            log_path = None
-        prob.solve(solver)
-        info = _parsear_log_cbc(log_path) if log_path else {
-            "lower_bound": None, "upper_bound": None, "gap_pct": None,
-            "stopped_on_time": False, "stopped_on_gap": False,
-            "proven_optimal": False, "termination_known": False,
-        }
-    finally:
-        if log_path and os.path.exists(log_path):
-            try:
-                os.remove(log_path)
-            except OSError:
-                pass
+# Modo de certificación: sin límite temporal ni brecha positiva aceptada.
+# Los argumentos heredados se conservan por compatibilidad; no limitan CBC.
+ULTIMA_AUDITORIA = {}
+
+def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
+    import time
+    from pathlib import Path
+    global ULTIMA_AUDITORIA
+    run_context = RUN_CONTEXT.get()
+    log_dir = Path(run_context.get("log_dir", os.environ.get("RPM_LOG_DIR", "logs_cbc")))
+    log_dir.mkdir(parents=True, exist_ok=True)
+    seed = int(os.environ.get("RPM_SEED", "42"))
+    tag = run_context.get("run_id", os.environ.get("RPM_RUN_ID", str(time.time_ns())))
+    log_path = log_dir / (tag + ".log")
+    solver_name = run_context.get("solver", os.environ.get("RPM_SOLVER", "HiGHS"))
+    if solver_name == "Gurobi":
+        from solver_config_rpm import resolver
+        ULTIMA_AUDITORIA = {}
+        r = resolver(prob, "Gurobi", log_path, threads=1, seed=seed)
+        info = dict(solver=solver_name, variables=r['variables'], constraints=r['restricciones'],
+                    proven_optimal=r['certificado'], termination_known=True,
+                    elapsed_s=r['segundos'], log_path=str(log_path), seed=seed,
+                    max_residual=r['residual_max'], lower_bound=r.get('lb'),
+                    upper_bound=r.get('ub'), gap_pct=100*r['gap_solver'] if r.get('gap_solver') is not None else None,
+                    nodes=r.get('nodos'), solver_version=r['version'])
+        ULTIMA_AUDITORIA = info.copy()
+        if not r['certificado']:
+            raise RuntimeError("Gurobi no certificó optimalidad y factibilidad. Revisa el registro; no se reporta GAP=0.")
+        return info
+    if solver_name not in ("CBC", "HiGHS"):
+        raise ValueError("Optimizador desconocido")
+    ULTIMA_AUDITORIA = {}
+    if solver_name == "CBC":
+        from cbc_actual import CBCActual
+        solver = CBCActual(
+            msg=False, timeLimit=None, gapRel=0.0, gapAbs=0.0,
+            threads=1, maxNodes=None, logPath=str(log_path),
+            warmStart=getattr(prob, "rpm_warm_start", False),
+            presolve=True, cuts=True, strong=5,
+            options=[f"randomSeed {seed}", f"randomCbcSeed {seed}", "increment 0", "heuristicsOnOff on"],
+        )
+    else:
+        class HiGHSConInicio(pulp.HiGHS):
+            def callSolver(self, lp):
+                if getattr(lp, "rpm_warm_start", False):
+                    import highspy
+                    variables = lp.variables()
+                    indices = np.asarray([v.index for v in variables], dtype=np.int32)
+                    values = np.asarray([v.varValue for v in variables], dtype=np.float64)
+                    status = lp.solverModel.setSolution(len(indices), indices, values)
+                    if status != highspy.HighsStatus.kOk:
+                        raise RuntimeError("HiGHS rechazó la carga del plan inicial")
+                super().callSolver(lp)
+        solver = HiGHSConInicio(msg=True, timeLimit=None, gapRel=0.0, gapAbs=0.0,
+                           threads=1, random_seed=seed, log_file=str(log_path),
+                           log_to_console=False)
+    started = time.perf_counter()
+    prob.solve(solver)
+    elapsed = time.perf_counter() - started
+    text = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
+    if solver_name == "CBC":
+        certified = bool(re.search(r"^Result - Optimal solution found\s*$", text, re.M))
+        info = _parsear_log_cbc(str(log_path))
+        nodes = re.search(r"Enumerated nodes:\s*(\d+)", text)
+        version = re.search(r"Version:\s*(\S+)", text)
+        info.update(nodes=int(nodes.group(1)) if nodes else None,
+                    solver_version=(version.group(1) if version else "CBC")+" / cbcbox 2.924")
+    else:
+        import highspy
+        hi = prob.solverModel.getInfo()
+        certified = (prob.solverModel.getModelStatus() == highspy.HighsModelStatus.kOptimal
+                     and hi.mip_gap == 0.0)
+        info = dict(lower_bound=hi.mip_dual_bound, upper_bound=hi.objective_function_value,
+                    gap_pct=hi.mip_gap * 100, nodes=hi.mip_node_count,
+                    solver_version=prob.solverModel.version())
+    certified = certified and prob.status == pulp.LpStatusOptimal
+    certified = certified and prob.sol_status == pulp.LpSolutionOptimal
+    violations = []
+    for v in prob.variables():
+        z = v.value()
+        if z is None or not math.isfinite(z):
+            violations.append(float("inf")); continue
+        if v.lowBound is not None: violations.append(max(0, v.lowBound-z))
+        if v.upBound is not None: violations.append(max(0, z-v.upBound))
+        if v.cat == pulp.LpInteger: violations.append(abs(z-round(z)))
+    for con in prob.constraints.values():
+        z = con.value()
+        if z is None: violations.append(float("inf")); continue
+        violations.append(abs(z) if con.sense == 0 else max(0,z) if con.sense == -1 else max(0,-z))
+    residual = max(violations, default=0.0)
+    certified = certified and residual <= 1e-5
+    info.update(solver=solver_name, variables=len(prob.variables()), constraints=len(prob.constraints))
+    info.update(proven_optimal=certified, termination_known=True,
+                elapsed_s=elapsed, log_path=str(log_path), seed=seed,
+                max_residual=residual)
+    ULTIMA_AUDITORIA = info.copy()
+    if not certified:
+        raise RuntimeError(f"{solver_name} no certificó optimalidad y factibilidad. Estado: {pulp.LpStatus[prob.status]}. Revisar {log_path}. No se reporta GAP=0.")
+    obj = float(pulp.value(prob.objective))
+    info.update(lower_bound=obj, upper_bound=obj, gap_pct=0.0)
+    ULTIMA_AUDITORIA = info.copy()
     return info
+
 def resolver_asignacion(cij: pd.DataFrame, demanda: pd.Series,
                          setup: pd.Series,
                          cap_minutos=CAP_MINUTOS_DIA,
-                         tiempo_limite_seg: int = 60) -> dict:
+                         tiempo_limite_seg: int | None = None, plan_inicial=None) -> dict:
     productos = list(cij.index)
     demanda_i = _validar_demanda_entera(demanda.reindex(productos))
     setup = setup.reindex(MACHINES).astype(float)
@@ -410,6 +494,24 @@ def resolver_asignacion(cij: pd.DataFrame, demanda: pd.Series,
             u_ij = max(0, min(int(demanda_i[i]), max_por_cap))
             U.loc[i, j] = u_ij
             prob += X[i][j] <= u_ij * Y[i][j], f"Link_{i}_{j}"
+    for i in productos:
+        max_u = int(U.loc[i].max())
+        if max_u > 0:
+            prob += pulp.lpSum(Y[i][j] for j in MACHINES) >= math.ceil(int(demanda_i[i])/max_u), f"MinSetups_{i}"
+    if plan_inicial is not None:
+        P = plan_inicial.reindex(index=productos, columns=MACHINES)
+        a = P.to_numpy(dtype=float)
+        if not np.isfinite(a).all() or (a < 0).any() or not np.allclose(a, np.rint(a), atol=1e-7, rtol=0):
+            raise ValueError("Plan inicial diario incompleto o no entero")
+        if not np.array_equal(P.sum(axis=1).to_numpy(), demanda_i.to_numpy()):
+            raise ValueError("Plan inicial diario no cumple la demanda actual")
+        cargas = (C * P).sum(axis=0) + P.gt(0).sum(axis=0) * setup
+        if (cargas > caps + 1e-6).any() or (P > U).any().any():
+            raise ValueError("Plan inicial diario excede capacidad o enlace")
+        for i in productos:
+            for j in MACHINES:
+                q = int(P.loc[i,j]); X[i][j].setInitialValue(q); Y[i][j].setInitialValue(int(q > 0))
+        prob.rpm_warm_start = True
     log_info = _resolver_prob_cbc(prob, tiempo_limite_seg)
     estado = pulp.LpStatus[prob.status]
     objetivo = pulp.value(prob.objective)
@@ -555,7 +657,7 @@ def politica_empirica(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
     }
 def analisis_cuello_de_botella(cij: pd.DataFrame, demanda: pd.Series,
                                 setup: pd.Series, cap_minutos=CAP_MINUTOS_DIA,
-                                delta: float = 30.0, tiempo_limite_seg: int = 60) -> pd.DataFrame:
+                                delta: float = 30.0, tiempo_limite_seg: int | None = None) -> pd.DataFrame:
     caps = _serie_capacidades(cap_minutos)
     base = resolver_asignacion(cij, demanda, setup, caps, tiempo_limite_seg)
     filas = []
@@ -584,7 +686,7 @@ def analisis_cuello_de_botella(cij: pd.DataFrame, demanda: pd.Series,
 def analisis_sensibilidad(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
                            cap_minutos=CAP_MINUTOS_DIA,
                            factores_demanda=(0.8, 0.9, 1.0, 1.1, 1.2),
-                           tiempo_limite_seg: int = 60,
+                           tiempo_limite_seg: int | None = None,
                            metodo_redondeo: str = "round") -> pd.DataFrame:
     filas = []
     for f in factores_demanda:
@@ -611,7 +713,7 @@ def analisis_sensibilidad_imputacion(cij: pd.DataFrame, mask_observado: pd.DataF
                                       demanda: pd.Series, setup: pd.Series,
                                       factores=(0.8, 1.0, 1.2),
                                       cap_minutos=CAP_MINUTOS_DIA,
-                                      tiempo_limite_seg: int = 60) -> pd.DataFrame:
+                                      tiempo_limite_seg: int | None = None) -> pd.DataFrame:
     mask = mask_observado.reindex(index=cij.index, columns=cij.columns).fillna(False)
     filas = []
     for f in factores:
@@ -634,7 +736,7 @@ def analisis_sensibilidad_imputacion(cij: pd.DataFrame, mask_observado: pd.DataF
 def comparar_politicas_multiescenario(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
                                        cap_minutos=CAP_MINUTOS_DIA,
                                        factores_demanda=(0.8, 0.9, 1.0, 1.1, 1.2),
-                                       tiempo_limite_seg: int = 60,
+                                       tiempo_limite_seg: int | None = None,
                                        metodo_redondeo: str = "round") -> pd.DataFrame:
     filas = []
     for f in factores_demanda:
@@ -659,7 +761,7 @@ def monte_carlo_demanda(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
                          n_escenarios: int = 30, seed: int = 42,
                          low: float = 0.85, high: float = 1.15,
                          cap_minutos=CAP_MINUTOS_DIA,
-                         tiempo_limite_seg: int = 60) -> dict:
+                         tiempo_limite_seg: int | None = None) -> dict:
     rng = np.random.default_rng(seed)
     base = pd.Series(demanda, dtype=float)
     filas = []
@@ -722,38 +824,137 @@ def monte_carlo_demanda(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
         "proporcion_mejora_positiva": float((r > 0).mean()) if len(r) else np.nan,
     }
     return {"escenarios": escenarios, "resumen": resumen}
-def resolver_multidia(cij: pd.DataFrame, demanda_horizonte: pd.Series, setup: pd.Series,
+def _cota_agregada_multidia(C, D, S, caps, dias, X, Y):
+    """Relajación válida: suma cantidades, preparaciones y capacidad por máquina.
+
+    Todo óptimo diario admite su proyección agregada. La recíproca no se
+    presupone: el modelo completo siempre resuelve y verifica cada día.
+    """
+    keys = [(i,j) for i in C.index for j in MACHINES]
+    aux = pulp.LpProblem('Cota_agregada_multidia', pulp.LpMinimize)
+    A = pulp.LpVariable.dicts('CantidadTotal', keys, 0, cat='Integer')
+    N = pulp.LpVariable.dicts('NumeroPreparaciones', keys, 0, dias, cat='Integer')
+    aux += pulp.lpSum(float(C.loc[i,j])*A[i,j]+float(S[j])*N[i,j] for i,j in keys)
+    for i in C.index:
+        aux += pulp.lpSum(A[i,j] for j in MACHINES)==int(D[i])
+    for j in MACHINES:
+        aux += pulp.lpSum(float(C.loc[i,j])*A[i,j]+float(S[j])*N[i,j] for i in C.index)<=dias*float(caps[j])
+    warm = all(X[i][j][t].varValue is not None for i,j in keys for t in range(1,dias+1))
+    for i,j in keys:
+        u=max(0,min(int(D[i]),math.floor((caps[j]-S[j])/C.loc[i,j])))
+        A[i,j].upBound=int(D[i])
+        aux += A[i,j]<=u*N[i,j]
+        aux += A[i,j]>=N[i,j]
+        if warm:
+            A[i,j].setInitialValue(sum(X[i][j][t].varValue for t in range(1,dias+1)))
+            N[i,j].setInitialValue(sum(Y[i][j][t].varValue for t in range(1,dias+1)))
+    aux.rpm_warm_start=warm
+    context=RUN_CONTEXT.get().copy()
+    import time
+    tag=context.get('run_id',os.environ.get('RPM_RUN_ID',str(time.time_ns())))
+    context['run_id']=tag+'_agregado'
+    token=RUN_CONTEXT.set(context)
+    try:
+        audit=_resolver_prob_cbc(aux)
+    finally:
+        RUN_CONTEXT.reset(token)
+    import json
+    from pathlib import Path
+    Path(audit['log_path']).with_suffix('.auditoria.json').write_text(
+        json.dumps(dict(audit, alcance='Certificado de la relajación agregada; no del modelo diario'),
+                   ensure_ascii=False, indent=2), encoding='utf-8')
+    return audit
+
+
+def _resolver_multidia_original(cij: pd.DataFrame, demanda_horizonte: pd.Series, setup: pd.Series,
                        dias: int, cap_minutos=CAP_MINUTOS_DIA,
-                       tiempo_limite_seg: int = 120,
-                       gap_rel: float | None = 0.005) -> dict:
+                       tiempo_limite_seg: int | None = None,
+                       gap_rel: float | None = 0.0, plan_inicial=None) -> dict:
     productos = list(cij.index)
     demanda_i = _validar_demanda_entera(demanda_horizonte.reindex(productos), "demanda_horizonte")
     caps = _serie_capacidades(cap_minutos)
     dias_lista = list(range(1, int(dias) + 1))
     C = cij.reindex(index=productos, columns=MACHINES).astype(float)
     setup = setup.reindex(MACHINES).astype(float)
+    costs = {(i,j):float(C.loc[i,j]) for i in productos for j in MACHINES}
+    setup_costs = setup.to_dict()
+    if (not np.isfinite(C.to_numpy()).all() or (C.to_numpy() <= 0).any()
+            or not np.isfinite(setup.to_numpy()).all() or (setup < 0).any()):
+        raise ValueError('Tiempos de producción positivos y preparaciones no negativas requeridos')
+    if int(dias) != dias or dias < 1:
+        raise ValueError('El horizonte debe ser entero positivo')
     prob = pulp.LpProblem("Programacion_MultiPeriodo", pulp.LpMinimize)
     X = pulp.LpVariable.dicts("X", (productos, MACHINES, dias_lista), lowBound=0, cat="Integer")
     Y = pulp.LpVariable.dicts("Y", (productos, MACHINES, dias_lista), cat="Binary")
     prob += (
-        pulp.lpSum(C.loc[i, j] * X[i][j][t] for i in productos for j in MACHINES for t in dias_lista)
-        + pulp.lpSum(setup[j] * Y[i][j][t] for i in productos for j in MACHINES for t in dias_lista)
+        pulp.lpSum(costs[i,j] * X[i][j][t] for i in productos for j in MACHINES for t in dias_lista)
+        + pulp.lpSum(setup_costs[j] * Y[i][j][t] for i in productos for j in MACHINES for t in dias_lista)
     )
     for i in productos:
         prob += pulp.lpSum(X[i][j][t] for j in MACHINES for t in dias_lista) == int(demanda_i[i]), f"Demanda_{i}"
     for j in MACHINES:
         for t in dias_lista:
             prob += (
-                pulp.lpSum(C.loc[i, j] * X[i][j][t] for i in productos)
-                + pulp.lpSum(setup[j] * Y[i][j][t] for i in productos)
+                pulp.lpSum(costs[i,j] * X[i][j][t] for i in productos)
+                + pulp.lpSum(setup_costs[j] * Y[i][j][t] for i in productos)
                 <= caps[j]
             ), f"Capacidad_{j}_{t}"
     for i in productos:
         for j in MACHINES:
-            u_ij = max(0, min(int(demanda_i[i]), math.floor((caps[j] - setup[j]) / C.loc[i, j])))
+            u_ij = max(0, min(int(demanda_i[i]), math.floor((caps[j] - setup_costs[j]) / costs[i,j])))
             for t in dias_lista:
                 prob += X[i][j][t] <= u_ij * Y[i][j][t], f"Link_{i}_{j}_{t}"
+    for i in productos:
+        max_u = max(max(0, min(int(demanda_i[i]), math.floor((caps[j]-setup_costs[j])/costs[i,j]))) for j in MACHINES)
+        if max_u > 0:
+            prob += pulp.lpSum(Y[i][j][t] for j in MACHINES for t in dias_lista) >= math.ceil(int(demanda_i[i])/max_u), f"MinSetups_{i}"
+    # Días intercambiables: sin vencimientos diarios, precedencias ni arrastres.
+    # Para cada máquina se ordenan las cargas. Permutar sus días preserva
+    # demanda total, objetivo y capacidad, por lo que no se pierde ningún óptimo.
+    for j in MACHINES:
+        for t in dias_lista[:-1]:
+            carga_t = pulp.lpSum(costs[i,j]*X[i][j][t]+setup_costs[j]*Y[i][j][t] for i in productos)
+            carga_sig = pulp.lpSum(costs[i,j]*X[i][j][t+1]+setup_costs[j]*Y[i][j][t+1] for i in productos)
+            prob += carga_t >= carga_sig, f"Simetria_carga_{j}_{t}"
+    if plan_inicial is not None:
+        # Validar el plan antes de ofrecerlo como incumbente. No fija decisiones.
+        P = plan_inicial.copy()
+        required = {"dia", "maquina", "producto", "unidades"}
+        if not required.issubset(P.columns): raise ValueError("Plan inicial incompleto")
+        if not P["producto"].isin(productos).all() or not P["maquina"].isin(MACHINES).all():
+            raise ValueError("Plan inicial con referencias o máquinas desconocidas")
+        if not P["dia"].isin(dias_lista).all() or (P["unidades"] <= 0).any():
+            raise ValueError("Plan inicial con días o cantidades inválidas")
+        if not np.allclose(P["unidades"], np.rint(P["unidades"]), atol=1e-7, rtol=0):
+            raise ValueError("Plan inicial no entero")
+        P = P.groupby(["dia","maquina","producto"],as_index=False)["unidades"].sum()
+        demand_check = P.groupby("producto")["unidades"].sum().reindex(productos,fill_value=0)
+        if not np.array_equal(demand_check.to_numpy(), demanda_i.to_numpy()):
+            raise ValueError("Plan inicial no cumple la demanda actual")
+        vals = {(i,j,t):0 for i in productos for j in MACHINES for t in dias_lista}
+        for row in P.itertuples(index=False): vals[(row.producto,row.maquina,int(row.dia))]=int(row.unidades)
+        for j in MACHINES:
+            loads={t:sum(costs[i,j]*vals[i,j,t]+setup_costs[j]*(vals[i,j,t]>0) for i in productos) for t in dias_lista}
+            if max(loads.values())>caps[j]+1e-6: raise ValueError("Plan inicial excede capacidad")
+            ordered=sorted(dias_lista,key=lambda t:-loads[t])
+            for t,old_t in zip(dias_lista,ordered):
+                for i in productos:
+                    q=vals[i,j,old_t];X[i][j][t].setInitialValue(q);Y[i][j][t].setInitialValue(int(q>0))
+        prob.rpm_warm_start=True
+    # Cota calculada con los datos actuales; jamás se reutiliza una cota de
+    # otra instancia. Cada fase conserva su propio certificado y registro.
+    agregado = None
+    if os.environ.get("RPM_COTA_AGREGADA", "1") == "1":
+        agregado = _cota_agregada_multidia(C, demanda_i, setup, caps, int(dias), X, Y)
+        lb = float(agregado["lower_bound"])
+        prob += prob.objective >= lb - 1e-7 * max(1.0, abs(lb)/10000.0), "Cota_agregada_certificada"
     log_info = _resolver_prob_cbc(prob, tiempo_limite_seg, gap_rel=gap_rel)
+    if agregado is not None:
+        log_info["fase_agregada"] = agregado
+        log_info["segundos_modelo_completo"] = log_info["elapsed_s"]
+        log_info["elapsed_s"] += agregado["elapsed_s"]
+        ULTIMA_AUDITORIA.update(log_info)
+
     estado = pulp.LpStatus[prob.status]
     objetivo = pulp.value(prob.objective)
     gap_certificado = (
@@ -775,11 +976,11 @@ def resolver_multidia(cij: pd.DataFrame, demanda_horizonte: pd.Series, setup: pd
                 cantidad = int(round(X[i][j][t].value() or 0.0))
                 yv = int(round(Y[i][j][t].value() or 0.0))
                 n_set += yv
-                tiempo_prod += C.loc[i, j] * cantidad
+                tiempo_prod += costs[i,j] * cantidad
                 if cantidad > 0:
                     filas.append({"dia": t, "maquina": j, "producto": i, "unidades": cantidad})
             prod_t.loc[t, j] = tiempo_prod
-            setup_t.loc[t, j] = n_set * setup[j]
+            setup_t.loc[t, j] = n_set * setup_costs[j]
             util.loc[t, j] = prod_t.loc[t, j] + setup_t.loc[t, j]
             setups_dm.loc[t, j] = n_set
     plan = pd.DataFrame(filas)
@@ -863,3 +1064,18 @@ def calibrar_demanda_extendida(demanda_medida: pd.Series, demanda_estimada: pd.S
         "demanda_calibrada": demanda_calibrada,
         "n_referencias_comunes": len(comunes),
     }
+
+# API pública utilizada por la app y por el lote experimental.
+def resolver_multidia(cij, demanda_horizonte, setup, dias, cap_minutos=CAP_MINUTOS_DIA,
+                       tiempo_limite_seg=None, gap_rel=0.0, plan_inicial=None):
+    caps = _serie_capacidades(cap_minutos)
+    if caps.nunique() != 1:
+        # La formulación selectiva actual exige capacidad uniforme; conservar
+        # el modelo original en escenarios de capacidades diferentes.
+        return _resolver_multidia_original(cij, demanda_horizonte, setup, dias,
+            cap_minutos, tiempo_limite_seg, gap_rel, plan_inicial)
+    from integracion_selectiva import resolver
+    C = cij.reindex(columns=MACHINES).astype(float)
+    D = _validar_demanda_entera(demanda_horizonte.reindex(C.index))
+    S = setup.reindex(MACHINES).astype(float)
+    return resolver(C,D,S,dias,float(caps.iloc[0]),plan_inicial)
