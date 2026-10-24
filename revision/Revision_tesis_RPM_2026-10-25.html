@@ -61,6 +61,8 @@ td.src{color:var(--muted);font-size:13px}
 .finding .body{grid-column:1;min-width:0}
 .finding .body p{max-width:80ch}
 .finding .decide{grid-column:2;grid-row:1 / span 2;align-self:start;display:flex;flex-direction:column;gap:8px;min-width:160px}
+.decide .sent{display:inline-block;font-family:var(--mono);font-size:13px;padding:8px 12px;border:1px solid var(--accent);border-radius:4px;background:var(--accent-soft);color:var(--accent);text-decoration:none;white-space:nowrap}
+.decide .sent:hover{background:var(--accent);color:#fff}
 .decide label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
 .decide label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .decide input{width:16px;height:16px;accent-color:var(--accent)}
@@ -96,12 +98,12 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
 <header class="top">
   <div class="eyebrow">Trabajo_RPM.pdf · 48 páginas · generado 22 oct 2026</div>
   <h1>Revisión de la tesis: cifras, trazabilidad y estructura</h1>
-  <p class="lead">Contrasté cada cifra del documento contra el código y los datos del repositorio, reejecutando los modelos donde fue posible. Cada hallazgo trae una casilla para marcar si se envía como issue a Sebastian.</p>
+  <p class="lead">Contrasté cada cifra del documento contra el código y los datos del repositorio, reejecutando los modelos donde fue posible. Cada hallazgo enlaza al issue correspondiente en el repositorio.</p>
   <div class="kpis">
     <div class="kpi"><b>61</b><span>cifras verificadas contra código y datos</span></div>
     <div class="kpi"><b>59</b><span>reproducidas con exactitud</span></div>
     <div class="kpi"><b>2</b><span>históricas ya superables por la certificación</span></div>
-    <div class="kpi"><b>10</b><span>hallazgos para decidir</span></div>
+    <div class="kpi"><b>10</b><span>hallazgos enviados como issues #7–#16</span></div>
   </div>
   <nav class="toc">
     <a href="#veredicto">Veredicto</a><a href="#verificacion">Tabla de verificación</a><a href="#hallazgos">Hallazgos</a><a href="#mapa">Mapa metodológico vs. tesis</a><a href="#erratas">Erratas</a><a href="#metodo">Cómo se verificó</a>
@@ -148,8 +150,8 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
 <tr><td class="src">E.2</td><td>SHA-256 de datos 576328e9…2223</td><td class="num">576328e9236ca175cc9b30fcd5422204efc4089725d1cf8dc81a410bd2cc2223</td><td><span class="chip c-ok">Coincide</span></td></tr>
 </tbody></table></div>
 
-<h2 id="hallazgos">Hallazgos para decidir</h2>
-<p class="note">Marca los que quieras enviar. La selección se guarda en este navegador. El botón al pie copia el texto de los seleccionados para pegarlo o para que yo los cree como issues.</p>
+<h2 id="hallazgos">Hallazgos enviados como issues</h2>
+<p class="note">Los diez hallazgos se revisaron con el director el 25 de octubre y se crearon como issues #7 a #16 del repositorio, asignados a Sebastian. Cada ficha enlaza a su issue.</p>
 
 <article class="finding sev-alta" data-id="T1">
   <div class="head"><span class="id">T1</span><span class="chip c-bad">Alta</span><h3>El expediente digital que sustenta las tablas no está en el repositorio</h3></div>
@@ -158,7 +160,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>El contraste: todo lo que sí depende solo del Excel y del código se reproduce, incluido el SHA-256 de los datos. La trazabilidad que la tesis promete está a medio camino.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Publicar la carpeta <code>evidencia/</code> en el repositorio o como release de GitHub, con los SHA-256 que ya imprime el protocolo. Si el ZIP de 1.000 escenarios pesa demasiado, al menos los CSV de resumen y los scripts de auditoría.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T1"> Enviar como issue</label><textarea id="note-T1" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/7" target="_blank" rel="noopener">Enviado · issue #7</a></div>
 </article>
 
 <article class="finding sev-alta" data-id="T2">
@@ -168,7 +170,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>Hoy además ni siquiera se carga por la ruta rota (issue #2). Cuando se corrija la ruta, el jurado vería en la app un 15,14 % frente al 15,19 % del documento.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Reemplazar el JSON por los estadísticos revalidados, conservar los anteriores con fecha en un campo aparte, y citar en la app la misma fuente que la tesis.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T2"> Enviar como issue</label><textarea id="note-T2" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/8" target="_blank" rel="noopener">Enviado · issue #8</a></div>
 </article>
 
 <article class="finding sev-media" data-id="T3">
@@ -178,7 +180,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>La tesis es honesta al etiquetarlos como históricos, pero mantener rangos por límite de tiempo cuando el trabajo presume de certificación exacta es una debilidad fácil de señalar por un jurado.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Recalcular tabla 14 y el ensayo de capacidad con el protocolo certificado y reportar valores exactos; dejar los históricos solo si aportan algo (por ejemplo, mostrar cuánto subestimaba el presupuesto de 20 s).</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T3"> Enviar como issue</label><textarea id="note-T3" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/9" target="_blank" rel="noopener">Enviado · issue #9</a></div>
 </article>
 
 <article class="finding sev-media" data-id="T4">
@@ -188,7 +190,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>Las diapositivas no reescritas (2, 6, 7, 8, 11, 12, 13 y 16) conservan pies como «Tabla 7.4, p. 57», «ec. 7.17», «Sección 7.4.9». Esa numeración no existe en <code>Trabajo_RPM.pdf</code>, que tiene secciones 1–12, anexos A–G y tablas 1–17. La diapositiva de imputación sigue mostrando MAE 0,2127 frente al 0,1888 de la tabla 8. Ya dejé esta precisión como comentario en el issue #5.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Consolidar los valores revisados en el marcado, eliminar la capa de reescritura y renumerar todas las fuentes al documento de 48 páginas.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T4"> Enviar como issue</label><textarea id="note-T4" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/10" target="_blank" rel="noopener">Enviado · issue #10</a></div>
 </article>
 
 <article class="finding sev-media" data-id="T5">
@@ -197,7 +199,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>La presentación organiza el estudio en siete etapas con entradas, procedimiento, resultado, límite y fuente por etapa. La tesis menciona «cinco fases» en la sección 2 (depuración y trazabilidad, caracterización, formulación de instancias, resolución y verificación, comparación de motores) y no vuelve a usarlas. No hay figura metodológica, la heurística que sostiene la comparación está en el anexo F.2, los indicadores de exposición se usan en §3.2 antes de definirse en §3.5, y la justificación del horizonte (§5) queda entre la formulación y la estrategia de resolución. La comparación completa está en la sección <a href="#mapa">Mapa metodológico vs. tesis</a>.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Añadir en §2.3 una figura «Ruta del estudio» con las siete etapas y una tabla que mapee etapa → secciones, anexos y archivos de evidencia (el mapa ya tiene ese campo «fuente»). Alinear el párrafo de las cinco fases con esos nombres. Subir el algoritmo de F.2 a una subsección del cuerpo y mover §3.5 antes de §3.2 o referenciarlo.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T5"> Enviar como issue</label><textarea id="note-T5" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/11" target="_blank" rel="noopener">Enviado · issue #11</a></div>
 </article>
 
 <article class="finding sev-media" data-id="T6">
@@ -206,7 +208,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>El PDF tiene 48 páginas en formato de artículo con encabezado «Planificación de la producción»: sin índice, sin lista de figuras y tablas, sin capítulo de metodología separado, sin glosario de notación. La presentación y la propia tesis hablan de una «edición técnica de 125 páginas» previa con capítulos 5 a 9 y tablas como 6.1, 7.4, 7.7, 7.9, 7.14, 7.15 y 7.18. Parte de ese contenido (tabla de carga por máquina, escenarios de demanda, descripción de la app) se comprimió en el anexo D o desapareció.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Confirmar con Sebastian cuál es el documento que se radica y si cumple el formato exigido por la maestría. Si el de 48 páginas es el final, necesita al menos índice, listas y una figura metodológica.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T6"> Enviar como issue</label><textarea id="note-T6" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/12" target="_blank" rel="noopener">Enviado · issue #12</a></div>
 </article>
 
 <article class="finding sev-baja" data-id="T7">
@@ -215,7 +217,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>Trece erratas concretas listadas en la sección <a href="#erratas">Erratas</a>, incluida una frase truncada en §7.3 («…que exhibir un mero 100», falta el signo de porcentaje) y dos párrafos ilegibles en el anexo A. Además, el registro es uniforme y recargado: «se vale de», «da fe de», «de rigor», «hace una distinción» se repiten decenas de veces y el texto se lee como paráfrasis automática. Un jurado lo nota.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Corregir las erratas y hacer una pasada de estilo sobre el cuerpo principal (secciones 1 a 12), priorizando resumen, introducción y conclusiones.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T7"> Enviar como issue</label><textarea id="note-T7" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/13" target="_blank" rel="noopener">Enviado · issue #13</a></div>
 </article>
 
 <article class="finding sev-baja" data-id="T8">
@@ -224,7 +226,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>La tesis registra Python 3.14.8 (§6.3, tabla 10). Con el calendario bimestral de mantenimiento de la serie 3.14, iniciada en octubre de 2025, para el 17 de octubre de 2026 se esperaría a lo sumo 3.14.6 salvo versiones de seguridad extraordinarias. El README del repositorio sigue diciendo «Usar Python 3.12». No puedo verificar la cifra sin el <code>protocolo.json</code> del expediente.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Confirmar la versión contra el protocolo y alinear README y tesis.</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T8"> Enviar como issue</label><textarea id="note-T8" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/14" target="_blank" rel="noopener">Enviado · issue #14</a></div>
 </article>
 
 <article class="finding sev-baja" data-id="T9">
@@ -233,7 +235,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
     <p>§4.4 dice que «no se trata de siete productos repartidos cuando se registran 207 activaciones para 200 referencias» y que «para saber el número preciso hay que agrupar el plan». El plan certificado está en el repositorio (<code>plan_inicial_3d.csv</code>) y la respuesta es concreta: cinco referencias tienen más de una activación y cuatro de ellas se reparten entre más de una máquina.</p>
     <dl class="kv"><dt>Propuesta</dt><dd>Dar las cifras en §7.2 y, de paso, aclarar en §8 que el inicio común de tres días es el propio plan óptimo, así que los tiempos miden solo la prueba de cota (hoy está dicho en §6.3 pero no donde se leen los tiempos).</dd></dl>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T9"> Enviar como issue</label><textarea id="note-T9" placeholder="Nota para el issue (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/15" target="_blank" rel="noopener">Enviado · issue #15</a></div>
 </article>
 
 <article class="finding sev-info" data-id="T10">
@@ -241,7 +243,7 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
   <div class="body">
     <p>No es un hallazgo para issue, pero conviene saberlo antes de la sustentación. La cadena de cotas del caso de tres días es correcta y reproducible: maestro agregado como relajación válida, distribución infactible en M1, segundo maestro con M1 detallado igual al plan completo, poda con margen conservador que preserva el incumbente. La cota de dos días (ec. 10) es elemental y robusta. La verificación independiente del plan diario y la separación entre matriz nominal y reconstruida están bien argumentadas. Las tablas 3 y 6 sobre qué afirma cada tipo de evidencia son el mejor material del documento.</p>
   </div>
-  <div class="decide"><label><input type="checkbox" id="chk-T10"> Enviar como issue</label><textarea id="note-T10" placeholder="Nota (opcional)"></textarea></div>
+  <div class="decide"><a class="sent" href="https://github.com/sebastianporras-web/planeador-milp-rpm/issues/16" target="_blank" rel="noopener">Enviado · issue #16</a></div>
 </article>
 
 <h2 id="mapa">Mapa metodológico vs. estructura de la tesis</h2>
@@ -315,53 +317,6 @@ ul.plain{padding-left:20px;font-size:14.5px;max-width:80ch} ul.plain li{margin:5
 </ul>
 </div>
 
-<div class="bar">
-  <span class="count"><span id="n-sel">0</span> seleccionados</span>
-  <button type="button" id="btn-copy">Copiar selección</button>
-  <button type="button" class="ghost" id="btn-all">Marcar T1–T9</button>
-  <button type="button" class="ghost" id="btn-none">Limpiar</button>
-  <output id="copy-out" aria-live="polite"></output>
-</div>
 
-<script>
-(function(){
-  var KEY='revision-tesis-rpm-v1';
-  var ids=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'];
-  var state={};
-  try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){state={};}
-  function chk(id){return document.getElementById('chk-'+id);}
-  function note(id){return document.getElementById('note-'+id);}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
-  function count(){var n=ids.filter(function(i){return chk(i).checked;}).length;document.getElementById('n-sel').textContent=n;}
-  ids.forEach(function(id){
-    var s=state[id]||{};
-    if(s.on) chk(id).checked=true;
-    if(s.note) note(id).value=s.note;
-    chk(id).addEventListener('change',function(){state[id]=state[id]||{};state[id].on=chk(id).checked;save();count();});
-    note(id).addEventListener('input',function(){state[id]=state[id]||{};state[id].note=note(id).value;save();});
-  });
-  count();
-  function text(){
-    var out=[];
-    ids.forEach(function(id){
-      if(!chk(id).checked) return;
-      var art=document.querySelector('[data-id="'+id+'"]');
-      var title=art.querySelector('h3').textContent.trim();
-      var sev=art.querySelector('.head .chip').textContent.trim();
-      var n=note(id).value.trim();
-      out.push(id+' ['+sev+'] '+title+(n?'\n  Nota: '+n:''));
-    });
-    return out.length?out.join('\n'):'(nada seleccionado)';
-  }
-  var outEl=document.getElementById('copy-out');
-  document.getElementById('btn-copy').addEventListener('click',function(){
-    var t=text();
-    function fallback(){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');outEl.textContent='Copiado.';}catch(e){outEl.textContent='Selecciona y copia manualmente: '+t;}document.body.removeChild(ta);}
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){outEl.textContent='Copiado.';},fallback);}else{fallback();}
-  });
-  document.getElementById('btn-all').addEventListener('click',function(){ids.slice(0,9).forEach(function(id){chk(id).checked=true;state[id]=state[id]||{};state[id].on=true;});save();count();});
-  document.getElementById('btn-none').addEventListener('click',function(){ids.forEach(function(id){chk(id).checked=false;state[id]=state[id]||{};state[id].on=false;});save();count();outEl.textContent='';});
-})();
-</script>
 </body>
 </html>
