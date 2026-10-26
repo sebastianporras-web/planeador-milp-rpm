@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 import numpy as np
 import pulp
+from certificacion_numerica import cierre_numerico, GAP_REL_TOL, BOUND_ABS_TOL, FACTIBILITY_TOL
 
 
 def cpu_disponible():
@@ -107,8 +108,8 @@ def resolver(prob, nombre, log, threads=1, seed=42, perfil='base', limite=None):
             ok = bool(re.search(r'^Result - Optimal solution found\s*$', text, re.M))
             r['infeasible'] = bool(re.search(r'Problem is infeasible|Problem proven infeasible', text))
             version = re.search(r'Version:\s*(\S+)',text)
-            r['version'] = (version.group(1) if version else 'CBC')+' / cbcbox 2.924'
             from cbc_actual import identidad
+            r['version'] = (version.group(1) if version else 'CBC')+' / cbcbox '+identidad()['version_distribucion']
             r['implementacion_cbc']=identidad()
             nodes = re.search(r'Enumerated nodes:\s*(\d+)', text)
             r['nodos'] = int(nodes.group(1)) if nodes else None
@@ -121,19 +122,21 @@ def resolver(prob, nombre, log, threads=1, seed=42, perfil='base', limite=None):
         elif nombre == 'HiGHS':
             import highspy
             h=prob.solverModel; info=h.getInfo()
-            ok=h.getModelStatus()==highspy.HighsModelStatus.kOptimal and info.mip_gap==0
+            ok=h.getModelStatus()==highspy.HighsModelStatus.kOptimal and cierre_numerico(info.mip_gap, info.mip_dual_bound, info.objective_function_value)
             r.update(infeasible=h.getModelStatus()==highspy.HighsModelStatus.kInfeasible,
                      lb=info.mip_dual_bound, ub=info.objective_function_value,
                      gap_solver=info.mip_gap, nodos=info.mip_node_count, version=h.version())
         else:
             m=prob.solverModel
-            ok=m.Status==gp.GRB.OPTIMAL and m.SolCount>0 and m.MIPGap==0
+            ok=m.Status==gp.GRB.OPTIMAL and m.SolCount>0 and cierre_numerico(m.MIPGap, m.ObjBound, m.ObjVal)
             r.update(infeasible=m.Status==gp.GRB.INFEASIBLE,
                      lb=m.ObjBound, ub=m.ObjVal if m.SolCount else None,
                      gap_solver=m.MIPGap if m.SolCount else None,
                      nodos=m.NodeCount, version='.'.join(map(str,gp.gurobi.version())))
         r['residual_max']=residual(prob)
-        r['factible']=r['residual_max']<=1e-5
+        r['factible']=r['residual_max']<=FACTIBILITY_TOL
+        r['tolerancias_certificado'] = dict(gap_rel=GAP_REL_TOL, cota_abs=BOUND_ABS_TOL, factibilidad=FACTIBILITY_TOL)
+        r['naturaleza_certificado'] = 'numerico'
         r['certificado']=bool(ok and prob.status==pulp.LpStatusOptimal and
                     prob.sol_status==pulp.LpSolutionOptimal and r['factible'])
         return r

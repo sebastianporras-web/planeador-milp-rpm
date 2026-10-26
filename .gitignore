@@ -1,4 +1,14 @@
 __pycache__/
-*.pyc
+*.py[cod]
+.venv/
+.pytest_cache/
 logs_cbc/
 .streamlit/secrets.toml
+.env
+gurobi.lic
+*.tmp
+
+# Productos reproducibles de los scripts de auditoría
+evidencia_estudio/evidencia/descomprimida/
+evidencia_estudio/evidencia/historica_extraida/
+evidencia_estudio/figuras/

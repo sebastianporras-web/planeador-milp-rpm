@@ -31,7 +31,7 @@ def decodificar(x):
 
 def firma(C,D,S,h,cap,solver="HiGHS"):
     payload=codificar({'C':C,'D':D,'S':S,'h':int(h),'cap':core._serie_capacidades(cap),
-        'codigo':hashlib.sha256(b''.join((ROOT/n).read_bytes() for n in ['rpm_core.py','soluciones_guardadas.py','optimizar_rpm.py','solver_config_rpm.py','integracion_selectiva.py','cbc_actual.py','poda_lagrangiana.py'])).hexdigest(),
+        'codigo':hashlib.sha256(b''.join((ROOT/n).read_bytes() for n in ['rpm_core.py','soluciones_guardadas.py','optimizar_rpm.py','solver_config_rpm.py','integracion_selectiva.py','cbc_actual.py','poda_lagrangiana.py','certificacion_numerica.py'])).hexdigest(),
         'solver':solver,'gap':0})
     return hashlib.sha256(json.dumps(payload,sort_keys=True,allow_nan=False).encode()).hexdigest()
 

@@ -65,7 +65,7 @@ def worker(folder):
         meta.update(python=platform.python_version(),sistema=platform.platform(),hilos=1,limite_interno_tiempo=None,
                     gap_relativo=0,gap_absoluto=0,tolerancia_validacion=1e-5,
                     criterio='Demanda total fija; capacidad diaria repetida, sin precedencias ni entregas parciales obligatorias.',
-                    sha256_codigo={n:hashlib.sha256((ROOT/n).read_bytes()).hexdigest() for n in ['carga_flexible.py','motor_horizonte.py','operacion_flexible.py','solver_config_rpm.py']})
+                    sha256_codigo={n:hashlib.sha256((ROOT/n).read_bytes()).hexdigest() for n in ['carga_flexible.py','motor_horizonte.py','operacion_flexible.py','solver_config_rpm.py','certificacion_numerica.py']})
         guardar(folder/'protocolo.json',meta)
         if cfg['accion'] in ('buscar','planificar'):
             manual=cfg.get('modo_horizonte')=='Manual'

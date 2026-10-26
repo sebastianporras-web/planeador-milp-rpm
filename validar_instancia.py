@@ -12,11 +12,12 @@ def main():
     d = cargar_datos(ARCHIVO)
     C, D, S = d["cij"], demanda_entera(d["demanda"]), d["setup"]
     audit = construir_cij_con_imputacion(ARCHIVO, productos=C.index)
-    res = resolver_asignacion(C, D, S, cap_minutos=1440, tiempo_limite_seg=120)
+    res = resolver_asignacion(C, D, S, cap_minutos=1440, tiempo_limite_seg=None)
     concord = concordancia_kmeans_ward_maquinas(C, S, n_clusters=3)
     assert len(C) == 99, f"Se esperaban 99 referencias y se obtuvieron {len(C)}"
     assert audit["n_observadas"] == 819
     assert audit["n_imputadas"] == 171
+    assert res["gap_certificado"], "El solver no certificó optimalidad"
     assert res["valor_objetivo"] is not None
     assert abs(res["valor_objetivo"] - EXPECTED_Z) <= TOL_Z, res["valor_objetivo"]
     assert max(res["residuos"].values()) <= 1e-6, res["residuos"]

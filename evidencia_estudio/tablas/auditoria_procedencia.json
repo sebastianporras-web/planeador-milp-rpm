@@ -1,0 +1,23 @@
+{
+  "matrices_reconstruidas": {
+    "1": {
+      "C_error": 2.220446049250313e-16,
+      "D_error": 0.0,
+      "S_error": 0.0,
+      "unidades": 14188
+    },
+    "3": {
+      "C_error": 2.220446049250313e-16,
+      "D_error": 0.0,
+      "S_error": 0.0,
+      "unidades": 45987
+    }
+  },
+  "factor_calibracion": 2.3743174983554183,
+  "referencias_comunes": 99,
+  "demanda_diaria_sin_redondear": 14188.0,
+  "demanda_calibrada_200": 15330.494399474108,
+  "heuristica_objetivo": 13684.488555555557,
+  "faltantes_heuristica": 0,
+  "diferencia_total": 2137.0759999999996
+}

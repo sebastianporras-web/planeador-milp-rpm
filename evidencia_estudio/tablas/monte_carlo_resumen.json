@@ -1,0 +1,31 @@
+{
+  "n": 1000,
+  "n_factibles_milp": 1000,
+  "n_gap_cero": 0,
+  "n_heuristica_infactible": 0,
+  "n_comparables": 1000,
+  "mean_incumbent_improvement_pct": 15.18760551240193,
+  "mean_optimal_improvement_upper_bound_pct": 15.291900469643148,
+  "median_incumbent_pct": 15.16805808492036,
+  "sd_incumbent_pct": 0.7724361813922629,
+  "min_incumbent_pct": 12.476268192080642,
+  "max_incumbent_pct": 17.897223953954178,
+  "max_gap_pct": 1.1878914167073213,
+  "mean_gap_pct": 0.1228915091460579,
+  "seed": 42,
+  "matrix": "MODELO PL",
+  "time_limit_per_scenario": 5,
+  "target_gap_pct": 0.01,
+  "n_positive_incumbent_improvement": 1000,
+  "ci95_mean_incumbent_pct": [
+    15.1396722279874,
+    15.23553879681646
+  ],
+  "escenarios_reintentados_30s": [
+    189,
+    304,
+    945
+  ],
+  "n_reintentados": 3,
+  "nota": "Reintento solo de escenarios sin plan factible verificable al límite inicial. Logs iniciales preservados. Resumen de los 1000 escenarios, no solo óptimos."
+}

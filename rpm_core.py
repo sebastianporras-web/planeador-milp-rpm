@@ -3,6 +3,7 @@ import math
 import os
 import re
 import tempfile
+from certificacion_numerica import cierre_numerico, ResolucionNoCertificada, GAP_REL_TOL, BOUND_ABS_TOL
 from contextvars import ContextVar
 RUN_CONTEXT = ContextVar("rpm_run_context", default={})
 from typing import Iterable
@@ -316,7 +317,8 @@ def _parsear_log_cbc(path: str) -> dict:
     if not path or not os.path.exists(path):
         return out
     try:
-        text = open(path, "r", encoding="utf-8", errors="ignore").read()
+        from pathlib import Path
+        text = Path(path).read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return out
     low = text.lower()
@@ -365,6 +367,8 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
     import time
     from pathlib import Path
     global ULTIMA_AUDITORIA
+    if tiempo_limite_seg is not None or gap_rel != 0:
+        raise ValueError("El protocolo nominal exige ausencia de límite interno y GAP objetivo cero.")
     run_context = RUN_CONTEXT.get()
     log_dir = Path(run_context.get("log_dir", os.environ.get("RPM_LOG_DIR", "logs_cbc")))
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -384,7 +388,7 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
                     nodes=r.get('nodos'), solver_version=r['version'])
         ULTIMA_AUDITORIA = info.copy()
         if not r['certificado']:
-            raise RuntimeError("Gurobi no certificó optimalidad y factibilidad. Revisa el registro; no se reporta GAP=0.")
+            raise ResolucionNoCertificada("Gurobi no certificó optimalidad y factibilidad.", info)
         return info
     if solver_name not in ("CBC", "HiGHS"):
         raise ValueError("Optimizador desconocido")
@@ -422,13 +426,14 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
         info = _parsear_log_cbc(str(log_path))
         nodes = re.search(r"Enumerated nodes:\s*(\d+)", text)
         version = re.search(r"Version:\s*(\S+)", text)
+        from cbc_actual import identidad
         info.update(nodes=int(nodes.group(1)) if nodes else None,
-                    solver_version=(version.group(1) if version else "CBC")+" / cbcbox 2.924")
+                    solver_version=(version.group(1) if version else "CBC")+" / cbcbox "+identidad()["version_distribucion"])
     else:
         import highspy
         hi = prob.solverModel.getInfo()
         certified = (prob.solverModel.getModelStatus() == highspy.HighsModelStatus.kOptimal
-                     and hi.mip_gap == 0.0)
+                     and cierre_numerico(hi.mip_gap, hi.mip_dual_bound, hi.objective_function_value))
         info = dict(lower_bound=hi.mip_dual_bound, upper_bound=hi.objective_function_value,
                     gap_pct=hi.mip_gap * 100, nodes=hi.mip_node_count,
                     solver_version=prob.solverModel.version())
@@ -444,7 +449,7 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
         if v.cat == pulp.LpInteger: violations.append(abs(z-round(z)))
     for con in prob.constraints.values():
         z = con.value()
-        if z is None: violations.append(float("inf")); continue
+        if z is None or not math.isfinite(z): violations.append(float("inf")); continue
         violations.append(abs(z) if con.sense == 0 else max(0,z) if con.sense == -1 else max(0,-z))
     residual = max(violations, default=0.0)
     certified = certified and residual <= 1e-5
@@ -454,9 +459,12 @@ def _resolver_prob_cbc(prob, tiempo_limite_seg=None, gap_rel=0.0):
                 max_residual=residual)
     ULTIMA_AUDITORIA = info.copy()
     if not certified:
-        raise RuntimeError(f"{solver_name} no certificó optimalidad y factibilidad. Estado: {pulp.LpStatus[prob.status]}. Revisar {log_path}. No se reporta GAP=0.")
+        raise ResolucionNoCertificada(f"{solver_name}: {pulp.LpStatus[prob.status]}; sin certificado. Revisar {log_path}.", info)
     obj = float(pulp.value(prob.objective))
-    info.update(lower_bound=obj, upper_bound=obj, gap_pct=0.0)
+    if solver_name == "CBC":
+        info.update(lower_bound=obj, upper_bound=obj, gap_pct=0.0,
+                    origen_cotas="Declaración final óptima CBC; objetivo recalculado")
+    info.update(tolerancia_gap_rel=GAP_REL_TOL, tolerancia_cotas_abs=BOUND_ABS_TOL)
     ULTIMA_AUDITORIA = info.copy()
     return info
 
@@ -543,14 +551,9 @@ def resolver_asignacion(cij: pd.DataFrame, demanda: pd.Series,
         "enlace_max": float(r_link.to_numpy().max()) if r_link.size else 0.0,
         "integralidad_max": float(r_int.to_numpy().max()) if r_int.size else 0.0,
     }
-    if gap_certificado:
-        gap_pct = 0.0
-        lower_bound = float(objetivo) if objetivo is not None else None
-        upper_bound = float(objetivo) if objetivo is not None else None
-    else:
-        gap_pct = log_info.get("gap_pct")
-        lower_bound = log_info.get("lower_bound")
-        upper_bound = log_info.get("upper_bound") or (float(objetivo) if objetivo is not None else None)
+    gap_pct = log_info.get("gap_pct")
+    lower_bound = log_info.get("lower_bound")
+    upper_bound = log_info.get("upper_bound")
     refs_divididas = int((asignacion.gt(0).sum(axis=1) > 1).sum())
     pares_activos = int(asignacion.gt(0).sum().sum())
     return {
@@ -559,6 +562,7 @@ def resolver_asignacion(cij: pd.DataFrame, demanda: pd.Series,
         "gap_pct": gap_pct,
         "lower_bound": lower_bound,
         "upper_bound": upper_bound,
+        "auditoria_solver": dict(log_info),
         "solver_termination": {
             "stopped_on_time": bool(log_info.get("stopped_on_time", False)),
             "stopped_on_gap": bool(log_info.get("stopped_on_gap", False)),
@@ -655,16 +659,58 @@ def politica_empirica(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
         "capacidad_min": caps,
         "cap_minutos": float(caps.iloc[0]) if caps.nunique() == 1 else caps,
     }
+def _resolver_escenario(cij, demanda, setup, cap_minutos, tiempo_limite_seg=None):
+    """Registra cada retorno. Solo captura la falta de certificado conocida.
+
+    No acepta automáticamente un incumbente. Los análisis conservan el
+    protocolo sin límite interno; la persistencia no evita un OOM del servidor.
+    """
+    import json
+    import time
+    from pathlib import Path
+    context = RUN_CONTEXT.get().copy()
+    context['run_id'] = str(context.get('run_id', 'escenario')) + '_' + str(time.time_ns())
+    token = RUN_CONTEXT.set(context)
+    try:
+        try:
+            r = resolver_asignacion(cij, demanda, setup, cap_minutos, tiempo_limite_seg)
+            audit = dict(r["auditoria_solver"])
+        except ResolucionNoCertificada as exc:
+            audit = exc.auditoria
+            empty = pd.Series(np.nan, index=MACHINES, dtype=float)
+            r = dict(estado='Sin certificado', gap_certificado=False,
+                     gap_pct=audit.get('gap_pct'), valor_objetivo=None,
+                     capacidad_min=_serie_capacidades(cap_minutos),
+                     utilizacion_min=empty, holgura_min=empty.copy(), n_setups=empty.copy())
+        folder = Path(context.get('log_dir', os.environ.get('RPM_LOG_DIR', 'logs_cbc')))
+        folder.mkdir(parents=True, exist_ok=True)
+        record = dict(run_id=context['run_id'], estado=r['estado'],
+                      optimo_certificado=bool(r['gap_certificado']),
+                      demanda=pd.Series(demanda).to_dict(), auditoria=audit)
+        def clean(v):
+            if isinstance(v, dict): return {str(k): clean(x) for k,x in v.items()}
+            if isinstance(v, (list, tuple)): return [clean(x) for x in v]
+            if isinstance(v, np.generic): return clean(v.item())
+            if isinstance(v, float) and not math.isfinite(v): return None
+            return v
+        dest = folder / (context['run_id'] + '.json')
+        temp = dest.with_suffix('.tmp')
+        temp.write_text(json.dumps(clean(record), ensure_ascii=False, allow_nan=False), encoding='utf-8')
+        temp.replace(dest)
+        return r
+    finally:
+        RUN_CONTEXT.reset(token)
+
 def analisis_cuello_de_botella(cij: pd.DataFrame, demanda: pd.Series,
                                 setup: pd.Series, cap_minutos=CAP_MINUTOS_DIA,
                                 delta: float = 30.0, tiempo_limite_seg: int | None = None) -> pd.DataFrame:
     caps = _serie_capacidades(cap_minutos)
-    base = resolver_asignacion(cij, demanda, setup, caps, tiempo_limite_seg)
+    base = _resolver_escenario(cij, demanda, setup, caps, tiempo_limite_seg)
     filas = []
     for j in MACHINES:
         caps_j = caps.copy()
         caps_j[j] += float(delta)
-        res = resolver_asignacion(cij, demanda, setup, caps_j, tiempo_limite_seg)
+        res = _resolver_escenario(cij, demanda, setup, caps_j, tiempo_limite_seg)
         mejora = None
         eta = None
         if base["valor_objetivo"] is not None and res["valor_objetivo"] is not None:
@@ -676,6 +722,7 @@ def analisis_cuello_de_botella(cij: pd.DataFrame, demanda: pd.Series,
             "maquina": j,
             "estado": res["estado"],
             "gap_pct": res["gap_pct"],
+            "optimo_certificado": bool(res["gap_certificado"]),
             "utilizacion_actual_pct": 100 * base["utilizacion_min"][j] / caps[j],
             "holgura_actual_min": base["holgura_min"][j],
             "delta_capacidad_min": float(delta),
@@ -692,7 +739,7 @@ def analisis_sensibilidad(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Serie
     for f in factores_demanda:
         teorica = float((pd.Series(demanda, dtype=float) * f).sum())
         dem_f = demanda_entera(demanda, f, metodo_redondeo)
-        res = resolver_asignacion(cij, dem_f, setup, cap_minutos, tiempo_limite_seg)
+        res = _resolver_escenario(cij, dem_f, setup, cap_minutos, tiempo_limite_seg)
         caps = res["capacidad_min"]
         util_pct = res["utilizacion_min"] / caps * 100
         filas.append({
@@ -702,11 +749,12 @@ def analisis_sensibilidad(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Serie
             "ajuste_redondeo_unidades": float(dem_f.sum() - teorica),
             "estado": res["estado"],
             "gap_pct": res["gap_pct"],
+            "optimo_certificado": bool(res["gap_certificado"]),
             "valor_objetivo_min": res["valor_objetivo"],
             "utilizacion_promedio_pct": float(util_pct.mean()),
             "utilizacion_maxima_pct": float(util_pct.max()),
-            "maquina_mas_cargada": util_pct.idxmax(),
-            "total_setups": int(res["n_setups"].sum()),
+            "maquina_mas_cargada": util_pct.idxmax() if util_pct.notna().any() else None,
+            "total_setups": int(res["n_setups"].sum()) if res["gap_certificado"] else None,
         })
     return pd.DataFrame(filas)
 def analisis_sensibilidad_imputacion(cij: pd.DataFrame, mask_observado: pd.DataFrame,
@@ -719,12 +767,13 @@ def analisis_sensibilidad_imputacion(cij: pd.DataFrame, mask_observado: pd.DataF
     for f in factores:
         C = cij.copy().astype(float)
         C = C.where(mask, C * float(f))
-        res = resolver_asignacion(C, demanda, setup, cap_minutos, tiempo_limite_seg)
+        res = _resolver_escenario(C, demanda, setup, cap_minutos, tiempo_limite_seg)
         filas.append({
             "factor_imputadas": float(f),
             "variacion_imputadas_pct": (float(f) - 1.0) * 100,
             "estado": res["estado"],
             "gap_pct": res["gap_pct"],
+            "optimo_certificado": bool(res["gap_certificado"]),
             "valor_objetivo_min": res["valor_objetivo"],
         })
     df = pd.DataFrame(filas)
@@ -741,7 +790,7 @@ def comparar_politicas_multiescenario(cij: pd.DataFrame, demanda: pd.Series, set
     filas = []
     for f in factores_demanda:
         dem_f = demanda_entera(demanda, f, metodo_redondeo)
-        res_opt = resolver_asignacion(cij, dem_f, setup, cap_minutos, tiempo_limite_seg)
+        res_opt = _resolver_escenario(cij, dem_f, setup, cap_minutos, tiempo_limite_seg)
         res_emp = politica_empirica(cij, dem_f, setup, cap_minutos)
         mejora = np.nan
         if res_opt["valor_objetivo"] is not None and res_emp["valor_objetivo"] > 0 and len(res_emp["demanda_incumplida"]) == 0:
@@ -751,6 +800,7 @@ def comparar_politicas_multiescenario(cij: pd.DataFrame, demanda: pd.Series, set
             "demanda_entera_total": int(dem_f.sum()),
             "estado_optimo": res_opt["estado"],
             "gap_pct": res_opt["gap_pct"],
+            "optimo_certificado": bool(res_opt["gap_certificado"]),
             "tiempo_optimo_min": res_opt["valor_objetivo"],
             "tiempo_empirico_min": res_emp["valor_objetivo"],
             "mejora_pct": mejora,
@@ -770,7 +820,7 @@ def monte_carlo_demanda(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
         valores = np.floor(base.to_numpy() * factores + 0.5).astype(int)
         valores[(base.to_numpy() > 0) & (valores < 1)] = 1
         dem_s = pd.Series(valores, index=base.index, dtype=int)
-        opt = resolver_asignacion(cij, dem_s, setup, cap_minutos, tiempo_limite_seg)
+        opt = _resolver_escenario(cij, dem_s, setup, cap_minutos, tiempo_limite_seg)
         emp = politica_empirica(cij, dem_s, setup, cap_minutos)
         mejora = np.nan
         mejora_certificada = np.nan
@@ -799,7 +849,7 @@ def monte_carlo_demanda(cij: pd.DataFrame, demanda: pd.Series, setup: pd.Series,
         q = stats.t.ppf(0.975, df=len(r) - 1)
         ci = (float(r.mean() - q * se), float(r.mean() + q * se))
     elif len(r) == 1:
-        sd, se, ci = 0.0, 0.0, (float(r.iloc[0]), float(r.iloc[0]))
+        sd, se, ci = np.nan, np.nan, (np.nan, np.nan)
     else:
         sd, se, ci = np.nan, np.nan, (np.nan, np.nan)
     resumen = {
@@ -962,7 +1012,7 @@ def _resolver_multidia_original(cij: pd.DataFrame, demanda_horizonte: pd.Series,
         if log_info.get("termination_known")
         else estado == "Optimal" and (gap_rel is None or gap_rel == 0)
     )
-    gap_pct = 0.0 if gap_certificado else log_info.get("gap_pct")
+    gap_pct = log_info.get("gap_pct")
     filas = []
     util = pd.DataFrame(0.0, index=dias_lista, columns=MACHINES)
     prod_t = pd.DataFrame(0.0, index=dias_lista, columns=MACHINES)
@@ -988,11 +1038,8 @@ def _resolver_multidia_original(cij: pd.DataFrame, demanda_horizonte: pd.Series,
     producido = plan.groupby("producto")["unidades"].sum().reindex(productos, fill_value=0) if len(plan) else pd.Series(0, index=productos)
     r_dem = (producido - demanda_i).abs()
     r_cap = (-holgura).clip(lower=0)
-    if gap_certificado:
-        lower_bound = upper_bound = float(objetivo) if objetivo is not None else None
-    else:
-        lower_bound = log_info.get("lower_bound")
-        upper_bound = log_info.get("upper_bound") or (float(objetivo) if objetivo is not None else None)
+    lower_bound = log_info.get("lower_bound")
+    upper_bound = log_info.get("upper_bound")
     if (not gap_certificado and gap_pct is None and lower_bound is not None
             and upper_bound is not None and abs(float(upper_bound)) > TOL):
         gap_pct = abs(float(upper_bound) - float(lower_bound)) / abs(float(upper_bound)) * 100.0

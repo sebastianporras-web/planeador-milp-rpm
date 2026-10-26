@@ -1,0 +1,3 @@
+# Perfil completo con Gurobi. Requiere licencia válida.
+-r requirements-base.txt
+gurobipy==13.0.3

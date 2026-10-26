@@ -138,15 +138,16 @@ def fig_layout(fig, title=None, height=390, legend=True, **kwargs):
     fig.update_xaxes(gridcolor=GRID, zerolinecolor=GRID)
     fig.update_yaxes(gridcolor=GRID, zerolinecolor=GRID)
     return fig
-@st.cache_data(show_spinner=False)
 def cargar_referencia_monte_carlo():
-    path = Path(__file__).resolve().parent / "results" / "monte_carlo_reference.json"
-    if not path.exists():
-        return None
+    # Lectura pequeña sin caché: un archivo corregido debe verse en el siguiente rerun.
+    from referencia_monte_carlo import leer_referencia
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return None
+        return leer_referencia(Path(__file__).resolve().parent)
+    except FileNotFoundError:
+        st.warning("No se encontró monte_carlo_reference.json en la raíz. La evidencia histórica no está disponible.")
+    except (OSError, ValueError, TypeError):
+        st.error("La referencia histórica de Monte Carlo no es válida. Revise el JSON original; no se sustituyeron sus resultados.")
+    return None
 @st.cache_data(show_spinner=False, ttl=24 * 60 * 60)
 def ejecutar_monte_carlo_cache(cij, demanda, setup, n_escenarios, seed, low, high, cap_minutos, tiempo_limite_seg):
     return monte_carlo_demanda(
@@ -785,8 +786,14 @@ with mc_tab:
         rr1.metric("Error estandar", f"{ref_mc['se_pct']:.3f} pp")
         rr2.metric("Rango", f"[{ref_mc['min_pct']:.2f}, {ref_mc['max_pct']:.2f}]%")
         rr3.metric("Mejora positiva", f"{100*ref_mc['positive_count']/ref_mc['n']:.1f}%")
-        rr4.metric("GAP por réplica", "No verificable")
+        if "max_gap_pct" in ref_mc:
+            rr4.metric("GAP histórico máximo", f"{ref_mc['max_gap_pct']:.4f}%")
+            st.caption(f"Escenarios históricos con GAP cero: {ref_mc.get('n_gap_cero', 'no informado')} de {ref_mc['n']}. La mejora reportada corresponde a planes factibles.")
+        else:
+            rr4.metric("GAP por réplica", "No verificable")
         st.caption(ref_mc["methodology_note"])
+        if ref_mc.get("source_path"):
+            st.caption(f"Fuente: {ref_mc['source_path']} · SHA-256: {ref_mc.get('source_sha256', 'no informado')}")
     st.markdown("#### Ejecutar una simulacion nueva")
     c1, c2, c3 = st.columns(3)
     preset = c1.radio(

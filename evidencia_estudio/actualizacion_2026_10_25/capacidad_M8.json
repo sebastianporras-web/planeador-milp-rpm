@@ -1,0 +1,8 @@
+{
+  "maquina": "M8",
+  "incremento_capacidad_min": 30,
+  "objetivo_base": 11547.41255555555,
+  "objetivo_ampliado": 11541.996444444441,
+  "ahorro_min": 5.416111111107966,
+  "interpretacion": "Ahorro total de minutos al ampliar M8 en 30 min; no es un precio sombra del MILP."
+}
