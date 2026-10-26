@@ -77,10 +77,15 @@ def ejecutar(carpeta):
         if row['estado'] != 'Pendiente': continue
         if (carpeta/'detener').exists(): break
         h = row['horizonte_dias']; C,D,S = datos[h]
+        from horizonte_automatico import preparar, firma
+        prueba = cfg.get('prueba_horizonte') or {}
+        misma_demanda = prueba.get('datos_sha256') == firma(preparar(C,D,S,float(cfg['capacidad'])))
         tag = f"{h}d_{row['optimizador']}_{row['repeticion']:02d}"
         os.environ.update(RPM_SOLVER=row['optimizador'], RPM_SEED=str(row['semilla']),
                           RPM_RUN_ID=tag, RPM_LOG_DIR=str(carpeta/'logs'))
-        row.update(estado='En ejecución', referencias=len(C), demanda_unidades=int(D.sum()),
+        row.update(horizonte_minimo_dias=prueba.get('horizonte_minimo') if misma_demanda else None,
+                   minimo_dias_demostrado=bool(prueba.get('minimo_certificado')) if misma_demanda else None,
+                   estado='En ejecución', referencias=len(C), demanda_unidades=int(D.sum()),
                    inicio_epoch=time.time(),warm_start=(h in starts),log=f'logs/{tag}.log',
                    inicio_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
         guardar(carpeta/'estado.json', rows)
@@ -178,16 +183,25 @@ def pares(df):
         result.append(out)
     return pd.concat(result,ignore_index=True) if result else pd.DataFrame()
 
-def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparadas=None):
+def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparadas=None, prueba_horizonte=None):
     import streamlit as st
     import plotly.express as px
     import rpm_core as core
     st.subheader('Planificación y certificación')
     st.caption('Prueba individual o lote experimental. Cada ejecución resuelve el modelo de nuevo, sin caché.')
-    disponibles=sorted(instancias_preparadas) if instancias_preparadas is not None else [1,3]
-    if 'bench_h' in st.session_state and any(h not in disponibles for h in st.session_state['bench_h']):
-        st.session_state['bench_h']=[h for h in st.session_state['bench_h'] if h in disponibles]
-    hsel=st.multiselect('Horizontes (días)', disponibles, default=None if 'bench_h' in st.session_state else disponibles, key='bench_h')
+    habiles=int(st.session_state.get('dias_habiles_estudio',180))
+    if instancias_preparadas is None:
+        from horizonte_automatico import obtener, instancias_automaticas
+        ext=core.cargar_datos_extendido(fuente(),habiles)
+        cal=core.calibrar_demanda_extendida(demanda,ext['demanda'])
+        total=(ext['cij'],core.demanda_entera(cal['demanda_calibrada']*3),ext['setup'])
+        prueba_horizonte=obtener(st,*total,capacidad)
+        if not prueba_horizonte.get('minimo_certificado'):return
+        instancias_preparadas=instancias_automaticas({1:(cij,core.demanda_entera(demanda),setup),3:total},prueba_horizonte)
+    disponibles=sorted(instancias_preparadas)
+    hsel = disponibles
+    st.write('**Horizontes automáticos (días):** ' + ' · '.join(map(str, hsel)))
+    st.caption('La tabla utiliza el caso de un día y el mínimo demostrado para la demanda total. Si ambos coinciden, se ejecuta un solo horizonte.')
     from gurobi_rpm import disponibles as solvers_disponibles, entorno_worker
     opciones=solvers_disponibles()
     if 'Gurobi' not in opciones:
@@ -198,9 +212,6 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     reps=st.number_input('Repeticiones por optimizador y horizonte',1,10,1,key='bench_reps')
     warm=st.checkbox('Usar la misma solución inicial factible en los optimizadores seleccionados',value=True,key='bench_warm')
     st.caption(f'{len(hsel)*len(solvers)*int(reps)} ejecuciones programadas. Si eliges ambos horizontes, el caso diario se completa primero.')
-    habiles=180
-    if instancias_preparadas is None:
-        habiles=st.number_input('Días hábiles para demanda del catálogo extendido',60,300,180,10,key='bench_days')
     st.caption('Versión 9 · CBC, HiGHS y Gurobi sin límite interno de tiempo; GAP relativo y absoluto solicitados: 0.')
     st.caption('Una repetición genera un plan. Diez repeticiones permiten evaluar la estabilidad del tiempo. La comparación no reutiliza certificados previos.')
     with st.expander('Protocolo y lectura académica'):
@@ -220,17 +231,9 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
     running=bool(job and job['process'].poll() is None)
     if st.button('Iniciar comparación',disabled=running or not hsel or not solvers,key='bench_start'):
         try:
-            inst={}
-            if instancias_preparadas is not None:
-                inst={str(h):empacar(*instancias_preparadas[h]) for h in hsel}
-            else:
-                if 1 in hsel: inst['1']=empacar(cij,core.demanda_entera(demanda),setup)
-                if 3 in hsel:
-                    ext=core.cargar_datos_extendido(fuente(),int(habiles))
-                    cal=core.calibrar_demanda_extendida(demanda,ext['demanda'])
-                    inst['3']=empacar(ext['cij'],core.demanda_entera(cal['demanda_calibrada']*3),ext['setup'])
+            inst={str(h):empacar(*instancias_preparadas[h]) for h in hsel}
             cfg={'instancias':inst,'capacidad':float(capacidad),'matriz_diaria':modo,'dias_habiles':int(habiles),
-                 'solvers':solvers,'repeticiones':int(reps),'warm_start':warm,'planes_iniciales':{},'origen_inicial':{}}
+                 'solvers':solvers,'repeticiones':int(reps),'warm_start':warm,'planes_iniciales':{},'origen_inicial':{}, 'prueba_horizonte':prueba_horizonte}
             inicio_comun=time.perf_counter()
             if warm:
                 for h,data in inst.items():
@@ -242,6 +245,9 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
             cfg['datos_sha256']=hashlib.sha256(json.dumps({'instancias':inst,'capacidad':float(capacidad)},sort_keys=True).encode()).hexdigest()
             cfg['config_sha256']=hashlib.sha256(json.dumps(cfg,sort_keys=True).encode()).hexdigest()
             folder=Path(tempfile.mkdtemp(prefix='rpm_benchmark_'))
+            if prueba_horizonte and prueba_horizonte.get('carpeta_evidencia'):
+                import shutil
+                shutil.copytree(prueba_horizonte['carpeta_evidencia'],folder/'prueba_horizonte')
             guardar(folder/'config.json',cfg); guardar(folder/'estado.json',programa(inst,int(reps),solvers))
             with (folder/'worker.log').open('w') as log:
                 proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),str(folder)],
@@ -251,6 +257,11 @@ def renderizar(cij, demanda, setup, fuente, capacidad, modo, instancias_preparad
         except Exception as exc: st.error(str(exc))
     if not job: return
     folder=Path(job['folder']); proc=job['process']
+    if instancias_preparadas is not None:
+        actual={str(h):empacar(*instancias_preparadas[h]) for h in hsel}
+        anterior=json.loads((folder/'config.json').read_text())
+        if actual != anterior['instancias'] or float(capacidad) != anterior['capacidad']:
+            st.warning('Este lote corresponde a la base o capacidad anterior. El horizonte automático de arriba pertenece a los datos actuales; inicia un nuevo lote para certificarlos.')
     st.caption('El lote conserva los datos y la capacidad del momento de inicio. Cambiar los controles no modifica un lote existente.')
     c1,c2,c3=st.columns(3)
     if c1.button('Actualizar resultados',key='bench_refresh'): st.rerun()

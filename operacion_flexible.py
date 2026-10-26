@@ -14,6 +14,7 @@ import pandas as pd
 from optimizar_rpm import guardar
 from carga_flexible import leer,serializar
 from motor_horizonte import Datos,buscar,resolver_h,validar
+from horizonte_automatico import horizontes_certificacion
 
 ROOT=Path(__file__).resolve().parent
 
@@ -70,10 +71,13 @@ def worker(folder):
         if cfg['accion'] in ('buscar','planificar'):
             manual=cfg.get('modo_horizonte')=='Manual'
             guardar(folder/'fase.json',dict(fase='Calculando horizonte y plan inicial'))
-            state=buscar(x,folder/'busqueda',cfg['solver'],cfg['max_variables'],solo_cotas=manual)
+            previous = folder/'busqueda'/'busqueda.json'
+            state = json.loads(previous.read_text()) if previous.exists() else buscar(x,folder/'busqueda',cfg['solver'],cfg['max_variables'],solo_cotas=manual)
             P=pd.read_csv(folder/'busqueda'/'inicio_comun.csv');guardar_exportaciones(folder/'busqueda',x,state['horizonte_factible'],P)
             if cfg['accion']=='buscar':return
-            h=int(cfg['dias']) if manual else state['horizonte_factible']
+            if not manual and not state.get('minimo_certificado'):
+                raise RuntimeError('La búsqueda no demostró el mínimo de días. Se conserva la evidencia, sin etiquetar un horizonte como óptimo.')
+            h=int(cfg['dias']) if manual else state['horizonte_minimo']
             rows=filas_lote([h],[cfg['solver']],1);guardar(folder/'corridas.json',rows)
         else:
             P=pd.read_csv(folder/'busqueda'/'inicio_comun.csv');state=json.loads((folder/'busqueda'/'busqueda.json').read_text())
@@ -126,8 +130,9 @@ def iniciar(cfg,previous=None):
     guardar(folder/'config.json',cfg)
     if previous:
         shutil.copytree(previous/'busqueda',folder/'busqueda')
-        rows=filas_lote(cfg['horizontes'],cfg['solvers'],cfg['repeticiones'])
-        guardar(folder/'corridas.json',rows)
+        if cfg['accion']=='comparar':
+            rows=filas_lote(cfg['horizontes'],cfg['solvers'],cfg['repeticiones'])
+            guardar(folder/'corridas.json',rows)
     with (folder/'worker.log').open('w') as log:
         process=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),str(folder)],stdout=log,
                                  stderr=subprocess.STDOUT,env=entorno_worker(),start_new_session=(os.name!='nt'))
@@ -293,11 +298,9 @@ def renderizar(st,archivo):
     signature=hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest()
     accepted=st.checkbox('Confirmo las unidades, los datos, los supuestos y la capacidad disponible.',key='flex_accept_'+signature[:16])
     opts=disponibles();a,b=st.columns(2)
-    mode=a.radio('Horizonte de planificación',['Automático','Manual'],horizontal=True)
+    a.info('Horizonte automático: mínimo de días para completar toda la demanda.')
     solver=b.selectbox('Optimizador',opts,index=opts.index('Gurobi') if 'Gurobi' in opts else 0)
-    days=st.number_input('Días disponibles',min_value=1,value=3,step=1) if mode=='Manual' else None
-    if mode=='Automático':st.caption('Primero busca el menor horizonte factible; después optimiza los minutos de producción y preparación en el horizonte encontrado. Si no demuestra el mínimo, lo indica.')
-    else:st.caption('Comprueba tu horizonte y optimiza el plan si es factible. Aumentar días no aumenta la demanda.')
+    st.caption('Al confirmar la base comienza la búsqueda de días. Después puedes optimizar el costo o ejecutar las repeticiones de certificación.')
     with st.expander('Configuración avanzada y alcance'):
         maxvars=st.number_input('Protección de memoria: variables por modelo',10000,1000000,250000,10000)
         st.caption('GAP relativo y absoluto solicitados: 0. Sin límite interno de tiempo o nodos. Superar la protección de memoria deja una conclusión pendiente. El servidor puede interrumpir el proceso.')
@@ -305,10 +308,23 @@ def renderizar(st,archivo):
     main=st.session_state.get('flex_search');batch=st.session_state.get('flex_batch')
     historic=st.session_state.get('rpm_benchmark')
     busy=any(j and j['process'].poll() is None for j in [main,batch,historic])
+    own_busy=any(j and j['process'].poll() is None for j in [main,batch])
     if historic and historic['process'].poll() is None:st.info('Hay un lote del estudio en ejecución. Finalízalo antes de iniciar otro plan.')
     cfg=dict(datos=payload,datos_sha256=signature,supuestos_confirmados=bool(accepted),max_variables=int(maxvars))
-    if st.button('Calcular plan',type='primary',disabled=not accepted or busy):
-        st.session_state['flex_search']=iniciar(dict(cfg,accion='planificar',solver=solver,modo_horizonte=mode,dias=int(days) if days else None))
+    # Una búsqueda por configuración confirmada, nunca por cada rerun de Streamlit.
+    if accepted and not busy and (main is None or main['datos_sha256'] != signature):
+        st.session_state['flex_search']=iniciar(dict(cfg,accion='buscar',solver=solver,modo_horizonte='Automático',dias=None))
+        st.session_state.pop('flex_batch',None);st.rerun()
+    same = bool(main and main['datos_sha256']==signature)
+    statefile = Path(main['folder'])/'busqueda'/'busqueda.json' if same else None
+    horizon_state = json.loads(statefile.read_text()) if statefile and statefile.exists() else {}
+    minimum = horizon_state.get('horizonte_minimo') if horizon_state.get('minimo_certificado') else None
+    st.metric('Horizonte mínimo de la demanda cargada', f'{minimum} días' if minimum else 'Calculando' if same and busy else 'Pendiente')
+    if same and not busy and minimum is None:
+        if st.button('Reintentar búsqueda del horizonte',disabled=not accepted):
+            st.session_state['flex_search']=iniciar(dict(cfg,accion='buscar',solver=solver,modo_horizonte='Automático',dias=None));st.rerun()
+    if st.button('Calcular plan óptimo',type='primary',disabled=not accepted or busy or minimum is None):
+        st.session_state['flex_search']=iniciar(dict(cfg,accion='planificar',solver=solver,modo_horizonte='Automático',dias=None),Path(main['folder']))
         st.session_state.pop('flex_batch',None);st.rerun()
     if main:
         st.divider()
@@ -319,12 +335,11 @@ def renderizar(st,archivo):
         running=mostrar_job(st,main)
         path=Path(main['folder'])/'busqueda'/'busqueda.json'
         if not running and path.exists():
-            state=json.loads(path.read_text());h=state.get('horizonte_factible')
+            state=json.loads(path.read_text());h=state.get('horizonte_minimo') if state.get('minimo_certificado') else None
             if h:
                 with st.expander('Comparar optimizadores y repetir la validación'):
-                    extra=st.number_input('Horizonte adicional para comparar',min_value=1,value=int(h),step=1,key='extra_'+signature[:12])
                     sols=st.multiselect('Optimizadores del lote',opts,default=[solver]);reps=st.number_input('Repeticiones por optimizador y horizonte',1,10,1)
-                    horizons=sorted(set([1,int(h),int(extra)]));total=len(horizons)*len(sols)*int(reps)
+                    horizons=horizontes_certificacion(state);total=len(horizons)*len(sols)*int(reps)
                     st.write(f'Horizontes: {horizons} días · {total} casos programados.')
                     st.caption('La tabla identifica mínimo de días, óptimo de costo y solver ejecutado por separado. Las repeticiones usan la misma demanda; no son bases diferentes.')
                     if st.button('Ejecutar comparación',disabled=busy or not accepted or not sols):
@@ -333,5 +348,24 @@ def renderizar(st,archivo):
         st.divider();st.subheader('Comparación de optimizadores')
         if batch['datos_sha256']==signature:mostrar_job(st,batch)
         else:st.warning('La comparación anterior corresponde a otra configuración.')
+    if own_busy:
+        # Actualiza el horizonte y habilita las certificaciones al terminar el worker.
+        # No inicia nuevas búsquedas ni resuelve modelos desde el temporizador.
+        jobs=[j for j in (main,batch) if j]
+        def progreso_actual():
+            values=[]
+            for job in jobs:
+                folder=Path(job['folder'])
+                values.append(job['process'].poll())
+                for name in ('busqueda/busqueda.json','fase.json','corridas.json','error.json'):
+                    p=folder/name
+                    values.append(p.stat().st_mtime_ns if p.exists() else None)
+            return values
+        last=progreso_actual()
+        @st.fragment(run_every='3s')
+        def actualizar_automaticamente():
+            if all(j['process'].poll() is not None for j in jobs) or progreso_actual()!=last:
+                st.rerun(scope='app')
+        actualizar_automaticamente()
 
 if __name__=='__main__':worker(sys.argv[1])

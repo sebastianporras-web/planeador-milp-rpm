@@ -79,7 +79,22 @@ st.markdown(
           padding: 14px 16px 12px 16px;
       }}
       div[data-testid="stMetricLabel"] {{ color: {MUTED} !important; }}
-      div[data-testid="stMetricValue"] {{ color: {TEXT} !important; }}
+      div[data-testid="stMetricValue"] {{
+          color: {TEXT} !important;
+          font-size: clamp(1.1rem, 1.8vw, 1.8rem) !important;
+          line-height: 1.3 !important;
+      }}
+      [data-testid="stMetricValue"], [data-testid="stMetricValue"] * {{
+          white-space: normal !important;
+          overflow: visible !important;
+          text-overflow: clip !important;
+          overflow-wrap: anywhere;
+      }}
+      [data-testid="stMetricValue"] * {{ font-size: inherit !important; }}
+      [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] p {{
+          white-space: normal !important; overflow: visible !important;
+          text-overflow: clip !important;
+      }}
       div[data-baseweb="tab-list"] {{ gap: 8px; }}
       button[data-baseweb="tab"] {{
           background: {CARD}; color: {TEXT} !important; border: 1px solid {GRID}; border-radius: 8px;
@@ -464,10 +479,11 @@ balance_sd = float(util_pct.std(ddof=0))
 soporte = soporte_observado_solucion(resultado["asignacion"], audit["mask_observado"])
 st.header("Plan diario optimizado")
 st.caption(f"Origen: {procedencia_diaria.get('origen', 'Nueva ejecución')}. Fecha UTC: {procedencia_diaria.get('fecha_utc', '')}.")
-ka, kb, kc, kd, ke, kf = st.columns(6)
+ka, kb, kc = st.columns(3)
 ka.metric("Objetivo", f"{fmt_num(z, 2)} min")
 kb.metric("Producción", f"{fmt_num(z_prod, 1)} min")
 kc.metric("Setups", f"{fmt_num(z_setup, 1)} min", f"{setup_share:.1f}% del objetivo")
+kd, ke, kf = st.columns(3)
 kd.metric("Holgura agregada", f"{fmt_num(slack_total, 1)} min")
 ke.metric("Utilización máxima", f"{util_pct.max():.1f}%", util_pct.idxmax())
 kf.metric("Balance de carga", f"σ={balance_sd:.1f} pts")
@@ -649,34 +665,39 @@ with cuello_tab:
             )
 with multi_tab:
     c1, c2, c3, c4 = st.columns(4)
-    dias_habiles_input = c1.number_input("Días hábiles para estimar demanda", 60, 300, 180, 10)
-    dias_horizonte = c2.slider("Horizonte de planeación (días)", 2, 7, 3)
+    dias_habiles_input = c1.number_input("Días hábiles para estimar demanda", 60, 300, 180, 10, key="dias_habiles_estudio")
+    # Fijar la demanda nominal original antes de buscar H: buscar días no genera pedidos.
+    datos_200 = cargar_datos_extendido(source(), dias_habiles=dias_habiles_input)
+    cal = calibrar_demanda_extendida(demanda, datos_200["demanda"])
+    demanda_teorica = cal["demanda_calibrada"] * 3
+    demanda_horizonte = demanda_entera(demanda_teorica, 1.0, "round")
+    ajuste = float(demanda_horizonte.sum() - demanda_teorica.sum())
+    from horizonte_automatico import obtener
+    prueba_horizonte = obtener(st, datos_200['cij'], demanda_horizonte, datos_200['setup'], cap_min, solver_operativo, clave='multi')
+    dias_horizonte = prueba_horizonte.get('horizonte_minimo')
+    c2.metric("Horizonte mínimo (días)", dias_horizonte if dias_horizonte is not None else 'Pendiente')
     tiempo_multi = None
-    c3.caption("Sin límite de ejecución")
+    c3.caption("Sin límite interno de ejecución")
     gap_obj_multi_pct = 0.0
     c4.caption("GAP requerido: 0 %")
-    if st.button("Calcular plan multi-día", key="run_multi", disabled=_batch_running):
-        with st.spinner("Preparando catálogo completo y demanda calibrada..."):
-            datos_200 = cargar_datos_extendido(source(), dias_habiles=dias_habiles_input)
-            cal = calibrar_demanda_extendida(demanda, datos_200["demanda"])
-            demanda_teorica = cal["demanda_calibrada"] * dias_horizonte
-            demanda_horizonte = demanda_entera(demanda_teorica, 1.0, "round")
-            ajuste = float(demanda_horizonte.sum() - demanda_teorica.sum())
+    st.caption('Demanda nominal del estudio fija: se conserva la calibración original de tres días. La búsqueda modifica los días disponibles, sin multiplicar de nuevo la demanda. Para otra base, usa la carga de demanda total de la página principal.')
+    # Sólo se habilita el costo óptimo cuando la prueba del mínimo de días terminó.
+    if st.button("Calcular plan multi-día", key="run_multi", disabled=_batch_running or dias_horizonte is None):
         with st.spinner(f"Resolviendo {len(datos_200['cij'])} referencias en {dias_horizonte} días..."):
             res_multi, origen_multi = resolver_con_avance(
                 datos_200["cij"], demanda_horizonte, datos_200["setup"], int(dias_horizonte), cap_min,
                 usar_guardada, usar_inicio, st.session_state["carpeta_soluciones"],
             )
         st.session_state["resultado_multi"] = {
-            "res": res_multi, "cal": cal, "ajuste": ajuste, "procedencia": origen_multi,
-            "entrada": (int(dias_horizonte), int(dias_habiles_input), float(cap_min), revision_archivo, firma_modelo(cij, demanda_entera(demanda), setup, 1, cap_min, solver_operativo)),
+            "prueba_horizonte": prueba_horizonte, "res": res_multi, "cal": cal, "ajuste": ajuste, "procedencia": origen_multi,
+            "entrada": (dias_horizonte, int(dias_habiles_input), float(cap_min), revision_archivo, firma_modelo(cij, demanda_entera(demanda), setup, 1, cap_min, solver_operativo)),
             "demanda_teorica": float(demanda_teorica.sum()), "demanda_entera": int(demanda_horizonte.sum()),
             "demanda_horizonte": demanda_horizonte.copy(),
             "gap_objetivo_pct": float(gap_obj_multi_pct),
             "tiempo_limite_seg": None,
         }
     multi_state = st.session_state.get("resultado_multi")
-    if multi_state is not None and multi_state.get("entrada") != (int(dias_horizonte), int(dias_habiles_input), float(cap_min), revision_archivo, firma_modelo(cij, demanda_entera(demanda), setup, 1, cap_min, solver_operativo)):
+    if multi_state is not None and multi_state.get("entrada") != (dias_horizonte, int(dias_habiles_input), float(cap_min), revision_archivo, firma_modelo(cij, demanda_entera(demanda), setup, 1, cap_min, solver_operativo)):
         st.info("Los parámetros cambiaron. Vuelve a calcular el plan multi-día.")
         multi_state = None
     if multi_state is not None:
@@ -694,7 +715,7 @@ with multi_tab:
         st.caption(
             f"Factor de calibración de demanda extendida: {multi_state['cal']['factor_sesgo']:.3f}x. "
             f"El redondeo del horizonte se reporta explícitamente porque la variable de producción es entera. "
-            "Esta corrida usó CBC sin límite temporal y con brechas de parada relativa y absoluta iguales a cero."
+            f"Esta corrida usó {solver_operativo} sin límite temporal y con brechas de parada relativa y absoluta iguales a cero."
         )
         lb_multi = res_multi.get("lower_bound")
         ub_multi = res_multi.get("upper_bound")
@@ -704,7 +725,7 @@ with multi_tab:
         b3.metric("Criterio GAP", f"≤ {gap_obj_usado:.2f}%")
         term = res_multi.get("solver_termination", {})
         if res_multi.get("gap_certificado"):
-            st.success("Óptimo certificado por CBC dentro de sus tolerancias numéricas.")
+            st.success(f"Óptimo certificado por {solver_operativo} dentro de sus tolerancias numéricas.")
         elif term.get("stopped_on_time") and res_multi.get("factible_incumbente"):
             st.warning(
                 "CBC alcanzó el límite de tiempo. Se conserva el mejor plan factible encontrado, "
@@ -740,6 +761,8 @@ with multi_tab:
                     "gap_objetivo_pct": gap_obj_usado,
                     "tiempo_limite_seg": tiempo_usado,
                     "dias_horizonte": res_multi.get("dias"),
+                    "horizonte_minimo_demostrado": multi_state["prueba_horizonte"].get("horizonte_minimo"),
+                    "minimo_dias_certificado": multi_state["prueba_horizonte"].get("minimo_certificado"),
                     "demanda_entera_unid": multi_state.get("demanda_entera"),
                     "ajuste_redondeo_unid": multi_state.get("ajuste"),
                     "factor_calibracion": multi_state["cal"].get("factor_sesgo"),

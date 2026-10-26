@@ -23,7 +23,7 @@ button:disabled {opacity: 1 !important; color: #CBD5E1 !important; background-co
 
 st.title('Planeación de producción | RPM Colombia')
 st.caption('Asignación de referencias a las máquinas disponibles. Objetivo: minimizar los minutos de producción y preparación, cumpliendo demanda y capacidad.')
-st.sidebar.caption('RPM · versión 11')
+st.sidebar.caption('RPM · horizonte automático')
 st.sidebar.header('Datos de entrada')
 uploaded = st.sidebar.file_uploader('Cargar Excel',type=['xlsx'],key='entrada_limpia_v7')
 options=['Datos del estudio','Mi plantilla completada','Demanda total · horizonte automático']
@@ -70,7 +70,20 @@ try:
 except Exception as exc:
     st.error(str(exc));st.stop()
 
-signature = hashlib.sha256(data+source_mode.encode()).hexdigest()
+from horizonte_automatico import obtener, instancias_automaticas
+C_total, D_total, S_total = instances[max(instances)]
+try:
+    prueba_horizonte = obtener(st, C_total, D_total, S_total, float(cap))
+except Exception as exc:
+    st.error(f'No se pudo determinar el horizonte: {exc}'); st.stop()
+st.metric('Horizonte mínimo de la demanda total',
+          f"{prueba_horizonte['horizonte_minimo']} días" if prueba_horizonte.get('minimo_certificado') else 'Pendiente')
+st.caption('El mínimo corresponde a la demanda total fija, las preparaciones y la capacidad cargadas. La certificación del costo se obtiene al ejecutar el plan.')
+if not prueba_horizonte.get('minimo_certificado'): st.stop()
+instances = instancias_automaticas(instances, prueba_horizonte)
+if source_mode == 'Mi plantilla completada':
+    st.caption('Compatibilidad con la plantilla anterior: Demanda_3d se interpreta como demanda total fija; Demanda_1d conserva el caso diario independiente. Para nuevas bases usa la plantilla de demanda total.')
+signature = hashlib.sha256(data+source_mode.encode()+str(cap).encode()).hexdigest()
 if st.session_state.get('fuente_v7') != signature:
     st.session_state['fuente_v7'] = signature
     # Ajustar selecciones a los horizontes presentes sin tocar un lote en curso.
@@ -83,9 +96,9 @@ with st.expander('Revisar datos antes de resolver'):
         st.write(f'**Horizonte de {h} día(s)** · tiempos M1–M10 en min/unidad')
         st.dataframe(pd.concat([D.rename('Demanda (unidades)'),C],axis=1),width='stretch')
     st.dataframe(S.rename('Preparación (min)').to_frame(),width='stretch')
-    st.caption('Cij representa tiempo por unidad, no costo monetario. Una preparación se cobra por referencia, máquina y día con producción. El horizonte de tres días cumple demanda total al final, sin fechas de entrega diarias internas.')
+    st.caption('Cij representa tiempo por unidad, no costo monetario. Una preparación se cobra por referencia, máquina y día con producción. El horizonte automático cumple demanda total al final, sin fechas de entrega diarias internas.')
 st.divider()
 C,D,S = next(iter(instances.values()))
-renderizar(C,D,S,lambda:io.BytesIO(data),float(cap),source_mode,instancias_preparadas=instances)
+renderizar(C,D,S,lambda:io.BytesIO(data),float(cap),source_mode,instancias_preparadas=instances, prueba_horizonte=prueba_horizonte)
 st.divider()
 st.caption('Los análisis de clustering, sensibilidad y Monte Carlo del anexo permanecen en «Analisis del estudio», en el menú lateral. Las simulaciones se ejecutan solo cuando se solicitan; no forman parte de la plantilla vacía.')
