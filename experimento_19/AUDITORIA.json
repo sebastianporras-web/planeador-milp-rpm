@@ -1,0 +1,63 @@
+{
+  "base_sha256": "9fda0f31ca72ce70927382fad2a3966de0711f9434f7ac142504e489b074e8f2",
+  "coincide_con_repositorio": true,
+  "base_commit": "ff0acda",
+  "pruebas": 32,
+  "subpruebas": 10,
+  "entorno_pruebas": "Linux, Python 3.12",
+  "alcance": "Prueba técnica local; no sustituye las 144 instancias.",
+  "presupuesto_piloto_local_s": 20,
+  "presupuesto_propuesto_GitHub_s": 600,
+  "licencia_WLS_del_usuario_verificada": false,
+  "workflow_GitHub_ejecutado": false,
+  "resultados_piloto_local": [
+    {
+      "id": "I001",
+      "metodo": "CBC",
+      "estado": "Optimo certificado numericamente",
+      "factible": true,
+      "certificado": true,
+      "objetivo_factible": 6356.814240740741,
+      "GAP_pct": 4.0060713881540964e-13,
+      "segundos_metodo": 7.246804972000064,
+      "entrada_sha256": "44e045f02b9647e933fd0252032dcf6c8d16668285a097005a77e0b3189621b7",
+      "modelo_sha256": "072b7a3383796a26410828e7457a8ace0444c5c65abfca0c93231407b06ec61d"
+    },
+    {
+      "id": "I001",
+      "metodo": "Gurobi",
+      "estado": "Optimo certificado numericamente",
+      "factible": true,
+      "certificado": true,
+      "objetivo_factible": 6356.814240740741,
+      "GAP_pct": 7.15369890741803e-14,
+      "segundos_metodo": 0.08971051399976204,
+      "entrada_sha256": "44e045f02b9647e933fd0252032dcf6c8d16668285a097005a77e0b3189621b7",
+      "modelo_sha256": "072b7a3383796a26410828e7457a8ace0444c5c65abfca0c93231407b06ec61d"
+    },
+    {
+      "id": "I001",
+      "metodo": "Heuristica",
+      "estado": "Heuristica completada",
+      "factible": true,
+      "certificado": false,
+      "objetivo_factible": 9436.578666666666,
+      "GAP_pct": null,
+      "segundos_metodo": 0.00048444200001540594,
+      "entrada_sha256": "44e045f02b9647e933fd0252032dcf6c8d16668285a097005a77e0b3189621b7",
+      "modelo_sha256": null
+    },
+    {
+      "id": "I001",
+      "metodo": "HiGHS",
+      "estado": "Optimo certificado numericamente",
+      "factible": true,
+      "certificado": true,
+      "objetivo_factible": 6356.81424074074,
+      "GAP_pct": 0.0,
+      "segundos_metodo": 2.8381294609998804,
+      "entrada_sha256": "44e045f02b9647e933fd0252032dcf6c8d16668285a097005a77e0b3189621b7",
+      "modelo_sha256": "072b7a3383796a26410828e7457a8ace0444c5c65abfca0c93231407b06ec61d"
+    }
+  ]
+}

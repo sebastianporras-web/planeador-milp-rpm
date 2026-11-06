@@ -1,0 +1,28 @@
+AUDITORÍA DE LA ENTREGA
+
+Base: el Excel adjunto coincide byte por byte con el anexo del repositorio ff0acda.
+200 referencias en el conjunto extendido, 99 en el diario y 10 máquinas.
+819 tiempos observados y 171 imputados en las 990 combinaciones del caso diario.
+Sin referencias duplicadas ni tiempos cargados faltantes/no positivos.
+Los totales semestrales no permiten estimar variación temporal por referencia.
+
+Código: 32 pruebas y 10 subpruebas aprobadas, sin advertencias, en Linux/Python 3.12.
+Pruebas contra enumeración independiente del óptimo, demanda, capacidad, enlace,
+integridad, infeasibilidad, casos multidía y rechazo de warm starts.
+El reporte conserva ausencias y rechaza resultados repetidos.
+YAML analizado sintácticamente; no ejecutado en GitHub durante esta entrega.
+La instalación limpia completa y la licencia WLS de la cuenta se comprueban en GitHub.
+
+Instancias: 144 JSON distintos, generados y verificados en la etapa preparatoria.
+Una instancia real del diseño se resolvió localmente con los cuatro métodos.
+CBC, HiGHS y Gurobi certificaron el mismo óptimo numérico: 6356.81424074074 min.
+La heurística cubrió la demanda con 9436.578666666666 min.
+Presupuesto de esta prueba técnica: 20 s por MILP; no combinarla con el estudio a 600 s.
+Gurobi se comprobó con la licencia local disponible, no con los Secrets del usuario.
+Los detalles del piloto están en AUDITORIA.json. Sus tiempos no fundamentan una
+conclusión general de rendimiento de los motores.
+
+Ninguna modificación a la app operativa ni a sus módulos existentes.
+No se han ejecutado las 144 instancias con los tres motores en el protocolo final.
+Los resultados, conclusiones, presentación y respuesta final al director siguen
+pendientes del nuevo estudio y de la justificación del diseño de sensibilidad.
