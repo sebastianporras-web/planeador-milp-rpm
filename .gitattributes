@@ -1,0 +1,4 @@
+evidencia_estudio/** -text
+monte_carlo_reference.json -text
+*.zip binary
+*.xlsx binary
