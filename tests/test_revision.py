@@ -42,7 +42,7 @@ class Revision(unittest.TestCase):
   self.assertFalse(r.iloc[0].optimo_certificado)
   self.assertTrue(pd.isna(r.iloc[0].valor_objetivo_min))
   self.assertTrue(r.iloc[1].optimo_certificado)
-  records=[json.loads(p.read_text()) for p in Path(self.temp.name).glob('*.json')]
+  records=[json.loads(p.read_text(encoding='utf-8')) for p in Path(self.temp.name).glob('*.json')]
   self.assertEqual(len(records),2)
   self.assertEqual(sum(x['optimo_certificado'] for x in records),1)
  def test_montecarlo_cuenta_no_certificado(self):
@@ -77,7 +77,7 @@ class Revision(unittest.TestCase):
  def test_referencia_json_raiz_y_avisos(self):
   import ast, types
   path=Path(__file__).resolve().parents[1]/'analisis_tesis.py'
-  tree=ast.parse(path.read_text())
+  tree=ast.parse(path.read_text(encoding='utf-8'))
   fn=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='cargar_referencia_monte_carlo')
   fn.decorator_list=[]
   alerts=[];ui=types.SimpleNamespace(warning=alerts.append,error=alerts.append)

@@ -7,6 +7,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 O=Path(__file__).resolve().parent
+(O/'figuras').mkdir(parents=True, exist_ok=True)
 R=O/'evidencia/historica_extraida'
 if not (R/'validacion_rpm_resultados/monte_carlo_escenarios.csv').exists():
  R.mkdir(exist_ok=True)

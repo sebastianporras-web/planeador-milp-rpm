@@ -45,7 +45,7 @@ class Escenarios(unittest.TestCase):
                 result=core._resolver_escenario(fixture.C, fixture.D, fixture.S, fixture.cap)
             records=list(Path(fixture.temp.name).glob('*.json'))
             self.assertEqual(len(records), 1)
-            saved=json.loads(records[0].read_text())
+            saved=json.loads(records[0].read_text(encoding='utf-8'))
             self.assertNotIn('ajeno', saved['auditoria'])
             self.assertEqual(saved['auditoria'], result['auditoria_solver'])
         finally:
