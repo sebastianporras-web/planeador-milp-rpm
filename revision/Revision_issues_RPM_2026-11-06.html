@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimiento de issues RPM</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#5f6670;--line:#dcd8cf;--card:#fff;--ok:#1f7a4a;--ok-bg:#e5f3ea;--mid:#8a5a00;--mid-bg:#fbf0d9;--bad:#a1271c;--bad-bg:#fbe5e2;--info:#2d5a85;--info-bg:#e3edf7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181b;--fg:#e6e4df;--muted:#9aa0a8;--line:#33373d;--card:#1d2024;--ok:#6fcf97;--ok-bg:#163323;--mid:#e5b35c;--mid-bg:#3a2d12;--bad:#f08a7e;--bad-bg:#3d1c19;--info:#8db8e6;--info-bg:#172a3d}}
+:root[data-theme="dark"]{--bg:#16181b;--fg:#e6e4df;--muted:#9aa0a8;--line:#33373d;--card:#1d2024;--ok:#6fcf97;--ok-bg:#163323;--mid:#e5b35c;--mid-bg:#3a2d12;--bad:#f08a7e;--bad-bg:#3d1c19;--info:#8db8e6;--info-bg:#172a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:1.7rem;margin:0 0 4px}h2{font-size:1.2rem;margin:36px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.sub{color:var(--muted);margin:0 0 20px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.sum b{display:block;font-size:1.6rem}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:.93rem}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--bg)}
+.b{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.ok{color:var(--ok);background:var(--ok-bg)}.mid{color:var(--mid);background:var(--mid-bg)}.bad{color:var(--bad);background:var(--bad-bg)}.inf{color:var(--info);background:var(--info-bg)}
+code{font-size:.88em;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+li{margin:4px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Seguimiento de los issues #1–#16</h1>
+<p class="sub">Revisión de los cambios de Sebastián Porras (commits <code>734aaf0</code> a <code>7604148</code>, 25–28 oct 2026) · 6 nov 2026</p>
+
+<div class="sum">
+<div><b>11</b>resueltos</div>
+<div><b>3</b>parciales</div>
+<div><b>1</b>sin resolver</div>
+<div><b>1</b>informativo</div>
+<div><b>5</b>hallazgos nuevos</div>
+</div>
+
+<h2>Estado por issue</h2>
+<div class="tw"><table>
+<tr><th>#</th><th>Tema</th><th>Estado</th><th>Evidencia</th></tr>
+<tr><td>1</td><td>Escenario sin certificar aborta los análisis</td><td><span class="b ok">Resuelto</span></td><td>Nuevo <code>_resolver_escenario</code> en <code>rpm_core.py</code> captura <code>ResolucionNoCertificada</code>, registra el escenario en JSON y lo marca <code>optimo_certificado=False</code>. <code>n_no_certificados</code> ya cuenta. Se decidió explícitamente mantener el modo sin límite; pasar un límite ahora lanza <code>ValueError</code>.</td></tr>
+<tr><td>2</td><td>Ruta rota a <code>monte_carlo_reference.json</code></td><td><span class="b ok">Resuelto</span></td><td><code>referencia_monte_carlo.leer_referencia</code> lee de la raíz, valida el JSON y avisa si falta.</td></tr>
+<tr><td>3</td><td>Igualdad exacta <code>mip_gap == 0</code></td><td><span class="b ok">Resuelto</span></td><td><code>certificacion_numerica.cierre_numerico</code> con <code>GAP_REL_TOL=1e-9</code> y <code>BOUND_ABS_TOL=1e-7</code> en HiGHS y Gurobi. Observación: la tolerancia absoluta de 1e-7 sobre objetivos de ~10<sup>4</sup> min equivale a ~1e-11 relativo, más estricta que la relativa; puede rechazar un óptimo con redondeo. Conviene justificarla o relajarla.</td></tr>
+<tr><td>4</td><td>Versión de cbcbox fija</td><td><span class="b ok">Resuelto</span></td><td>Ambos puntos usan <code>identidad()["version_distribucion"]</code>.</td></tr>
+<tr><td>5</td><td>Presentación vs código (3 días, solver)</td><td><span class="b ok">Resuelto</span></td><td>34.132,14 min, GAP 0, «CBC · HiGHS · Gurobi». Coincide con la tesis.</td></tr>
+<tr><td>6</td><td>Dependencias, README, .gitignore</td><td><span class="b ok">Resuelto</span></td><td><code>requirements-base.txt</code> / <code>requirements-gurobi.txt</code>; <code>requirements_rpm_v3.txt</code> sin duplicados y documentado; README con estructura, secrets WLS, variables <code>RPM_*</code> y CLI; <code>.gitignore</code> completo.</td></tr>
+<tr><td>7</td><td>Expediente digital ausente</td><td><span class="b mid">Parcial</span></td><td>Publicados <code>evidencia_estudio/</code> (tablas, ZIP, scripts, fuentes). Faltan <code>tablas/huellas_corrida_actual.json</code> y <code>evidencia/historico_nominal/</code>, que cita el anexo E.2, y la corrida del 25 oct (ver hallazgo N2). <code>auditar_monte_carlo.py</code> falla al guardar figuras porque <code>figuras/</code> está en <code>.gitignore</code> y no se crea.</td></tr>
+<tr><td>8</td><td>JSON de Monte Carlo con cifras descartadas</td><td><span class="b ok">Resuelto</span></td><td>JSON revalidado: media 15,1876 %, IC [15,1397; 15,2355], GAP máx. 1,1879 %, SHA-256 del CSV; la versión anterior queda en <code>historico/</code>.</td></tr>
+<tr><td>9</td><td>Anexo D con cotas por límite de tiempo</td><td><span class="b ok">Resuelto</span></td><td>Factor 1,2 = 13.641,1764 con GAP 0; M8 = 5,4161 exacto. Menor: no reporta 11,4189 (matriz reconstruida) y las fuentes son capturas E17/E18 sin archivo en el repo.</td></tr>
+<tr><td>10</td><td>Presentación con dos capas y fuentes de 125 p.</td><td><span class="b ok">Resuelto</span></td><td>Sin capa de reescritura; marcado estático = lo proyectado; MAE 0,1888; ningún pie con numeración antigua. Menor: <code>sensibilidad_actual_captura_E17.csv</code> y «E18» no existen en el repo.</td></tr>
+<tr><td>11</td><td>Mapa metodológico</td><td><span class="b ok">Resuelto</span></td><td>§2 nuevo con figura 1 «Mapa metodológico», §2.2 con tabla etapa → sección → anexo; heurística subida a §4. Pendiente menor: 9,42 % se usa en §3.1 y se define en §3.5. La tabla sale ilegible por los «??» (N1).</td></tr>
+<tr><td>12</td><td>Formato y versión de entrega</td><td><span class="b mid">Parcial</span></td><td>Ahora 59 páginas con índice general, de figuras y de tablas. Sigue en formato artículo, sin glosario de notación. No hay respuesta sobre qué versión se radica ni si cumple el formato de la maestría. <code>control_documental.json</code> dice 46 páginas.</td></tr>
+<tr><td>13</td><td>Erratas y estilo</td><td><span class="b mid">Parcial</span></td><td>Las 12 erratas están corregidas. El estilo no mejoró: «da fe» 5→7, «dar cuenta» 11→12, «pone de manifiesto» 8→7; frases nuevas como «el mero hecho de reoptimizar» (§8.2) y «Gurobi ha sido el que ha puesto de manifiesto el tiempo medio más bajo» (conclusiones). Además, el resumen y el <i>abstract</i> son un listado de más de 15 cifras con cuatro decimales (11.547,4126; 34.132,1434; 29.748,4944; 15,6168 %…), que corresponden a resultados y no al resumen.</td></tr>
+<tr><td>14</td><td>Versión de Python</td><td><span class="b bad">Sin resolver</span></td><td>La tesis pasó de 3.14.8 a <b>3.14.9</b> (§6.3 y tabla de configuración). El <code>protocolo.json</code> publicado y los 120 JSON de auditoría registran 3.14.8, igual que <code>evidencia_estudio/README.md</code>. La tesis contradice su propia evidencia.</td></tr>
+<tr><td>15</td><td>Plan de tres días con cifras</td><td><span class="b ok">Resuelto</span></td><td>§7.2: cinco referencias con varias activaciones, cuatro en varias máquinas. La advertencia del inicio común está junto a la tabla de tiempos.</td></tr>
+<tr><td>16</td><td>Puntos que se defienden bien</td><td><span class="b inf">Informativo</span></td><td>Sin acción; útil hasta la sustentación.</td></tr>
+</table></div>
+
+<h2>Hallazgos nuevos</h2>
+<div class="tw"><table>
+<tr><th>Id</th><th>Hallazgo</th><th>Prioridad</th><th>Detalle</th></tr>
+<tr><td>N1</td><td>54 referencias cruzadas «??» en el PDF</td><td><span class="b bad">Alta</span></td><td>«La figura ?? resume las etapas», «La tabla ?? relaciona…», «ecuación (??)», la tabla de trazabilidad entera. Las etiquetas existen en el <code>.tex</code>: el PDF se compiló sin la segunda pasada. Recompilar con <code>latexmk -pdf</code> o dos pasadas de pdflatex.</td></tr>
+<tr><td>N2</td><td>Tiempos de §7.5 no coinciden con <code>comparacion.csv</code></td><td><span class="b bad">Alta</span></td><td>La tesis atribuye la tabla a la «corrida del 25 de octubre»; el CSV publicado es del 17 oct. Medias: 3d CBC 49,230 vs 53,525 s; 3d HiGHS 28,555 vs 30,911 s; 3d Gurobi 9,614 vs 10,536 s; máximo 3d CBC 69,427 vs 77,118 s. Publicar la corrida del 25 oct (con su protocolo) o citar la del 17.</td></tr>
+<tr><td>N3</td><td>Prueba <code>test_json_reproduce_csv</code> falla en Windows</td><td><span class="b mid">Media</span></td><td>Con <code>core.autocrlf=true</code> el CSV se descarga con CRLF y su SHA-256 cambia (<code>2260995f…</code> en lugar de <code>36d7a29d…</code>). Agregar <code>.gitattributes</code> con <code>evidencia_estudio/** -text</code> (o <code>*.csv binary</code>) para que los hashes publicados sean reproducibles.</td></tr>
+<tr><td>N5</td><td>Solo dos instancias; las distribuciones no generan instancias resueltas</td><td><span class="b bad">Alta</span></td><td>Las 60 corridas son 2 instancias × 3 motores × 10 semillas, todas con <code>warm_start</code>. El Monte Carlo usa una uniforme ±15 % no estimada de datos y solo se resolvió con HiGHS a 5 s: 0 de 1.000 escenarios certificados, GAP hasta 1,19 %. Se pide un conjunto de al menos 100 instancias sintéticas en el que se compare, instancia por instancia, la heurística corporativa actual con el modelo propuesto resuelto por CBC, HiGHS y Gurobi, sin solución inicial heredada. Las conclusiones y el resumen deben apoyarse en ese conjunto. Issue #19.</td></tr>
+<tr><td>N4</td><td>Pruebas leen archivos sin <code>encoding</code></td><td><span class="b inf">Baja</span></td><td><code>tests/test_revision.py:45,80</code> y <code>tests/test_auditoria_adicional.py:48</code> usan <code>read_text()</code>; en Windows falla con <code>UnicodeDecodeError</code> salvo con <code>PYTHONUTF8=1</code>. Pasar <code>encoding="utf-8"</code>.</td></tr>
+</table></div>
+
+<h2>Pruebas</h2>
+<p>Python 3.10, Windows: <b>12 aprobadas, 2 fallidas</b>. Con <code>PYTHONUTF8=1</code>: 13 aprobadas, 1 fallida (N3). Ambas fallas son del entorno Windows, no de la lógica.</p>
+
+<h2>Recomendación</h2>
+<ul>
+<li>Cerrar #1, #2, #3, #4, #5, #6, #8, #9, #10, #11 y #15, con un comentario que deje constancia de los menores pendientes.</li>
+<li>Mantener abiertos #7, #12, #13 y #14; #16 hasta la sustentación.</li>
+<li>Issues abiertos: #17 (N1), #18 (N2), #19 (N5) y #20 (N3–N4).</li>
+</ul>
+</main>
+</body>
+</html>
