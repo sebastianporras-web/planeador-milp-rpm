@@ -38,14 +38,14 @@ def codigo():
     return {str(p.relative_to(ROOT)):sha(p) for p in sorted(files)}
 
 
-def worker(instancia, metodo, salida, limite):
+def worker(instancia, metodo, salida, limite, threads=1, perfil='base'):
     import pulp
     from experimento_19.solver_benchmark import resolver
     salida=Path(salida);salida.mkdir(parents=True,exist_ok=True)
     inst=json.loads(Path(instancia).read_text(encoding='utf-8'));d=inst['datos']
     r=dict(id=inst['meta']['id'],metodo=metodo,entrada_sha256=sha(instancia),
            meta=inst['meta'],horizonte_dias=d['horizonte_dias'],warm_start=False,
-           limite_s=limite,hilos=1,semilla=42,python=sys.version,sistema=platform.platform(),
+           limite_s=limite,hilos=threads,perfil=perfil,semilla=42,python=sys.version,sistema=platform.platform(),
            cpu=platform.processor(),cpu_logicas=os.cpu_count(),pulp=pulp.__version__,
            codigo_sha256=codigo(),certificado=False,factible=False,estado='Error')
     inicio=time.perf_counter()
@@ -61,7 +61,8 @@ def worker(instancia, metodo, salida, limite):
             r['variables_binarias']=sum(v.isBinary() for v in p.variables())
             r['variables_enteras_no_binarias']=sum(v.cat==pulp.LpInteger and not v.isBinary() for v in p.variables())
             r['variables_continuas']=sum(v.cat==pulp.LpContinuous for v in p.variables())
-            native=resolver(p,metodo,salida/'solver.log',threads=1,seed=42,limite=limite)
+            native=resolver(p,metodo,salida/'solver.log',threads=threads,seed=42,
+                            perfil=perfil,limite=limite)
             r['solver']=native;r['segundos_metodo']=native['segundos']
             X=np.full((len(D),len(S),h),np.nan);Y=X.copy()
             for k in x:
@@ -98,14 +99,17 @@ def worker(instancia, metodo, salida, limite):
     return r
 
 
-def ejecutar(instancias, salida, desde=1, hasta=4, limite=600., metodos=None):
+def ejecutar(instancias, salida, desde=1, hasta=4, limite=600., metodos=None,
+             threads=1, perfil='base'):
     if limite<=0 or not math.isfinite(limite):raise ValueError('Presupuesto inválido')
+    if threads < 1: raise ValueError('El número de hilos debe ser positivo')
+    if perfil not in {'base','agresivo'}: raise ValueError('Perfil desconocido')
     carpeta=Path(instancias);salida=Path(salida)
     manifest=pd.read_csv(carpeta/'manifest.csv');metodos=metodos or METODOS
     if not 1<=desde<=hasta<=len(manifest):raise ValueError('Rango fuera del manifiesto')
     if set(metodos)-set(METODOS):raise ValueError('Método desconocido')
-    firma=dict(manifest_sha256=sha(carpeta/'manifest.csv'),limite_s=limite,hilos=1,semilla=42,
-               warm_start=False,codigo_sha256=codigo())
+    firma=dict(manifest_sha256=sha(carpeta/'manifest.csv'),limite_s=limite,hilos=threads,
+               perfil=perfil,semilla=42,warm_start=False,codigo_sha256=codigo())
     protocolo=salida/'protocolo_ejecucion.json'
     if protocolo.exists() and json.loads(protocolo.read_text(encoding='utf-8'))!=firma:
         raise ValueError('La carpeta contiene otro protocolo. Usa una salida nueva.')
@@ -125,6 +129,7 @@ def ejecutar(instancias, salida, desde=1, hasta=4, limite=600., metodos=None):
             # Proceso separado para liberar memoria y evitar compartir estados del solver.
             cmd=[sys.executable,str(Path(__file__).resolve()),'worker','--instancia',str(path.resolve()),
                  '--metodo',metodo,'--salida',str(out.resolve()),'--limite',str(limite)]
+            cmd += ['--threads',str(threads),'--perfil',perfil]
             with (out/'ejecucion.log').open('w',encoding='utf-8') as log:
                 completed=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT,check=False)
             if not result.exists():
@@ -150,8 +155,11 @@ if __name__=='__main__':
     a=sub.add_parser('lote');a.add_argument('--instancias',required=True);a.add_argument('--salida',required=True)
     a.add_argument('--desde',type=int,default=1);a.add_argument('--hasta',type=int,default=4)
     a.add_argument('--limite',type=float,default=600);a.add_argument('--metodos',nargs='+',choices=METODOS,default=METODOS)
+    a.add_argument('--threads',type=int,default=1);a.add_argument('--perfil',choices=['base','agresivo'],default='base')
     w=sub.add_parser('worker');w.add_argument('--instancia',required=True);w.add_argument('--metodo',choices=METODOS,required=True)
     w.add_argument('--salida',required=True);w.add_argument('--limite',type=float,required=True)
+    w.add_argument('--threads',type=int,default=1);w.add_argument('--perfil',choices=['base','agresivo'],default='base')
     args=vars(p.parse_args());accion=args.pop('accion')
     if accion=='worker':worker(**args)
     else:ejecutar(**args)
+
