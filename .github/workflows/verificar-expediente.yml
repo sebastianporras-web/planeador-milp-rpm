@@ -1,0 +1,48 @@
+name: Auditoria de evidencia en Windows y Linux
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'evidencia_estudio/**'
+      - 'experimento_19_empirico/resultados_publicados/**'
+      - 'tests/**'
+      - '.gitattributes'
+      - '.github/workflows/verificar-expediente.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  comprobar:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            python: '3.12'
+          - os: windows-latest
+            python: '3.10'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - run: git config --global core.autocrlf true
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-base.txt
+      - run: python -m pip install -r requirements-base.txt -r evidencia_estudio/requirements_auditoria.txt
+      - name: Registrar entorno y codificacion nativa
+        run: python -c "import sys,locale; print(sys.version); print(locale.getpreferredencoding(False)); print('utf8_mode=',sys.flags.utf8_mode)"
+      - name: Pruebas de regresion y lectura UTF-8
+        run: python -m unittest discover -s tests -p "test_revision.py" -v
+      - run: python -m unittest discover -s tests -p "test_auditoria_adicional.py" -v
+      - name: Hash del CSV con autocrlf y auditoria publicada
+        run: python -m unittest discover -s tests -p "test_evidencia_publicada.py" -v
+      - name: Revisar sesenta planes nominales almacenados
+        run: python evidencia_estudio/auditar.py
+      - name: Revisar mil planes historicos y crear figuras desde cero
+        run: python evidencia_estudio/auditar_monte_carlo.py
+      - run: python evidencia_estudio/auditar_procedencia.py

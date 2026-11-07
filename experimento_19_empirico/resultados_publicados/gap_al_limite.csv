@@ -1,0 +1,146 @@
+id,metodo,n,h,demanda_nivel,capacidad,matriz,estado,factible,certificado,inviabilidad,objetivo,pendiente,LB,GAP_pct,segundos,segundos_totales,tiempo_certificacion_s,estado_nativo,termino_por_tiempo,sin_incumbente
+E005,CBC,99,3,0.8,nominal,publicada,Factible sin certificado,True,False,False,12677.71237037037,0.0,12653.7,0.1894061773044228,180.205797594,180.429232711,,Stopped on time limit,True,False
+E006,CBC,99,3,0.8,nominal,reconstruida,Factible sin certificado,True,False,False,12665.885561280507,0.0,12649.6,0.1285781495633575,180.279698579,180.49774272500002,,Stopped on time limit,True,False
+E007,CBC,99,3,0.8,M1_reducida,publicada,Factible sin certificado,True,False,False,12677.712370370371,0.0,12653.7,0.18940617730443712,180.35083053300002,180.572333824,,Stopped on time limit,True,False
+E008,CBC,99,3,0.8,M1_reducida,reconstruida,Factible sin certificado,True,False,False,12667.26165447047,0.0,12665.9,0.0107493987857306,180.44462423699997,180.665833745,,Stopped on time limit,True,False
+E013,CBC,150,5,0.8,nominal,publicada,Sin incumbente al limite,False,False,False,,,49949.5,,180.963504067,181.646076185,,Stopped on time limit,True,True
+E013,HiGHS,150,5,0.8,nominal,publicada,Factible sin certificado,True,False,False,50527.37677777777,0.0,49952.29876226175,1.1381513393130276,180.754483182,181.449992475,,Time limit reached,True,False
+E013,Gurobi,150,5,0.8,nominal,publicada,Factible sin certificado,True,False,False,50109.06394444444,0.0,50053.45551562501,0.11097479067076137,180.190244892,181.24002370899996,,9,True,False
+E014,CBC,150,5,0.8,nominal,reconstruida,Factible sin certificado,True,False,False,53319.241776676594,0.0,49846.2,6.513674352728339,180.76759656800004,181.47674746199993,,Stopped on time limit,True,False
+E014,HiGHS,150,5,0.8,nominal,reconstruida,Factible sin certificado,True,False,False,50430.48969535185,0.0,49923.57259420509,1.0051798112788848,180.92713888899993,181.6244900920001,,Time limit reached,True,False
+E014,Gurobi,150,5,0.8,nominal,reconstruida,Factible sin certificado,True,False,False,50000.110171840875,0.0,49999.98035011766,0.0002596428743291339,180.19749172499996,181.34563696300006,,9,True,False
+E015,CBC,150,5,0.8,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,,50427.9,,180.60324127600006,181.28527451699983,,Stopped on time limit,True,True
+E015,HiGHS,150,5,0.8,M1_reducida,publicada,Factible sin certificado,True,False,False,51000.429,0.0,50443.92544017462,1.0911742719367605,180.66215865699996,181.36136964399998,,Time limit reached,True,False
+E015,Gurobi,150,5,0.8,M1_reducida,publicada,Factible sin certificado,True,False,False,50558.841166666665,0.0,50549.20532743777,0.019058663146831665,180.19677285599982,181.2859348259999,,9,True,False
+E016,CBC,150,5,0.8,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,50469.1,,180.9381558729997,181.62622610899962,,Stopped on time limit,True,True
+E016,HiGHS,150,5,0.8,M1_reducida,reconstruida,Factible sin certificado,True,False,False,51705.18410683921,0.0,50513.87931994743,2.3040335460950434,180.66158550499995,181.35946620599998,,Time limit reached,True,False
+E016,Gurobi,150,5,0.8,M1_reducida,reconstruida,Factible sin certificado,True,False,False,50625.90314220076,0.0,50625.80856235921,0.00018682104550911895,180.19758840400004,181.25988465399973,,9,True,False
+E025,CBC,99,3,1.0,nominal,publicada,Factible sin certificado,True,False,False,25930.843777777776,0.0,25396.7,2.0598781218046067,180.366865806,180.66039322400002,,Stopped on time limit,True,False
+E025,HiGHS,99,3,1.0,nominal,publicada,Factible sin certificado,True,False,False,25430.291555555556,0.0,25415.974626140804,0.05629872305425548,180.253813234,180.54601954100002,,Time limit reached,True,False
+E026,CBC,99,3,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,26814.42993590258,0.0,25351.1,5.457247979541373,180.45260219500005,180.74556226700008,,Stopped on time limit,True,False
+E026,HiGHS,99,3,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,25465.2304207262,0.0,25366.80842223734,0.38649561328435034,180.36248876499997,180.64015972699997,,Time limit reached,True,False
+E027,CBC,99,3,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,26432.420074074074,0.0,25581.5,3.2192287792395113,180.34981350300018,180.6514194880001,,Stopped on time limit,True,False
+E027,HiGHS,99,3,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,25671.672777777774,0.0,25633.64763959907,0.14812099900097456,180.2675881859999,180.54478438599995,,Time limit reached,True,False
+E027,Gurobi,99,3,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,25655.652222222223,0.0,25654.668169769084,0.003835616590899986,180.07352548699987,180.60517005700012,,9,True,False
+E028,CBC,99,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,26207.347677060403,0.0,25624.0,2.225893609108006,180.36174249499982,180.65681623299997,,Stopped on time limit,True,False
+E028,HiGHS,99,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,25676.958295682663,1.3322676295501878e-12,25620.04617069638,0.22164667765906282,180.28538140700016,180.56510761100003,,Time limit reached,True,False
+E028,Gurobi,99,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,25663.478014265955,0.0,25663.474967809063,1.1870787311286618e-05,180.10644705799996,180.62281892800002,,9,True,False
+E029,CBC,99,5,1.0,nominal,publicada,Sin incumbente al limite,False,False,False,,,34237.9,,180.7378364440001,181.19973872299988,,Stopped on time limit,True,True
+E029,HiGHS,99,5,1.0,nominal,publicada,Factible sin certificado,True,False,False,34632.64266666667,0.0,34303.91599983203,0.9491815857039074,180.45040918799987,180.9157964279998,,Time limit reached,True,False
+E029,Gurobi,99,5,1.0,nominal,publicada,Factible sin certificado,True,False,False,34481.519629629634,0.0,34479.826362765416,0.004910650349538105,180.12797342199997,180.88746297199987,,9,True,False
+E030,CBC,99,5,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,38327.32075046077,0.0,34384.3,10.287754722363067,180.90029553600016,181.40940636899995,,Stopped on time limit,True,False
+E030,HiGHS,99,5,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,34854.5593652289,0.0,34466.59656707554,1.1130905259424881,180.54273740500003,181.0119641450001,,Time limit reached,True,False
+E030,Gurobi,99,5,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,34656.468912250915,0.0,34644.55658157664,0.03437260358070059,180.1227632580003,180.82746587600013,,9,True,False
+E031,CBC,99,5,1.0,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,,35596.4,,180.352869374,180.60369323600003,,Stopped on time limit,True,True
+E031,HiGHS,99,5,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,35902.510444444444,0.0,35606.42670056046,0.8246881352270362,180.288795898,180.579086093,,Time limit reached,True,False
+E032,CBC,99,5,1.0,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,35763.7,,180.30851580700005,180.56472193699994,,Stopped on time limit,True,True
+E032,HiGHS,99,5,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,36032.846812859025,3.552713678800501e-14,35794.70297406531,0.6609076436023636,180.29368973200008,180.54033774900017,,Time limit reached,True,False
+E034,CBC,150,1,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,12032.655065858526,0.0,12021.3,0.09436874734941285,180.172401047,180.25423435799985,,Stopped on time limit,True,False
+E036,CBC,150,1,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,12271.715141654824,0.0,12081.6,1.5492141030026134,180.10855033999997,180.19489346,,Stopped on time limit,True,False
+E037,CBC,150,3,1.0,nominal,publicada,Factible sin certificado,True,False,False,28658.01344444445,0.0,28386.3,0.9481237943138819,180.22888285999989,180.46100592400012,,Stopped on time limit,True,False
+E037,HiGHS,150,3,1.0,nominal,publicada,Factible sin certificado,True,False,False,28435.14783333333,2.1316282072803006e-12,28383.209751968025,0.1826545150028002,180.25747321300014,180.5095675739999,,Time limit reached,True,False
+E038,CBC,150,3,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,29193.08229671219,0.0,27658.4,5.257006715200568,180.3027446269998,180.55786036500012,,Stopped on time limit,True,False
+E038,HiGHS,150,3,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,27767.923107737966,0.0,27651.28744396547,0.4200374054622554,180.2230724430001,180.4539943599998,,Time limit reached,True,False
+E038,Gurobi,150,3,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,27682.43188210005,0.0,27679.67699649679,0.00995174706829274,180.05964903300037,180.46127588400032,,9,True,False
+E039,CBC,150,3,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,28951.46792592593,0.0,28389.5,1.941068851374849,180.27258342599998,180.53478799200002,,Stopped on time limit,True,False
+E039,HiGHS,150,3,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,28485.203666666668,0.0,28386.42646235479,0.34676671252825675,180.229573866,180.45954215499978,,Time limit reached,True,False
+E040,CBC,150,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,30835.30709986687,0.0,27910.1,9.486550889189948,180.38240339899994,180.62872977799998,,Stopped on time limit,True,False
+E040,HiGHS,150,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,28108.45962741752,2.842170943040401e-14,27920.629268077013,0.6682342676554708,180.25574410100035,180.5003351639998,,Time limit reached,True,False
+E040,Gurobi,150,3,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,27985.13070117719,0.0,27983.4374831203,0.006050420399929847,180.06251804299973,180.36911180000016,,9,True,False
+E045,CBC,200,5,1.0,nominal,publicada,Factible sin certificado,True,False,False,58991.78998148148,0.0,56090.5,4.918125017722372,180.745150283,181.49364748,,Stopped on time limit,True,False
+E045,HiGHS,200,5,1.0,nominal,publicada,Factible sin certificado,True,False,False,59502.40855555554,0.0,56097.993931671124,5.721473645400124,181.02695197900002,181.740245142,,Time limit reached,True,False
+E045,Gurobi,200,5,1.0,nominal,publicada,Factible sin certificado,True,False,False,56366.398222222226,0.0,56106.72443865702,0.4606889773965262,180.20037527200003,181.21781260399996,,9,True,False
+E046,CBC,200,5,1.0,nominal,reconstruida,Sin incumbente al limite,False,False,False,,,55269.7,,180.63438153000016,181.32151162699995,,Stopped on time limit,True,True
+E046,HiGHS,200,5,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,58840.945612830204,0.0,55319.09301639012,5.985377290864182,181.0831443620001,181.791721898,,Time limit reached,True,False
+E046,Gurobi,200,5,1.0,nominal,reconstruida,Factible sin certificado,True,False,False,55622.82432955313,0.0,55387.725436579916,0.42266622705151086,180.19853125300006,181.25171143600005,,9,True,False
+E047,CBC,200,5,1.0,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,,56729.7,,181.06067597600008,181.75362378199998,,Stopped on time limit,True,True
+E047,HiGHS,200,5,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,58838.56435185185,0.0,56731.62274368817,3.580885481100914,180.76498941199998,181.48659083799998,,Time limit reached,True,False
+E047,Gurobi,200,5,1.0,M1_reducida,publicada,Factible sin certificado,True,False,False,56934.28401851852,0.0,56746.12730432865,0.3304805135139142,180.20027518100005,181.2566609019998,,9,True,False
+E048,CBC,200,5,1.0,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,56286.5,,180.53303575600012,181.24547198100026,,Stopped on time limit,True,True
+E048,HiGHS,200,5,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,59568.56560015302,2.1316282072803006e-13,56294.07688015932,5.497007837948156,181.2406749510003,181.9610358929997,,Time limit reached,True,False
+E048,Gurobi,200,5,1.0,M1_reducida,reconstruida,Factible sin certificado,True,False,False,56606.81168604911,0.0,56397.242118817034,0.3702196979303266,180.20288817999995,181.20133855899985,,9,True,False
+E053,CBC,99,5,1.2,nominal,publicada,Factible sin certificado,True,False,False,20694.528055555555,0.0,20694.5,0.0001355699220551683,180.613820765,181.07033701400002,,Stopped on time limit,True,False
+E054,CBC,99,5,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,20541.08409081743,0.0,20073.0,2.2787701406016754,180.46680985300003,180.9253868,,Stopped on time limit,True,False
+E054,HiGHS,99,5,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,20111.787694406157,0.0,20073.09478397026,0.19238921484169638,180.428343138,180.88217776899995,,Time limit reached,True,False
+E055,CBC,99,5,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,20713.3475,0.0,20713.3,0.0002293207314780099,180.53773716400008,180.99490063300004,,Stopped on time limit,True,False
+E055,HiGHS,99,5,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,20766.8975,0.0,20713.3475,0.2578623022528968,180.50293157599992,180.951131251,,Time limit reached,True,False
+E056,CBC,99,5,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,20387.937871786184,0.0,20215.7,0.8448028087457244,180.57653222099998,181.03539809199992,,Stopped on time limit,True,False
+E056,HiGHS,99,5,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,20417.776847280842,4.547473508864641e-13,20218.314198988235,0.9769067895321353,180.54698923,180.9915701949999,,Time limit reached,True,False
+E057,CBC,150,3,1.2,nominal,publicada,Factible sin certificado,True,False,False,20733.235444444443,0.0,20730.5,0.013193524241657447,181.02911800799984,181.44121687799998,,Stopped on time limit,True,False
+E057,HiGHS,150,3,1.2,nominal,publicada,Factible sin certificado,True,False,False,20736.075074074077,0.0,20730.348090173422,0.027618456627866023,180.378220758,180.77583072400012,,Time limit reached,True,False
+E058,CBC,150,3,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,21601.26297190925,0.0,19919.8,7.784095652628563,180.44229679499995,180.8600712839998,,Stopped on time limit,True,False
+E058,HiGHS,150,3,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,19989.16448230801,1.1368683772161603e-13,19910.458683811816,0.3937423125706667,180.410949502,180.81066059199998,,Time limit reached,True,False
+E059,CBC,150,3,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,20793.59192592593,0.0,20730.4,0.3039009621379609,180.56950879100032,180.98363553399986,,Stopped on time limit,True,False
+E059,HiGHS,150,3,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,20749.5422962963,0.0,20730.192230137192,0.09325538791552027,180.39181618800012,180.7896927380002,,Time limit reached,True,False
+E060,CBC,150,3,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,20820.958037099528,0.0,20122.9,3.352670111796498,180.40030357399974,180.81850382099992,,Stopped on time limit,True,False
+E060,HiGHS,150,3,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,20251.67482133554,0.0,20071.853849190207,0.8879313623774285,180.4210350180001,180.81991787800007,,Time limit reached,True,False
+E061,CBC,150,5,1.2,nominal,publicada,Factible sin certificado,True,False,False,44201.28788888889,0.0,43277.2,2.090635664761216,180.630814576,181.385650728,,Stopped on time limit,True,False
+E061,HiGHS,150,5,1.2,nominal,publicada,Factible sin certificado,True,False,False,43937.32898148148,0.0,43276.40022755437,1.5042533746320252,180.70539878200003,181.410461901,,Time limit reached,True,False
+E061,Gurobi,150,5,1.2,nominal,publicada,Factible sin certificado,True,False,False,43308.65416666667,0.0,43305.83918135894,0.006499821714370448,180.20741983700003,181.30038544,,9,True,False
+E062,CBC,150,5,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,44589.26519172818,0.0,43290.2,2.9134034529216035,180.7602639710001,181.476410214,,Stopped on time limit,True,False
+E062,HiGHS,150,5,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,43965.32562945419,0.0,43325.23331260923,1.4559025952400586,180.70615852799995,181.42123629000014,,Time limit reached,True,False
+E062,Gurobi,150,5,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,43440.74480813758,0.0,43360.72248961056,0.18421028203002843,180.197523788,181.195288139,,9,True,False
+E063,CBC,150,5,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,44350.02766666666,0.0,43383.3,2.1797678998817127,180.67136917999983,181.382780142,,Stopped on time limit,True,False
+E063,HiGHS,150,5,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,44213.134333333335,0.0,43384.17081900439,1.8749259169892722,180.70523682299995,181.41677067399996,,Time limit reached,True,False
+E063,Gurobi,150,5,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,43489.14744444445,0.0,43412.42859246485,0.17640918824081678,180.1948066340001,181.1363774209999,,9,True,False
+E064,CBC,150,5,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,47783.224736306336,0.0,43967.7,7.985071659274708,180.86992316099986,181.5942363029999,,Stopped on time limit,True,False
+E064,HiGHS,150,5,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,44667.41810186461,0.0,43976.61020647388,1.546558822395634,182.86736553800006,183.577767064,,Time limit reached,True,False
+E064,Gurobi,150,5,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,44047.31960724096,0.0,44004.27280952183,0.09772852946096806,180.20604331999994,181.16555826499985,,9,True,False
+E069,CBC,200,3,1.2,nominal,publicada,Sin incumbente al limite,False,False,False,,,37613.0,,180.78232223299983,181.3366401000003,,Stopped on time limit,True,True
+E069,HiGHS,200,3,1.2,nominal,publicada,Sin incumbente al limite,False,False,False,,50673.0,37621.63864159222,,180.64053629799992,181.20344708099992,,Time limit reached,True,True
+E069,Gurobi,200,3,1.2,nominal,publicada,Factible sin certificado,True,False,False,37684.8932962963,0.0,37683.735694360774,0.0030717930562399244,180.14184670399982,180.9671424180001,,9,True,False
+E070,CBC,200,3,1.2,nominal,reconstruida,Sin incumbente al limite,False,False,False,,,36612.1,,180.72370602699993,181.27294695699993,,Stopped on time limit,True,True
+E070,HiGHS,200,3,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,37971.17123366503,0.0,36651.58052552274,3.475243626333944,180.53088756800025,181.08629643200038,,Time limit reached,True,False
+E070,Gurobi,200,3,1.2,nominal,reconstruida,Factible sin certificado,True,False,False,36841.079639980744,0.0,36682.784659007906,0.42966976679221086,180.142327863,180.93184446700025,,9,True,False
+E071,CBC,200,3,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,39097.825500000006,0.0,37755.5,3.4332484807882886,180.443461971,180.874443275,,Stopped on time limit,True,False
+E071,HiGHS,200,3,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,38263.67842592593,0.0,37745.09619343828,1.3552858842140996,180.39628041200007,180.81552673,,Time limit reached,True,False
+E071,Gurobi,200,3,1.2,M1_reducida,publicada,Factible sin certificado,True,False,False,37878.25007407408,0.0,37876.83625386051,0.003732538358577598,180.110519284,180.891707826,,9,True,False
+E072,CBC,200,3,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,38693.378763047804,0.0,36830.4,4.814722370089189,180.44962782900006,180.89107370299996,,Stopped on time limit,True,False
+E072,HiGHS,200,3,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,37572.041176222745,0.0,36832.088924209675,1.9694225515789785,180.444021356,180.87763959899996,,Time limit reached,True,False
+E072,Gurobi,200,3,1.2,M1_reducida,reconstruida,Factible sin certificado,True,False,False,37035.40372543242,0.0,36901.954796728314,0.36032799775439417,180.2277481330001,180.954126202,,9,True,False
+E077,CBC,99,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,38556.52440740741,0.0,37713.7,2.1859449739341343,180.42763425600015,180.79054736800003,,Stopped on time limit,True,False
+E077,HiGHS,99,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,37778.611666666664,8.526512829121202e-14,37677.2010915613,0.26843383234975465,180.418496668,180.77311651699983,,Time limit reached,True,False
+E078,CBC,99,5,1.4,nominal,reconstruida,Sin incumbente al limite,False,False,False,,,37047.0,,180.5844501849997,180.92886780800018,,Stopped on time limit,True,True
+E078,HiGHS,99,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,37654.63173913777,0.0,37054.28027912686,1.594362850684599,180.3755337319999,180.72890708499995,,Time limit reached,True,False
+E078,Gurobi,99,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,37201.89305610049,0.0,37144.96209429675,0.15303243229554184,180.09284449999996,180.774058749,,9,True,False
+E079,CBC,99,5,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,39668.32596296296,0.0,37676.3,5.021704129442842,180.53424195599973,180.89205696099998,,Stopped on time limit,True,False
+E079,HiGHS,99,5,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,37808.96055555555,2.6361135496699717e-12,37676.64558351032,0.3499566507542951,180.38780024800008,180.7441865349997,,Time limit reached,True,False
+E080,CBC,99,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,39173.15348612936,0.0,37322.1,4.725311396706406,180.76431178899975,181.12549655400016,,Stopped on time limit,True,False
+E080,HiGHS,99,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,38507.85290713588,0.0,37329.12513140495,3.06100622793357,180.33125459699977,180.68081987200003,,Time limit reached,True,False
+E080,Gurobi,99,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,37421.315971730655,0.0,37389.37773447231,0.08534771273802746,180.0952466470003,180.48546330099998,,9,True,False
+E081,CBC,150,3,1.4,nominal,publicada,Factible sin certificado,True,False,False,36268.39420370371,0.0,34439.3,5.043218052143382,180.45857500499997,180.885504195,,Stopped on time limit,True,False
+E081,HiGHS,150,3,1.4,nominal,publicada,Factible sin certificado,True,False,False,35080.79511111112,0.0,34414.84386506049,1.898335667539371,180.629433657,181.039745807,,Time limit reached,True,False
+E081,Gurobi,150,3,1.4,nominal,publicada,Factible sin certificado,True,False,False,34513.38233333333,0.0,34456.270995006584,0.16547592402030453,180.11033703299995,180.82768219399998,,9,True,False
+E082,CBC,150,3,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,36735.60534396242,0.0,34881.2,5.0479781851946575,180.907752061,181.3316570170001,,Stopped on time limit,True,False
+E082,HiGHS,150,3,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,35790.39695952958,0.0,34860.97418930418,2.5968495719015223,180.410779339,180.81719195099993,,Time limit reached,True,False
+E082,Gurobi,150,3,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,35047.47239766824,0.0,34936.69539379215,0.3160770129701673,180.10799220900003,180.76296947800006,,9,True,False
+E083,CBC,150,3,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,37875.26935185184,0.0,35232.5,6.977559228163295,180.7222579820002,181.148365368,,Stopped on time limit,True,False
+E083,HiGHS,150,3,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,35588.988796296275,9.094947017729282e-13,35187.58501129059,1.1278875814742413,180.42089062000014,180.83701493199987,,Time limit reached,True,False
+E083,Gurobi,150,3,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,35367.698722222216,0.0,35308.59600518362,0.16710930926771853,180.11002714100005,180.7702642119998,,9,True,False
+E084,CBC,150,3,1.4,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,35623.6,,180.6921874159998,181.0987771959999,,Stopped on time limit,True,True
+E084,HiGHS,150,3,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,37528.24531172728,0.0,35628.553005839785,5.062033383409635,180.43985840899995,180.85200265000003,,Time limit reached,True,False
+E084,Gurobi,150,3,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,35821.078358322266,0.0,35694.0051026826,0.354744361318609,180.11269995199996,180.79079450199993,,9,True,False
+E085,CBC,150,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,54819.36614814815,0.0,52979.1,3.356963564983347,180.75256532899994,181.4568838549999,,Stopped on time limit,True,False
+E085,HiGHS,150,5,1.4,nominal,publicada,Sin incumbente al limite,False,False,False,,79823.0,52994.22788900525,,183.35533368999995,184.05266638700004,,Time limit reached,True,True
+E085,Gurobi,150,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,53099.12087037037,0.0,53024.49303869451,0.1405443827554915,180.30139544999975,181.2655828080001,,9,True,False
+E086,CBC,150,5,1.4,nominal,reconstruida,Sin incumbente al limite,False,False,False,,,52388.6,,180.98365571799968,181.66142772400008,,Stopped on time limit,True,True
+E086,HiGHS,150,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,56170.99806216849,4.973799150320701e-14,52393.64267162507,6.724743232019386,181.27157831099976,181.96367472600014,,Time limit reached,True,False
+E086,Gurobi,150,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,52615.86925435267,0.0,52408.07949137137,0.39491842656217635,180.1992444120001,181.3109537549999,,9,True,False
+E087,CBC,150,5,1.4,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,,53733.8,,180.93876329900013,181.62267552699996,,Stopped on time limit,True,True
+E087,HiGHS,150,5,1.4,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,79823.0,53733.75819819976,,180.72615094999992,181.42729256099983,,Time limit reached,True,True
+E087,Gurobi,150,5,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,53981.94188888889,0.0,53797.29245000962,0.3420577926954443,180.1981131560001,181.15645872599998,,9,True,False
+E088,CBC,150,5,1.4,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,53435.1,,181.19001443099933,181.86864213300032,,Stopped on time limit,True,True
+E088,HiGHS,150,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,57639.45139898315,0.0,53435.23914681882,7.293983808177768,180.97843888499983,181.6736097170001,,Time limit reached,True,False
+E088,Gurobi,150,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,53634.04724918015,0.0,53454.05689358491,0.33558973231875927,180.19800807299998,181.12316119599973,,9,True,False
+E097,CBC,200,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,51039.4937037037,0.0,49583.6,2.852484611535352,180.760497554,181.731093973,,Stopped on time limit,True,False
+E097,HiGHS,200,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,51032.715351851846,0.0,49582.507363966695,2.841722173485183,181.038533057,182.00163396700003,,Time limit reached,True,False
+E097,Gurobi,200,5,1.4,nominal,publicada,Factible sin certificado,True,False,False,49596.64435185185,0.0,49591.95879483252,0.00944732669026696,180.26488092600005,181.69363906600006,,9,True,False
+E098,CBC,200,5,1.4,nominal,reconstruida,Sin incumbente al limite,False,False,False,,,49275.0,,180.94633977400008,181.88939522299995,,Stopped on time limit,True,True
+E098,HiGHS,200,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,51603.479637971155,0.0,49296.37716113409,4.470827341533453,181.90614901200001,182.85724548300004,,Time limit reached,True,False
+E098,Gurobi,200,5,1.4,nominal,reconstruida,Factible sin certificado,True,False,False,49448.82432114976,0.0,49303.82240382376,0.2932363293094148,180.25619605999998,181.5233276639999,,9,True,False
+E099,CBC,200,5,1.4,M1_reducida,publicada,Sin incumbente al limite,False,False,False,,,49630.1,,180.69482596000012,181.63028361299985,,Stopped on time limit,True,True
+E099,HiGHS,200,5,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,51960.22885185185,0.0,49639.83824625601,4.465705130382885,181.01416560100006,181.96655531700003,,Time limit reached,True,False
+E099,Gurobi,200,5,1.4,M1_reducida,publicada,Factible sin certificado,True,False,False,49685.625907407404,0.0,49661.42548298166,0.04870709381994489,180.26225441999986,181.50836055699983,,9,True,False
+E100,CBC,200,5,1.4,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,,49615.7,,180.59210087600013,181.5360989149999,,Stopped on time limit,True,True
+E100,HiGHS,200,5,1.4,M1_reducida,reconstruida,Sin incumbente al limite,False,False,False,,69892.0,49614.70444524659,,181.05411973299988,181.9935545379999,,Time limit reached,True,True
+E100,Gurobi,200,5,1.4,M1_reducida,reconstruida,Factible sin certificado,True,False,False,49860.61909566915,0.0,49668.42550761153,0.38546169611101755,180.7881852160001,182.03425370800005,,9,True,False

@@ -2,13 +2,13 @@ from pathlib import Path
 import ast,math,hashlib,json
 import numpy as np,pandas as pd
 O=Path(__file__).resolve().parent
-P=O/'evidencia/descomprimida';R=O/'fuentes_verificadas'
+P=O/'evidencia/descomprimida'/hashlib.sha256((O/'evidencia/evidencia_optimizadores.zip').read_bytes()).hexdigest()[:16];R=O/'fuentes_verificadas'
 if not (P/'C_1d.csv').exists():
  import zipfile
- P.mkdir(exist_ok=True)
+ P.mkdir(parents=True,exist_ok=True)
  with zipfile.ZipFile(O/'evidencia/evidencia_optimizadores.zip') as z:z.extractall(P)
 names={'_cargar_setup','cargar_datos','cargar_datos_extendido','calibrar_demanda_extendida','demanda_entera','_validar_demanda_entera','_serie_capacidades','politica_empirica'}
-tree=ast.parse((R/'rpm_core.py').read_text());mod=ast.Module(body=[x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name in names],type_ignores=[])
+tree=ast.parse((R/'rpm_core.py').read_text(encoding='utf-8'));mod=ast.Module(body=[x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name in names],type_ignores=[])
 g=dict(pd=pd,np=np,math=math,MACHINES=[f'M{i}' for i in range(1,11)],CAP_MINUTOS_DIA=1440,TOL=1e-6)
 exec(compile(mod,'funciones_verificadas','exec'),g)
 data=g['cargar_datos'](O/'evidencia/AnexodeDatosxlsx.xlsx');ext=g['cargar_datos_extendido'](O/'evidencia/AnexodeDatosxlsx.xlsx');cal=g['calibrar_demanda_extendida'](data['demanda'],ext['demanda'])
@@ -24,4 +24,4 @@ comp=pd.DataFrame({'demanda':D1,'carga_heuristica':Z,'carga_milp':Zo,'diferencia
 for label,A in [('heuristica',X),('milp',opt)]:comp['asignacion_'+label]=['; '.join(f'{j}: {int(q)}' for j,q in row.items() if q>0) for _,row in A.iterrows()]
 comp.sort_values('diferencia',ascending=False).to_csv(O/'tablas/comparacion_asignaciones.csv')
 report={'matrices_reconstruidas':checks,'factor_calibracion':cal['factor_sesgo'],'referencias_comunes':cal['n_referencias_comunes'],'demanda_diaria_sin_redondear':float(data['demanda'].sum()),'demanda_calibrada_200':float(cal['demanda_calibrada'].sum()),'heuristica_objetivo':heur['valor_objetivo'],'faltantes_heuristica':int(heur['demanda_incumplida'].sum()),'diferencia_total':float(comp.diferencia.sum())}
-(O/'tablas/auditoria_procedencia.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));print(comp.sort_values('diferencia',ascending=False).head(4).to_string())
+(O/'tablas/auditoria_procedencia.json').write_text(json.dumps(report,indent=2),encoding='utf-8');print(json.dumps(report,indent=2));print(comp.sort_values('diferencia',ascending=False).head(4).to_string())

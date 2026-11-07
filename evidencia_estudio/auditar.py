@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 import zipfile
 O=Path(__file__).resolve().parent
-P=O/'evidencia'/'descomprimida'
+P=O/'evidencia'/'descomprimida'/hashlib.sha256((O/'evidencia/evidencia_optimizadores.zip').read_bytes()).hexdigest()[:16]
 if not (P/'comparacion.csv').exists():
     P.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(O/'evidencia'/'evidencia_optimizadores.zip') as z: z.extractall(P)
@@ -23,7 +23,7 @@ for h in [1,3]:
     for solver in ['CBC','HiGHS','Gurobi']:
       for r in range(1,11):
         stem=f'{h}d_{solver}_{r:02d}'
-        a=json.loads((P/f'{stem}_auditoria.json').read_text())
+        a=json.loads((P/f'{stem}_auditoria.json').read_text(encoding='utf-8'))
         if h==1:
             x=pd.read_csv(P/f'{stem}_plan.csv',index_col=0).reindex(index=C.index,columns=C.columns).to_numpy()[:,:,None]
             y=pd.read_csv(P/f'{stem}_preparaciones.csv',index_col=0).reindex(index=C.index,columns=C.columns).to_numpy()[:,:,None]
@@ -46,7 +46,7 @@ summary=df.groupby(['horizonte_dias','optimizador']).agg(n=('certificado','size'
 summary.to_csv(O/'tablas/resumen_certificaciones.csv')
 logs=[]
 for f in (P/'logs').rglob('*.log'):
-    txt=f.read_text(errors='replace')
+    txt=f.read_text(encoding='utf-8',errors='replace')
     if any(s in txt for s in ['Result - Optimal solution found','Optimal solution found','Model status        : Optimal','Status            Optimal']): logs.append(str(f.relative_to(P)))
 stats['auditoria']={'corridas':len(rows),'max_residuos':{k:max(r[k] for r in rows) for k in err},'logs_optimos':len(logs),'logs':logs}
 (O/'tablas/resumen_auditoria.json').write_text(json.dumps(stats,indent=2),encoding='utf8')
@@ -73,10 +73,10 @@ pd.DataFrame(loads[3],index=C.columns,columns=['dia1','dia2','dia3']).to_csv(O/'
 D=pd.read_csv(P/'D_1d.csv',index_col=0).iloc[:,0].sort_values(ascending=False)
 fig,ax=plt.subplots(figsize=(8.5,3));ax.plot(np.arange(1,len(D)+1),D.cumsum()/D.sum()*100,color=colors[0]);ax.axhline(80,color=colors[2],ls='--');ax.set(xlabel='Referencias acumuladas por demanda descendente',ylabel='Demanda acumulada (%)',xlim=(1,99),ylim=(0,102));ax.grid(alpha=.2);fig.tight_layout();fig.savefig(O/'figuras/pareto.pdf');plt.close(fig)
 def fmt(x,n=3): return f'{x:,.{n}f}'.replace(',','X').replace('.',',').replace('X','.')
-with (O/'tablas/tabla_resumen.tex').open('w') as f:
+with (O/'tablas/tabla_resumen.tex').open('w',encoding='utf-8') as f:
  for (h,s),r in summary.iterrows(): f.write(f'{h} & {s} & 10/10 & {fmt(r.media_s)} & {fmt(r.desv_s)} & {fmt(r.min_s)}--{fmt(r.max_s)} \\\\\n')
 for h in [1,3]:
- with (O/f'tablas/detalle_{h}d.tex').open('w') as f:
+ with (O/f'tablas/detalle_{h}d.tex').open('w',encoding='utf-8') as f:
   for _,r in df[df.horizonte_dias==h].sort_values(['optimizador','repeticion']).iterrows():
    f.write(f'{r.optimizador} & {r.repeticion} & {r.semilla} & {fmt(r.LB_min,6)} & {fmt(r.UB_min,6)} & 0 & {fmt(r.segundos_totales)} \\\\\n')
 print(summary.to_string()); print(json.dumps({k:v for k,v in stats.items() if k!='auditoria'},indent=2));print('logs optimos',len(logs));print(stats['auditoria']['max_residuos'])

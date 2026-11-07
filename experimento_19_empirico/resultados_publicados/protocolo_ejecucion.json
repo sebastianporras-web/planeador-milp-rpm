@@ -1,0 +1,21 @@
+{
+  "generacion_sha256": "ae97b55d50759d15fb2ab7e7cffeff23428c70629641a1678ae4532437417e37",
+  "manifest_sha256": "e4664dd6d8b9526dd359996758982affb91142a8b2d47bc94702a191d336c472",
+  "limite_s": 180.0,
+  "hilos": 2,
+  "perfil": "base",
+  "semilla": 42,
+  "warm_start": false,
+  "codigo_sha256": {
+    "certificacion_numerica.py": "cca6ee3a65290c573420c2d5461a65a75eb53f1ab9b54dbe660ceaf9339d6590",
+    "experimento_19/modelo.py": "f42ded5e3671735d4f953fb505101ee35bacaf054d9fcf4d24ca83d696316f07",
+    "experimento_19_empirico/__init__.py": "598ee7eadf7884aa3be9a9fa1946fdc5eeb49d0e2b276ed0393fc246ec6427c3",
+    "experimento_19_empirico/cbc_benchmark.py": "0950749c1da7bdc44cf319d54c8378bc757d0190d70975a9d81155dd2206d446",
+    "experimento_19_empirico/ejecutar.py": "1887ffbc766bce5877ae75e8de30e370ad359182792bd9c059b79161a4d889b7",
+    "experimento_19_empirico/generar_instancias.py": "f8c08f1bd28cb19a2fb7d507985efb86c82d6126a4f2f51db80f6483f3418cd6",
+    "experimento_19_empirico/reportar.py": "d0929663913b8f79ef617980485b68a605604afef0c7261a039e7e86f8910945",
+    "experimento_19_empirico/solver_benchmark.py": "9d84f9e48b1cb6aac8b19302084b91912ca404d53296a56779af8456e2e9ba7d",
+    "experimento_19_empirico/test_estudio.py": "d479eaddcf1801ee9aadcbd2db4d75f134f3e5aead5cdf031117873e134b419d",
+    "rpm_core.py": "94722ce5a7b31cbd498e11ca103f8e7f829fbe820db1b5b27769e31ceb96fa22"
+  }
+}

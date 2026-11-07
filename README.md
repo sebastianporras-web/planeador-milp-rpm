@@ -85,3 +85,9 @@ La carpeta `evidencia_estudio/` conserva las evidencias nominales y la validaci�
 
 ## Versión del entorno
 Instalación comprobada en Python 3.12. Las versiones históricas de las corridas constan en el protocolo conservado dentro de evidencia_estudio; no se reemplazan por la versión del entorno de esta revisión.
+
+## Estudio de cien instancias
+
+La ejecución completa y su auditoría están en [experimento_19_empirico/resultados_publicados](experimento_19_empirico/resultados_publicados/). Contiene 400 registros de cuatro métodos, estados, brechas, perfiles y el inventario de cien problemas sintéticos. Los resultados distinguen optimalidad numérica, planes completos sin certificado e inviabilidad; no afirman que las cien instancias tengan GAP cero.
+
+Los resúmenes nominales del 25 de octubre y la distinción entre sus versiones de Python y las del respaldo anterior están en [evidencia_estudio/nominal_2026_10_25](evidencia_estudio/nominal_2026_10_25/). El PDF del repositorio y el RAR de fuentes siguen siendo la versión anterior: el autor revisará el nuevo editable antes de publicarlo.

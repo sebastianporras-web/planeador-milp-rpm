@@ -1,0 +1,55 @@
+{
+  "capacidad": 1440.0,
+  "matriz_diaria": "Datos del estudio",
+  "dias_habiles": 180,
+  "solvers": [
+    "HiGHS",
+    "CBC",
+    "Gurobi"
+  ],
+  "repeticiones": 10,
+  "warm_start": true,
+  "origen_inicial": {
+    "1": "Heurística determinista factible",
+    "3": "Plan de referencia factible obtenido con HiGHS; certificación nueva por el solver seleccionado"
+  },
+  "segundos_inicio_comun": 0.15174191701225936,
+  "datos_sha256": "576328e9236ca175cc9b30fcd5422204efc4089725d1cf8dc81a410bd2cc2223",
+  "config_sha256": "c497945e259f18e4c672a46930a8308d1856111b4d3568f4ef70d6d4ff68066e",
+  "version_app": "9",
+  "cpu_logicas": 16,
+  "tolerancia_validacion": 1e-05,
+  "python": "3.14.9 (main, Oct 21 2026, 22:25:42) [GCC 14.2.0]",
+  "sistema": "Linux-6.12.94+-x86_64-with-glibc2.41",
+  "cpu": "",
+  "pulp": "3.3.0",
+  "highs": "1.15.1",
+  "cbc": {
+    "distribucion": "cbcbox",
+    "version_distribucion": "2.924",
+    "sha256_ejecutable": "131e6b18d5254bea681f2f501ab488328ee99be609228a02853c660f09b070f9",
+    "rama": "CBC Devel; compilación fijada, no CBC 2.10.3 de PuLP"
+  },
+  "hilos": 1,
+  "limite_tiempo": null,
+  "gap_relativo": 0,
+  "gap_absoluto": 0,
+  "codigo_sha256": {
+    "rpm_core.py": "94722ce5a7b31cbd498e11ca103f8e7f829fbe820db1b5b27769e31ceb96fa22",
+    "comparacion_solvers.py": "df1ebe2fbd458fe1a97ce1227ce7cc2f8f57b862225fc529813a2791321f615a",
+    "integracion_selectiva.py": "80bebe79d3fed1be20b07bac4cbbfc923615e3610232ff7e45c6d60a7c27a92c",
+    "optimizar_rpm.py": "f1e9ff811736f03c91db8da6732e971b002e19b1f1fa551754a7e467c6098a2c",
+    "solver_config_rpm.py": "923d22442fcc3f1dfb281f796f408dd0a649977cee5d1e61e37d979534cecf7a",
+    "cbc_actual.py": "81e07cd359423067ecd65485e7578f08bcd42640ba4a4b3c55326fd3ff643b87",
+    "poda_lagrangiana.py": "3651b51b0b0c249dbb50a99c38edcd6acd2f92cbd83d6f8830e032e8f9a57ff5",
+    "carga_limpia.py": "88f2a65d36fed747d841096a9f6b09b0862eaa5a4782f01efd2e7c71a837ec63",
+    "presentacion_resultados.py": "ccb1ffea0c85fd3f45d74ef7d6d110bafd4ee81005a47001c8fccdcbda17834f",
+    "gurobi_rpm.py": "e5e538384c6f84a541e3a29583fb0f0ee77678457d334c6055e3432bd9808f9d",
+    "validacion_tecnica.py": "f91a59dc188287915a6d9c2c9f58fe5e840e2df40977a5a8b2df2503a37be52e"
+  },
+  "criterio": "Estado óptimo, GAP solicitado cero y residuo máximo <= 1e-5; tolerancias numéricas.",
+  "orden": "Primero horizonte diario completo, luego tres días; alternado por repetición; semillas no equivalen a trayectorias aleatorias idénticas.",
+  "gurobi": "13.0.3",
+  "protocolo_completo_sha256": "1922a0bedb71e0f7d0246382b4fa47da888e12ce7661a39c89ba77d881966c19",
+  "alcance_copia": "Metadatos de ejecución. No replica nombres de productos ni vectores de demanda o asignación."
+}

@@ -1,0 +1,57 @@
+{
+  "rpm_core.py": {
+    "esperado": "94722ce5a7b31cbd498e11ca103f8e7f829fbe820db1b5b27769e31ceb96fa22",
+    "disponible": "94722ce5a7b31cbd498e11ca103f8e7f829fbe820db1b5b27769e31ceb96fa22",
+    "coincide": true
+  },
+  "comparacion_solvers.py": {
+    "esperado": "df1ebe2fbd458fe1a97ce1227ce7cc2f8f57b862225fc529813a2791321f615a",
+    "disponible": "df1ebe2fbd458fe1a97ce1227ce7cc2f8f57b862225fc529813a2791321f615a",
+    "coincide": true
+  },
+  "integracion_selectiva.py": {
+    "esperado": "80bebe79d3fed1be20b07bac4cbbfc923615e3610232ff7e45c6d60a7c27a92c",
+    "disponible": "80bebe79d3fed1be20b07bac4cbbfc923615e3610232ff7e45c6d60a7c27a92c",
+    "coincide": true
+  },
+  "optimizar_rpm.py": {
+    "esperado": "f1e9ff811736f03c91db8da6732e971b002e19b1f1fa551754a7e467c6098a2c",
+    "disponible": "f1e9ff811736f03c91db8da6732e971b002e19b1f1fa551754a7e467c6098a2c",
+    "coincide": true
+  },
+  "solver_config_rpm.py": {
+    "esperado": "923d22442fcc3f1dfb281f796f408dd0a649977cee5d1e61e37d979534cecf7a",
+    "disponible": "923d22442fcc3f1dfb281f796f408dd0a649977cee5d1e61e37d979534cecf7a",
+    "coincide": true
+  },
+  "cbc_actual.py": {
+    "esperado": "81e07cd359423067ecd65485e7578f08bcd42640ba4a4b3c55326fd3ff643b87",
+    "disponible": "81e07cd359423067ecd65485e7578f08bcd42640ba4a4b3c55326fd3ff643b87",
+    "coincide": true
+  },
+  "poda_lagrangiana.py": {
+    "esperado": "3651b51b0b0c249dbb50a99c38edcd6acd2f92cbd83d6f8830e032e8f9a57ff5",
+    "disponible": "3651b51b0b0c249dbb50a99c38edcd6acd2f92cbd83d6f8830e032e8f9a57ff5",
+    "coincide": true
+  },
+  "carga_limpia.py": {
+    "esperado": "88f2a65d36fed747d841096a9f6b09b0862eaa5a4782f01efd2e7c71a837ec63",
+    "disponible": "88f2a65d36fed747d841096a9f6b09b0862eaa5a4782f01efd2e7c71a837ec63",
+    "coincide": true
+  },
+  "presentacion_resultados.py": {
+    "esperado": "ccb1ffea0c85fd3f45d74ef7d6d110bafd4ee81005a47001c8fccdcbda17834f",
+    "disponible": "ccb1ffea0c85fd3f45d74ef7d6d110bafd4ee81005a47001c8fccdcbda17834f",
+    "coincide": true
+  },
+  "gurobi_rpm.py": {
+    "esperado": "e5e538384c6f84a541e3a29583fb0f0ee77678457d334c6055e3432bd9808f9d",
+    "disponible": "e5e538384c6f84a541e3a29583fb0f0ee77678457d334c6055e3432bd9808f9d",
+    "coincide": true
+  },
+  "validacion_tecnica.py": {
+    "esperado": "f91a59dc188287915a6d9c2c9f58fe5e840e2df40977a5a8b2df2503a37be52e",
+    "disponible": "f91a59dc188287915a6d9c2c9f58fe5e840e2df40977a5a8b2df2503a37be52e",
+    "coincide": true
+  }
+}

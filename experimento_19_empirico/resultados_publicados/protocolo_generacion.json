@@ -1,0 +1,151 @@
+{
+  "W": "Ventas de donante / media de ventas en su estrato; remuestreo con reemplazo.",
+  "alcance": "Heterogeneidad entre productos; NO variabilidad temporal observada de cada producto.",
+  "anexo_sha256": "9fda0f31ca72ce70927382fad2a3966de0711f9434f7ac142504e489b074e8f2",
+  "cargador_sha256": "94722ce5a7b31cbd498e11ca103f8e7f829fbe820db1b5b27769e31ceb96fa22",
+  "celdas_seleccionadas": [
+    [
+      0.8,
+      99,
+      1
+    ],
+    [
+      0.8,
+      99,
+      3
+    ],
+    [
+      0.8,
+      150,
+      1
+    ],
+    [
+      0.8,
+      150,
+      5
+    ],
+    [
+      0.8,
+      200,
+      3
+    ],
+    [
+      0.8,
+      200,
+      5
+    ],
+    [
+      1.0,
+      99,
+      3
+    ],
+    [
+      1.0,
+      99,
+      5
+    ],
+    [
+      1.0,
+      150,
+      1
+    ],
+    [
+      1.0,
+      150,
+      3
+    ],
+    [
+      1.0,
+      200,
+      1
+    ],
+    [
+      1.0,
+      200,
+      5
+    ],
+    [
+      1.2,
+      99,
+      1
+    ],
+    [
+      1.2,
+      99,
+      5
+    ],
+    [
+      1.2,
+      150,
+      3
+    ],
+    [
+      1.2,
+      150,
+      5
+    ],
+    [
+      1.2,
+      200,
+      1
+    ],
+    [
+      1.2,
+      200,
+      3
+    ],
+    [
+      1.4,
+      99,
+      1
+    ],
+    [
+      1.4,
+      99,
+      5
+    ],
+    [
+      1.4,
+      150,
+      3
+    ],
+    [
+      1.4,
+      150,
+      5
+    ],
+    [
+      1.4,
+      200,
+      1
+    ],
+    [
+      1.4,
+      200,
+      3
+    ],
+    [
+      1.4,
+      200,
+      5
+    ]
+  ],
+  "datos_temporales_observados": false,
+  "dias_conversion_nominal": 180,
+  "diseno": "Fraccion estratificada de 25 celdas x 2 capacidades x 2 matrices; sin selección por resultados.",
+  "ejecuciones_realizadas": 0,
+  "factor_calibracion": 2.3743174983554183,
+  "formula": "D_i,s = floor(d_i_base * horizonte * nivel * W_i,s + 0.5)",
+  "generador_sha256": "f8c08f1bd28cb19a2fb7d507985efb86c82d6126a4f2f51db80f6483f3418cd6",
+  "hashes_archivos_auxiliares": {
+    "base_empirica.csv": "bc341e4dcfb55fb8b2aa2873cf2717a65738c9f634166e07827832a8d0e54e80",
+    "distribucion_estratos.csv": "7aba9ea533ad39cd11e0dbc53838287b0d83896c956d01a7d398a694172a9f98",
+    "manifest.csv": "e4664dd6d8b9526dd359996758982affb91142a8b2d47bc94702a191d336c472",
+    "trazabilidad_demandas.csv": "8131ce8966ca89a376c3ccd8d6a970ee725f4a89bf9ecca548d863da3d2883eb"
+  },
+  "n_bloques_demanda": 25,
+  "n_instancias": 100,
+  "naturaleza": "remuestreo transversal estratificado",
+  "semilla": 191007,
+  "supuesto": "Los factores de referencias del mismo estrato son intercambiables para el benchmark sintético."
+}

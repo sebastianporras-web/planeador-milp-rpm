@@ -1,0 +1,401 @@
+id,metodo,estado,plan_exportado,factible_recalculado,certificado,objetivo_recalculado,demanda_pendiente,demanda,capacidad,enlace,integridad,dominio
+E057,CBC,Factible sin certificado,True,True,False,20733.235444444443,0.0,0.0,0.0,0.0,0.0,0.0
+E057,HiGHS,Factible sin certificado,True,True,False,20736.075074074077,0.0,1.4210854715202004e-14,0.0,1.4210854715202004e-14,3.623767952376511e-13,3.552713678800501e-13
+E057,Gurobi,Factible sin certificado,True,True,False,20731.828703703704,0.0,0.0,0.0,0.0,0.0,0.0
+E057,Heuristica,Heuristica completada,True,True,False,25958.9444074074,0.0,0.0,0.0,0.0,0.0,0.0
+E053,CBC,Factible sin certificado,True,True,False,20694.528055555555,0.0,0.0,0.0,0.0,0.0,0.0
+E053,HiGHS,Optimo certificado numericamente,True,True,True,20694.528055555555,0.0,0.0,0.0,0.0,0.0,0.0
+E053,Gurobi,Optimo certificado numericamente,True,True,True,20694.528055555555,0.0,0.0,0.0,0.0,0.0,0.0
+E053,Heuristica,Heuristica completada,True,True,False,24928.364944444445,0.0,0.0,0.0,0.0,0.0,0.0
+E056,CBC,Factible sin certificado,True,True,False,20387.937871786184,0.0,0.0,0.0,0.0,0.0,0.0
+E056,HiGHS,Factible sin certificado,True,True,False,20417.776847280842,4.547473508864641e-13,3.979039320256561e-13,0.0,1.4430282275636681e-13,3.979039320256561e-13,7.105427357601002e-15
+E056,Gurobi,Optimo certificado numericamente,True,True,True,20221.414897122977,0.0,0.0,0.0,0.0,0.0,0.0
+E056,Heuristica,Heuristica completada,True,True,False,25628.610397274915,0.0,0.0,0.0,0.0,0.0,0.0
+E055,CBC,Factible sin certificado,True,True,False,20713.3475,0.0,0.0,0.0,0.0,0.0,0.0
+E055,HiGHS,Factible sin certificado,True,True,False,20766.8975,0.0,0.0,0.0,9.836436604708806e-12,1.071498445526231e-11,1.1102230246251565e-15
+E055,Gurobi,Optimo certificado numericamente,True,True,True,20713.3475,0.0,0.0,0.0,0.0,0.0,0.0
+E055,Heuristica,Heuristica completada,True,True,False,24722.77527777778,0.0,0.0,0.0,0.0,0.0,0.0
+E054,CBC,Factible sin certificado,True,True,False,20541.08409081743,0.0,0.0,0.0,0.0,0.0,0.0
+E054,HiGHS,Factible sin certificado,True,True,False,20111.787694406157,0.0,0.0,0.0,0.0,0.0,0.0
+E054,Gurobi,Optimo certificado numericamente,True,True,True,20073.841387892742,0.0,0.0,0.0,0.0,0.0,0.0
+E054,Heuristica,Heuristica completada,True,True,False,25745.403787103165,0.0,0.0,0.0,0.0,0.0,0.0
+E051,CBC,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,0.0,0.0,0.0,0.0,0.0
+E051,HiGHS,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,3.552713678800501e-14,0.0,3.552713678800501e-14,3.5421568677388874e-14,4.440892098500626e-16
+E051,Gurobi,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,0.0,0.0,0.0,0.0,0.0
+E051,Heuristica,Heuristica completada,True,True,False,9001.416388888889,0.0,0.0,0.0,0.0,0.0,0.0
+E058,CBC,Factible sin certificado,True,True,False,21601.26297190925,0.0,0.0,0.0,0.0,0.0,0.0
+E058,HiGHS,Factible sin certificado,True,True,False,19989.16448230801,1.1368683772161603e-13,1.55964130499342e-12,0.0,2.364324790312806e-12,1.55964130499342e-12,1.1368683772161605e-13
+E058,Gurobi,Optimo certificado numericamente,True,True,True,19961.182154601458,0.0,0.0,0.0,0.0,0.0,0.0
+E058,Heuristica,Heuristica completada,True,True,False,25816.99148585872,0.0,0.0,0.0,0.0,0.0,0.0
+E059,CBC,Factible sin certificado,True,True,False,20793.59192592593,0.0,0.0,0.0,0.0,0.0,0.0
+E059,HiGHS,Factible sin certificado,True,True,False,20749.5422962963,0.0,0.0,0.0,9.023892744153272e-13,5.794328386541567e-13,0.0
+E059,Gurobi,Optimo certificado numericamente,True,True,True,20731.8287037037,0.0,0.0,0.0,0.0,0.0,0.0
+E059,Heuristica,Heuristica completada,True,True,False,25685.910407407406,0.0,0.0,0.0,0.0,0.0,0.0
+E060,CBC,Factible sin certificado,True,True,False,20820.958037099528,0.0,0.0,0.0,0.0,0.0,0.0
+E060,HiGHS,Factible sin certificado,True,True,False,20251.67482133554,0.0,3.552713678800501e-15,0.0,3.552713678800501e-15,2.273736754432321e-13,2.273736754432321e-13
+E060,Gurobi,Optimo certificado numericamente,True,True,True,20177.771121199705,0.0,0.0,0.0,0.0,0.0,0.0
+E060,Heuristica,Heuristica completada,True,True,False,25598.058666658384,0.0,0.0,0.0,0.0,0.0,0.0
+E052,CBC,Optimo certificado numericamente,True,True,True,6182.972828989232,0.0,0.0,0.0,0.0,0.0,0.0
+E052,HiGHS,Optimo certificado numericamente,True,True,True,6182.972828989231,0.0,5.329070518200751e-15,0.0,6.098698580431202e-13,4.423128530106624e-13,4.423128530106624e-13
+E052,Gurobi,Optimo certificado numericamente,True,True,True,6182.972828989232,0.0,0.0,0.0,0.0,0.0,0.0
+E052,Heuristica,Heuristica completada,True,True,False,9161.744323539657,0.0,0.0,0.0,0.0,0.0,0.0
+E030,CBC,Factible sin certificado,True,True,False,38327.32075046077,0.0,0.0,0.0,0.0,0.0,0.0
+E030,HiGHS,Factible sin certificado,True,True,False,34854.5593652289,0.0,2.842170943040401e-14,0.0,1.8236310251518653e-13,6.5976955985767626e-12,6.5976955985767626e-12
+E030,Gurobi,Factible sin certificado,True,True,False,34656.468912250915,0.0,0.0,0.0,0.0,0.0,0.0
+E030,Heuristica,Heuristica completada,True,True,False,45872.86698718349,0.0,0.0,0.0,0.0,0.0,0.0
+E021,CBC,Inviable demostrado,True,False,False,72411.9201421936,0.0001899999988381751,7.999999979801942e-05,411.9201169999999,1110.7566,0.4955100000000243,962.75657
+E021,HiGHS,Inviable demostrado,True,False,False,0.0,101236.0,51087.0,0.0,0.0,0.0,0.0
+E021,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E021,Heuristica,Heuristica completada,True,False,False,71950.94422751323,11198.0,180.0,0.0,0.0,0.0,0.0
+E025,CBC,Factible sin certificado,True,True,False,25930.843777777776,0.0,0.0,0.0,0.0,0.0,0.0
+E025,HiGHS,Factible sin certificado,True,True,False,25430.291555555556,0.0,0.0,0.0,0.0,1.5916157281026244e-12,0.0
+E025,Gurobi,Optimo certificado numericamente,True,True,True,25421.49044463609,6.66666721826914e-10,3.333369136271358e-10,0.0,2.278689120061017e-06,2.279022449896797e-06,2.279022449896797e-06
+E025,Heuristica,Heuristica completada,True,True,False,31856.8885,0.0,0.0,0.0,0.0,0.0,0.0
+E022,CBC,Inviable demostrado,True,False,False,72553.33868634036,4.0960000887935166e-05,5.000000010113581e-05,553.3385630519333,473.0,0.49616906,715.05854
+E022,HiGHS,Inviable demostrado,True,False,False,0.0,101236.0,51087.0,0.0,0.0,0.0,0.0
+E022,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E022,Heuristica,Heuristica completada,True,False,False,71816.65867667491,13004.0,322.0,0.0,0.0,0.0,0.0
+E027,CBC,Factible sin certificado,True,True,False,26432.420074074074,0.0,0.0,0.0,0.0,0.0,0.0
+E027,HiGHS,Factible sin certificado,True,True,False,25671.672777777774,0.0,0.0,0.0,1.1368683772161603e-13,2.3874235921539366e-12,2.3353596273874198e-12
+E027,Gurobi,Factible sin certificado,True,True,False,25655.652222222223,0.0,0.0,0.0,0.0,0.0,0.0
+E027,Heuristica,Heuristica completada,True,True,False,32208.46438888889,0.0,0.0,0.0,0.0,0.0,0.0
+E026,CBC,Factible sin certificado,True,True,False,26814.42993590258,0.0,0.0,0.0,0.0,0.0,0.0
+E026,HiGHS,Factible sin certificado,True,True,False,25465.2304207262,0.0,0.0,0.0,3.019806626980426e-14,3.0198066269804264e-14,3.0198066269804264e-14
+E026,Gurobi,Optimo certificado numericamente,True,True,True,25426.05486517065,0.0,0.0,0.0,0.0,0.0,0.0
+E026,Heuristica,Heuristica completada,True,True,False,33523.70558647063,0.0,0.0,0.0,0.0,0.0,0.0
+E029,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E029,HiGHS,Factible sin certificado,True,True,False,34632.64266666667,0.0,0.0,0.0,0.0,0.0,0.0
+E029,Gurobi,Factible sin certificado,True,True,False,34481.519629629634,0.0,0.0,0.0,0.0,0.0,0.0
+E029,Heuristica,Heuristica completada,True,True,False,45125.77890740741,0.0,0.0,0.0,0.0,0.0,0.0
+E024,CBC,Inviable demostrado,True,False,False,71301.84172908362,2085.000363659995,44.0,1101.8419571988666,2854.0034,0.4838941000000001,1750.093
+E024,HiGHS,Inviable demostrado,True,False,False,0.0,101236.0,51087.0,0.0,0.0,0.0,0.0
+E024,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E024,Heuristica,Heuristica completada,True,False,False,70182.43505708259,15605.0,462.0,0.0,0.0,0.0,0.0
+E023,CBC,Inviable demostrado,True,False,False,70770.85105884008,0.00029399999857560033,0.0002539999986765906,570.8511277499995,987.50615,0.49840953,812.9067
+E023,HiGHS,Inviable demostrado,True,False,False,0.0,101236.0,51087.0,0.0,0.0,0.0,0.0
+E023,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E023,Heuristica,Heuristica completada,True,False,False,70077.97583333333,13420.0,347.0,0.0,0.0,0.0,0.0
+E028,CBC,Factible sin certificado,True,True,False,26207.347677060403,0.0,0.0,0.0,0.0,0.0,0.0
+E028,HiGHS,Factible sin certificado,True,True,False,25676.958295682663,1.3322676295501878e-12,5.002220859751105e-12,0.0,1.3429257705865902e-12,5.115907697472721e-12,4.2710970165500005e-13
+E028,Gurobi,Factible sin certificado,True,True,False,25663.478014265955,0.0,0.0,0.0,0.0,0.0,0.0
+E028,Heuristica,Heuristica completada,True,True,False,33389.724886547396,0.0,0.0,0.0,0.0,0.0,0.0
+E038,CBC,Factible sin certificado,True,True,False,29193.08229671219,0.0,0.0,0.0,0.0,0.0,0.0
+E038,HiGHS,Factible sin certificado,True,True,False,27767.923107737966,0.0,0.0,0.0,2.842170943040401e-14,2.8421709430404014e-14,2.8421709430404014e-14
+E038,Gurobi,Factible sin certificado,True,True,False,27682.43188210005,0.0,0.0,0.0,0.0,0.0,0.0
+E038,Heuristica,Heuristica completada,True,True,False,35747.39444584974,0.0,0.0,0.0,0.0,0.0,0.0
+E039,CBC,Factible sin certificado,True,True,False,28951.46792592593,0.0,0.0,0.0,0.0,0.0,0.0
+E039,HiGHS,Factible sin certificado,True,True,False,28485.203666666668,0.0,0.0,0.0,0.0,0.0,0.0
+E039,Gurobi,Factible sin certificado,True,True,False,28390.70838888889,0.0,0.0,0.0,0.0,0.0,0.0
+E039,Heuristica,Heuristica completada,True,True,False,34630.85061111111,0.0,0.0,0.0,0.0,0.0,0.0
+E034,CBC,Factible sin certificado,True,True,False,12032.655065858526,0.0,0.0,0.0,0.0,0.0,0.0
+E034,HiGHS,Optimo certificado numericamente,True,True,True,12022.345091178162,1.7763568394002505e-15,1.7763568394002505e-15,0.0,1.5454304502782182e-13,1.1032807868857996e-12,7.396213596931541e-15
+E034,Gurobi,Optimo certificado numericamente,True,True,True,12022.34509117816,0.0,0.0,0.0,0.0,0.0,0.0
+E034,Heuristica,Heuristica completada,True,False,False,14218.941389879377,10.0,5.0,0.0,0.0,0.0,0.0
+E032,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E032,HiGHS,Factible sin certificado,True,True,False,36032.846812859025,3.552713678800501e-14,3.552713678800501e-14,0.0,6.6195323440626295e-12,9.094947017729282e-13,6.393989520307323e-13
+E032,Gurobi,Optimo certificado numericamente,True,True,True,35825.65147114906,0.0,0.0,0.0,0.0,0.0,0.0
+E032,Heuristica,Heuristica completada,True,True,False,47184.85472347083,0.0,0.0,0.0,0.0,0.0,0.0
+E035,CBC,Optimo certificado numericamente,True,True,True,12472.524666666666,0.0,0.0,0.0,0.0,0.0,0.0
+E035,HiGHS,Optimo certificado numericamente,True,True,True,12472.524666666664,6.492584248007915e-13,4.547473508864641e-13,0.0,3.5316065229264497e-13,4.547473508864641e-13,4.547473508864641e-13
+E035,Gurobi,Optimo certificado numericamente,True,True,True,12472.524666666666,0.0,0.0,0.0,0.0,0.0,0.0
+E035,Heuristica,Heuristica completada,True,False,False,13828.529277777778,208.0,8.0,0.0,0.0,0.0,0.0
+E037,CBC,Factible sin certificado,True,True,False,28658.01344444445,0.0,0.0,0.0,0.0,0.0,0.0
+E037,HiGHS,Factible sin certificado,True,True,False,28435.14783333333,2.1316282072803006e-12,1.2221335055073723e-12,0.0,2.7000623958883807e-13,1.2260517944682345e-12,1.2260517944682345e-12
+E037,Gurobi,Optimo certificado numericamente,True,True,True,28390.708388888892,0.0,0.0,0.0,0.0,0.0,0.0
+E037,Heuristica,Heuristica completada,True,True,False,34180.69922222222,0.0,0.0,0.0,0.0,0.0,0.0
+E031,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E031,HiGHS,Factible sin certificado,True,True,False,35902.510444444444,0.0,0.0,0.0,0.0,1.6201962125753076e-13,0.0
+E031,Gurobi,Optimo certificado numericamente,True,True,True,35671.41333333333,0.0,0.0,0.0,0.0,0.0,0.0
+E031,Heuristica,Heuristica completada,True,True,False,46132.59012962963,0.0,0.0,0.0,0.0,0.0,0.0
+E040,CBC,Factible sin certificado,True,True,False,30835.30709986687,0.0,0.0,0.0,0.0,0.0,0.0
+E040,HiGHS,Factible sin certificado,True,True,False,28108.45962741752,2.842170943040401e-14,2.842170943040401e-14,0.0,8.864081255120543e-14,1.8758328224066645e-11,1.8758328224066645e-11
+E040,Gurobi,Factible sin certificado,True,True,False,27985.13070117719,0.0,0.0,0.0,0.0,0.0,0.0
+E040,Heuristica,Heuristica completada,True,True,False,36191.3434960903,0.0,0.0,0.0,0.0,0.0,0.0
+E033,CBC,Optimo certificado numericamente,True,True,True,12465.473999999998,0.0,0.0,0.0,0.0,0.0,0.0
+E033,HiGHS,Optimo certificado numericamente,True,True,True,12465.473999999998,2.842170943040401e-14,3.375077994860476e-14,0.0,3.4465535388331844e-14,5.684341886080803e-14,0.0
+E033,Gurobi,Optimo certificado numericamente,True,True,True,12465.473999999998,0.0,0.0,0.0,0.0,0.0,0.0
+E033,Heuristica,Heuristica completada,True,False,False,14167.369888888888,154.0,8.0,0.0,0.0,0.0,0.0
+E036,CBC,Factible sin certificado,True,True,False,12271.715141654824,0.0,0.0,0.0,0.0,0.0,0.0
+E036,HiGHS,Optimo certificado numericamente,True,True,True,12082.269479892893,0.0,0.0,0.0,9.059419880941277e-14,7.670543066989199e-15,0.0
+E036,Gurobi,Optimo certificado numericamente,True,True,True,12082.269479892893,0.0,0.0,0.0,0.0,0.0,0.0
+E036,Heuristica,Heuristica completada,True,False,False,13869.126357834792,132.0,7.0,0.0,0.0,0.0,0.0
+E007,CBC,Factible sin certificado,True,True,False,12677.712370370371,0.0,0.0,0.0,0.0,0.0,0.0
+E007,HiGHS,Optimo certificado numericamente,True,True,True,12677.712370370376,1.007549599307822e-11,5.5138116294983774e-12,0.0,5.6203930398623925e-12,5.6203930398623925e-12,4.442732234282599e-12
+E007,Gurobi,Optimo certificado numericamente,True,True,True,12677.71237037037,0.0,0.0,0.0,0.0,0.0,0.0
+E007,Heuristica,Heuristica completada,True,True,False,17112.874555555558,0.0,0.0,0.0,0.0,0.0,0.0
+E005,CBC,Factible sin certificado,True,True,False,12677.71237037037,0.0,0.0,0.0,0.0,0.0,0.0
+E005,HiGHS,Optimo certificado numericamente,True,True,True,12677.712370370367,3.552713678800501e-15,3.552713678800501e-15,0.0,1.8966916679735412e-13,2.5011104298755527e-12,1.3547797628382438e-14
+E005,Gurobi,Optimo certificado numericamente,True,True,True,12677.71237037037,0.0,0.0,0.0,0.0,0.0,0.0
+E005,Heuristica,Heuristica completada,True,True,False,16733.221999999998,0.0,0.0,0.0,0.0,0.0,0.0
+E001,CBC,Optimo certificado numericamente,True,True,True,8966.04025925926,0.0,0.0,0.0,0.0,0.0,0.0
+E001,HiGHS,Optimo certificado numericamente,True,True,True,8966.04025925926,0.0,0.0,0.0,0.0,0.0,0.0
+E001,Gurobi,Optimo certificado numericamente,True,True,True,8966.04025925926,0.0,0.0,0.0,0.0,0.0,0.0
+E001,Heuristica,Heuristica completada,True,True,False,11794.518222222223,0.0,0.0,0.0,0.0,0.0,0.0
+E006,CBC,Factible sin certificado,True,True,False,12665.885561280507,0.0,0.0,0.0,0.0,0.0,0.0
+E006,HiGHS,Optimo certificado numericamente,True,True,True,12665.885561280505,1.7763568394002505e-14,2.842170943040401e-14,0.0,1.2473043043540472e-14,2.842170943040401e-14,4.454658229835883e-16
+E006,Gurobi,Optimo certificado numericamente,True,True,True,12665.885561280505,0.0,0.0,0.0,0.0,0.0,0.0
+E006,Heuristica,Heuristica completada,True,True,False,16534.886981692962,0.0,0.0,0.0,0.0,0.0,0.0
+E009,CBC,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,0.0,0.0,0.0
+E009,HiGHS,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,3.552713678800501e-15,3.552713678800501e-15,3.552713678800501e-15
+E009,Gurobi,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,0.0,0.0,0.0
+E009,Heuristica,Heuristica completada,True,True,False,12837.432499999999,0.0,0.0,0.0,0.0,0.0,0.0
+E008,CBC,Factible sin certificado,True,True,False,12667.26165447047,0.0,0.0,0.0,0.0,0.0,0.0
+E008,HiGHS,Optimo certificado numericamente,True,True,True,12665.885561280505,3.410605131648481e-13,1.4210854715202004e-13,0.0,1.9697159463682668e-13,3.802400698766902e-12,3.802400698766902e-12
+E008,Gurobi,Optimo certificado numericamente,True,True,True,12665.885561280505,0.0,0.0,0.0,0.0,0.0,0.0
+E008,Heuristica,Heuristica completada,True,True,False,16927.885493405487,0.0,0.0,0.0,0.0,0.0,0.0
+E004,CBC,Optimo certificado numericamente,True,True,True,9294.23876910017,0.0,0.0,0.0,0.0,0.0,0.0
+E004,HiGHS,Optimo certificado numericamente,True,True,True,9294.23876910017,0.0,0.0,0.0,0.0,0.0,0.0
+E004,Gurobi,Optimo certificado numericamente,True,True,True,9294.23876910017,0.0,0.0,0.0,0.0,0.0,0.0
+E004,Heuristica,Heuristica completada,True,True,False,11747.538694592988,0.0,0.0,0.0,0.0,0.0,0.0
+E003,CBC,Optimo certificado numericamente,True,True,True,9292.84988888889,0.0,0.0,0.0,0.0,0.0,0.0
+E003,HiGHS,Optimo certificado numericamente,True,True,True,9292.84988888889,0.0,0.0,0.0,0.0,0.0,0.0
+E003,Gurobi,Optimo certificado numericamente,True,True,True,9292.84988888889,0.0,0.0,0.0,0.0,0.0,0.0
+E003,Heuristica,Heuristica completada,True,True,False,11773.003777777778,0.0,0.0,0.0,0.0,0.0,0.0
+E002,CBC,Optimo certificado numericamente,True,True,True,8965.53312393888,0.0,0.0,0.0,0.0,0.0,0.0
+E002,HiGHS,Optimo certificado numericamente,True,True,True,8965.533123938825,4.2570391656227e-12,4.2570391656227e-12,0.0,4.549194989312452e-11,3.773514833937952e-11,4.257271618612903e-12
+E002,Gurobi,Optimo certificado numericamente,True,True,True,8965.53312393888,0.0,0.0,0.0,0.0,0.0,0.0
+E002,Heuristica,Heuristica completada,True,True,False,11765.429250148543,0.0,0.0,0.0,0.0,0.0,0.0
+E010,CBC,Optimo certificado numericamente,True,True,True,8560.764522632508,0.0,0.0,0.0,0.0,0.0,0.0
+E010,HiGHS,Optimo certificado numericamente,True,True,True,8560.764522632511,0.0,0.0,0.0,4.817216247484688e-12,4.817216247484688e-12,1.8109957977685558e-12
+E010,Gurobi,Optimo certificado numericamente,True,True,True,8560.764522632508,0.0,0.0,0.0,0.0,0.0,0.0
+E010,Heuristica,Heuristica completada,True,True,False,12190.399896845178,0.0,0.0,0.0,0.0,0.0,0.0
+E048,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E048,HiGHS,Factible sin certificado,True,True,False,59568.56560015302,2.1316282072803006e-13,2.1316282072803006e-13,0.0,6.401781470955682e-13,2.131704699064395e-13,1.1855150872140151e-14
+E048,Gurobi,Factible sin certificado,True,True,False,56606.81168604911,0.0,0.0,0.0,0.0,0.0,0.0
+E048,Heuristica,Heuristica completada,True,True,False,69458.51934176813,0.0,0.0,0.0,0.0,0.0,0.0
+E045,CBC,Factible sin certificado,True,True,False,58991.78998148148,0.0,0.0,0.0,0.0,0.0,0.0
+E045,HiGHS,Factible sin certificado,True,True,False,59502.40855555554,0.0,0.0,0.0,0.0,1.7763568394002505e-13,2.220446049250313e-16
+E045,Gurobi,Factible sin certificado,True,True,False,56366.398222222226,0.0,0.0,0.0,0.0,0.0,0.0
+E045,Heuristica,Heuristica completada,True,True,False,69591.12775925924,0.0,0.0,0.0,0.0,0.0,0.0
+E046,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E046,HiGHS,Factible sin certificado,True,True,False,58840.945612830204,0.0,7.105427357601002e-15,0.0,1.2789769243681806e-13,1.2789769243681806e-13,1.1842378929335002e-15
+E046,Gurobi,Factible sin certificado,True,True,False,55622.82432955313,0.0,0.0,0.0,0.0,0.0,0.0
+E046,Heuristica,Heuristica completada,True,True,False,69666.4753116343,0.0,0.0,0.0,0.0,0.0,0.0
+E043,CBC,Inviable demostrado,True,False,False,15459.99132449302,4.793000002578651e-05,3.0000000151630957e-05,1419.991325818302,1.0279999969498022e-05,0.45429253,0.00020609999999998685
+E043,HiGHS,Inviable demostrado,True,False,False,0.0,15286.0,3910.0,0.0,0.0,0.0,0.0
+E043,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E043,Heuristica,Heuristica completada,True,False,False,13906.25238888889,896.0,14.0,0.0,0.0,0.0,0.0
+E049,CBC,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,0.0,0.0,0.0,0.0,0.0
+E049,HiGHS,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,3.552713678800501e-14,0.0,3.552713678800501e-14,3.5421568677388874e-14,4.440892098500626e-16
+E049,Gurobi,Optimo certificado numericamente,True,True,True,6096.812740740741,0.0,0.0,0.0,0.0,0.0,0.0
+E049,Heuristica,Heuristica completada,True,True,False,9157.607555555554,0.0,0.0,0.0,0.0,0.0,0.0
+E042,CBC,Inviable demostrado,True,False,False,15188.764524717062,5.319999986497237e-05,4.9999999873762135e-05,788.7645408392923,1.0279999969498022e-05,0.4927799999999962,0.00020609999999998685
+E042,HiGHS,Inviable demostrado,True,False,False,0.0,15286.0,3910.0,0.0,0.0,0.0,0.0
+E042,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E042,Heuristica,Heuristica completada,True,False,False,14313.387196673786,644.0,12.0,0.0,0.0,0.0,0.0
+E044,CBC,Inviable demostrado,True,False,False,15517.977566770267,3.2399999923882206e-05,3.199999991920777e-05,1477.977552534534,1.0279999969498022e-05,0.448828000000006,0.00020609999999998685
+E044,HiGHS,Inviable demostrado,True,False,False,0.0,15286.0,3910.0,0.0,0.0,0.0,0.0
+E044,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E044,Heuristica,Heuristica completada,True,False,False,13958.103773755198,773.0,13.0,0.0,0.0,0.0,0.0
+E047,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E047,HiGHS,Factible sin certificado,True,True,False,58838.56435185185,0.0,0.0,0.0,0.0,4.547473508864641e-13,9.281736814602707e-15
+E047,Gurobi,Factible sin certificado,True,True,False,56934.28401851852,0.0,0.0,0.0,0.0,0.0,0.0
+E047,Heuristica,Heuristica completada,True,True,False,69126.04861904762,0.0,0.0,0.0,0.0,0.0,0.0
+E041,CBC,Inviable demostrado,True,False,False,15280.282551381051,0.0,5.000000055588316e-05,880.2824876424665,2.8319999955783715e-05,0.4484499999999798,0.00020609999999998685
+E041,HiGHS,Inviable demostrado,True,False,False,0.0,15286.0,3910.0,0.0,0.0,0.0,0.0
+E041,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E041,Heuristica,Heuristica completada,True,False,False,14264.875888888891,812.0,14.0,0.0,0.0,0.0,0.0
+E050,CBC,Optimo certificado numericamente,True,True,True,6182.972828989232,0.0,0.0,0.0,0.0,0.0,0.0
+E050,HiGHS,Optimo certificado numericamente,True,True,True,6182.972828989232,0.0,0.0,0.0,0.0,0.0,0.0
+E050,Gurobi,Optimo certificado numericamente,True,True,True,6182.972828989232,0.0,0.0,0.0,0.0,0.0,0.0
+E050,Heuristica,Heuristica completada,True,True,False,9173.84128487717,0.0,0.0,0.0,0.0,0.0,0.0
+E072,CBC,Factible sin certificado,True,True,False,38693.378763047804,0.0,0.0,0.0,0.0,0.0,0.0
+E072,HiGHS,Factible sin certificado,True,True,False,37572.041176222745,0.0,0.0,0.0,0.0,4.440892098500626e-16,4.440892098500626e-16
+E072,Gurobi,Factible sin certificado,True,True,False,37035.40372543242,0.0,0.0,0.0,0.0,0.0,0.0
+E072,Heuristica,Heuristica completada,True,False,False,41978.36510812629,335.0,23.0,0.0,0.0,0.0,0.0
+E080,CBC,Factible sin certificado,True,True,False,39173.15348612936,0.0,0.0,0.0,0.0,0.0,0.0
+E080,HiGHS,Factible sin certificado,True,True,False,38507.85290713588,0.0,0.0,0.0,0.0,0.0,0.0
+E080,Gurobi,Factible sin certificado,True,True,False,37421.315971730655,0.0,0.0,0.0,0.0,0.0,0.0
+E080,Heuristica,Heuristica completada,True,True,False,46143.12252234725,0.0,0.0,0.0,0.0,0.0,0.0
+E074,CBC,Optimo certificado numericamente,True,True,True,6369.671345100203,0.0,0.0,0.0,0.0,0.0,0.0
+E074,HiGHS,Optimo certificado numericamente,True,True,True,6369.671345100203,0.0,0.0,0.0,3.752553823233029e-14,2.886579864025407e-15,2.886579864025407e-15
+E074,Gurobi,Optimo certificado numericamente,True,True,True,6369.671345100203,0.0,0.0,0.0,0.0,0.0,0.0
+E074,Heuristica,Heuristica completada,True,True,False,9689.244685946687,0.0,0.0,0.0,0.0,0.0,0.0
+E077,CBC,Factible sin certificado,True,True,False,38556.52440740741,0.0,0.0,0.0,0.0,0.0,0.0
+E077,HiGHS,Factible sin certificado,True,True,False,37778.611666666664,8.526512829121202e-14,2.2737367544323206e-13,0.0,1.50164465930808e-13,2.273736754432321e-13,1.50164465930808e-13
+E077,Gurobi,Optimo certificado numericamente,True,True,True,37715.84166666667,0.0,0.0,0.0,0.0,0.0,0.0
+E077,Heuristica,Heuristica completada,True,True,False,45429.75266666667,0.0,0.0,0.0,0.0,0.0,0.0
+E079,CBC,Factible sin certificado,True,True,False,39668.32596296296,0.0,0.0,0.0,0.0,0.0,0.0
+E079,HiGHS,Factible sin certificado,True,True,False,37808.96055555555,2.6361135496699717e-12,1.8189894035458565e-12,0.0,4.547473508864641e-13,9.094947017729282e-13,1.1487917944197901e-13
+E079,Gurobi,Optimo certificado numericamente,True,True,True,37715.84166666667,0.0,0.0,0.0,0.0,0.0,0.0
+E079,Heuristica,Heuristica completada,True,True,False,45812.52255555555,0.0,0.0,0.0,0.0,0.0,0.0
+E078,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E078,HiGHS,Factible sin certificado,True,True,False,37654.63173913777,0.0,2.842170943040401e-14,0.0,1.4210854715202004e-14,1.8900436771218665e-12,2.220446049250313e-16
+E078,Gurobi,Factible sin certificado,True,True,False,37201.89305610049,0.0,0.0,0.0,0.0,0.0,0.0
+E078,Heuristica,Heuristica completada,True,True,False,46528.41415602196,0.0,0.0,0.0,0.0,0.0,0.0
+E073,CBC,Optimo certificado numericamente,True,True,True,6456.945703703705,0.0,0.0,0.0,0.0,0.0,0.0
+E073,HiGHS,Optimo certificado numericamente,True,True,True,6456.945703703705,0.0,0.0,0.0,3.552713678800501e-15,2.220446049250313e-16,0.0
+E073,Gurobi,Optimo certificado numericamente,True,True,True,6456.945703703705,0.0,0.0,0.0,0.0,0.0,0.0
+E073,Heuristica,Heuristica completada,True,True,False,9457.775555555556,0.0,0.0,0.0,0.0,0.0,0.0
+E076,CBC,Optimo certificado numericamente,True,True,True,6391.074904138865,0.0,0.0,0.0,0.0,0.0,0.0
+E076,HiGHS,Optimo certificado numericamente,True,True,True,6391.074904138865,3.197442310920451e-14,3.197442310920451e-14,0.0,1.7763568394002505e-15,2.540190280342358e-13,0.0
+E076,Gurobi,Optimo certificado numericamente,True,True,True,6391.074904138865,0.0,0.0,0.0,0.0,0.0,0.0
+E076,Heuristica,Heuristica completada,True,True,False,9638.57316487389,0.0,0.0,0.0,0.0,0.0,0.0
+E071,CBC,Factible sin certificado,True,True,False,39097.825500000006,0.0,0.0,0.0,0.0,0.0,0.0
+E071,HiGHS,Factible sin certificado,True,True,False,38263.67842592593,0.0,1.1368683772161603e-13,0.0,0.0,1.1368683772161603e-13,3.7140645771000044e-14
+E071,Gurobi,Factible sin certificado,True,True,False,37878.25007407408,0.0,0.0,0.0,0.0,0.0,0.0
+E071,Heuristica,Heuristica completada,True,False,False,41909.48322222222,1232.0,33.0,0.0,0.0,0.0,0.0
+E075,CBC,Optimo certificado numericamente,True,True,True,6456.945703703705,0.0,0.0,0.0,0.0,0.0,0.0
+E075,HiGHS,Optimo certificado numericamente,True,True,True,6456.945703703705,3.552713678800501e-15,3.552713678800501e-15,0.0,4.263256414560601e-14,1.4988010832439613e-13,1.4988010832439613e-13
+E075,Gurobi,Optimo certificado numericamente,True,True,True,6456.945703703705,0.0,0.0,0.0,0.0,0.0,0.0
+E075,Heuristica,Heuristica completada,True,True,False,9476.999555555554,0.0,0.0,0.0,0.0,0.0,0.0
+E085,CBC,Factible sin certificado,True,True,False,54819.36614814815,0.0,0.0,0.0,0.0,0.0,0.0
+E085,HiGHS,Sin incumbente al limite,True,False,False,0.0,79823.0,14547.0,0.0,0.0,0.0,0.0
+E085,Gurobi,Factible sin certificado,True,True,False,53099.12087037037,0.0,0.0,0.0,0.0,0.0,0.0
+E085,Heuristica,Heuristica completada,True,True,False,64315.13909259259,0.0,0.0,0.0,0.0,0.0,0.0
+E090,CBC,Inviable demostrado,True,False,False,16438.07501072716,7.000000299999996,7.0,2038.0749644906227,12.0,0.49696841,0.0
+E090,HiGHS,Inviable demostrado,True,False,False,0.0,16536.0,2521.0,0.0,0.0,0.0,0.0
+E090,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E090,Heuristica,Heuristica completada,True,False,False,14314.798119188788,1202.0,20.0,0.0,0.0,0.0,0.0
+E089,CBC,Inviable demostrado,True,False,False,16134.677393656479,61.00001099999997,8.0,1734.6773997559403,27.0,0.4718000000000302,0.0
+E089,HiGHS,Inviable demostrado,True,False,False,0.0,16536.0,2521.0,0.0,0.0,0.0,0.0
+E089,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E089,Heuristica,Heuristica completada,True,False,False,14280.809000000001,1364.0,22.0,0.0,0.0,0.0,0.0
+E087,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E087,HiGHS,Sin incumbente al limite,True,False,False,0.0,79823.0,14547.0,0.0,0.0,0.0,0.0
+E087,Gurobi,Factible sin certificado,True,True,False,53981.94188888889,0.0,0.0,0.0,0.0,0.0,0.0
+E087,Heuristica,Heuristica completada,True,True,False,64302.8792962963,0.0,0.0,0.0,0.0,0.0,0.0
+E083,CBC,Factible sin certificado,True,True,False,37875.26935185184,0.0,0.0,0.0,0.0,0.0,0.0
+E083,HiGHS,Factible sin certificado,True,True,False,35588.988796296275,9.094947017729282e-13,9.094947017729282e-13,0.0,3.715587846660725e-10,3.715587846660725e-10,3.101743263038594e-13
+E083,Gurobi,Factible sin certificado,True,True,False,35367.698722222216,0.0,0.0,0.0,0.0,0.0,0.0
+E083,Heuristica,Heuristica completada,True,True,False,41408.70864814815,0.0,0.0,0.0,0.0,0.0,0.0
+E084,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E084,HiGHS,Factible sin certificado,True,True,False,37528.24531172728,0.0,0.0,0.0,0.0,0.0,0.0
+E084,Gurobi,Factible sin certificado,True,True,False,35821.078358322266,0.0,0.0,0.0,0.0,0.0,0.0
+E084,Heuristica,Heuristica completada,True,False,False,42065.26176578226,460.0,29.0,0.0,0.0,0.0,0.0
+E088,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E088,HiGHS,Factible sin certificado,True,True,False,57639.45139898315,0.0,0.0,0.0,0.0,0.0,0.0
+E088,Gurobi,Factible sin certificado,True,True,False,53634.04724918015,0.0,0.0,0.0,0.0,0.0,0.0
+E088,Heuristica,Heuristica completada,True,True,False,65454.11878107414,0.0,0.0,0.0,0.0,0.0,0.0
+E082,CBC,Factible sin certificado,True,True,False,36735.60534396242,0.0,0.0,0.0,0.0,0.0,0.0
+E082,HiGHS,Factible sin certificado,True,True,False,35790.39695952958,0.0,0.0,0.0,0.0,0.0,0.0
+E082,Gurobi,Factible sin certificado,True,True,False,35047.47239766824,0.0,0.0,0.0,0.0,0.0,0.0
+E082,Heuristica,Heuristica completada,True,True,False,42210.38967800773,0.0,0.0,0.0,0.0,0.0,0.0
+E086,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E086,HiGHS,Factible sin certificado,True,True,False,56170.99806216849,4.973799150320701e-14,4.973799150320701e-14,0.0,0.0,4.96269692007445e-14,0.0
+E086,Gurobi,Factible sin certificado,True,True,False,52615.86925435267,0.0,0.0,0.0,0.0,0.0,0.0
+E086,Heuristica,Heuristica completada,True,True,False,65352.68754682168,0.0,0.0,0.0,0.0,0.0,0.0
+E081,CBC,Factible sin certificado,True,True,False,36268.39420370371,0.0,0.0,0.0,0.0,0.0,0.0
+E081,HiGHS,Factible sin certificado,True,True,False,35080.79511111112,0.0,2.842170943040401e-14,0.0,3.240933033782072e-14,2.432898327242583e-11,2.8421709430404014e-14
+E081,Gurobi,Factible sin certificado,True,True,False,34513.38233333333,0.0,0.0,0.0,0.0,0.0,0.0
+E081,Heuristica,Heuristica completada,True,True,False,41405.22303703704,0.0,0.0,0.0,0.0,0.0,0.0
+E063,CBC,Factible sin certificado,True,True,False,44350.02766666666,0.0,0.0,0.0,0.0,0.0,0.0
+E063,HiGHS,Factible sin certificado,True,True,False,44213.134333333335,0.0,0.0,0.0,9.724421138277105e-14,2.2737367544323206e-13,3.0013645488509583e-16
+E063,Gurobi,Factible sin certificado,True,True,False,43489.14744444445,0.0,0.0,0.0,0.0,0.0,0.0
+E063,Heuristica,Heuristica completada,True,True,False,53450.213425925926,0.0,0.0,0.0,0.0,0.0,0.0
+E061,CBC,Factible sin certificado,True,True,False,44201.28788888889,0.0,0.0,0.0,0.0,0.0,0.0
+E061,HiGHS,Factible sin certificado,True,True,False,43937.32898148148,1.4210854715202004e-14,1.4210854715202004e-14,0.0,0.0,1.4210854715202004e-14,1.4210854715202004e-14
+E061,Gurobi,Factible sin certificado,True,True,False,43308.65416666667,0.0,0.0,0.0,0.0,0.0,0.0
+E061,Heuristica,Heuristica completada,True,True,False,54233.49179629629,0.0,0.0,0.0,0.0,0.0,0.0
+E066,CBC,Inviable demostrado,True,False,False,24098.41722181908,306.00000929999976,14.0,9698.417241268873,134.0,0.4989100000000235,0.9155709000000001
+E066,HiGHS,Inviable demostrado,True,False,False,0.0,28035.0,4946.0,0.0,0.0,0.0,0.0
+E066,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E066,Heuristica,Heuristica completada,True,False,False,14396.554632718515,8764.0,508.0,0.0,0.0,0.0,0.0
+E062,CBC,Factible sin certificado,True,True,False,44589.26519172818,0.0,0.0,0.0,0.0,0.0,0.0
+E062,HiGHS,Factible sin certificado,True,True,False,43965.32562945419,0.0,2.2737367544323206e-13,0.0,8.4343573276966e-13,4.547473508864641e-13,8.881784197001252e-16
+E062,Gurobi,Factible sin certificado,True,True,False,43440.74480813758,0.0,0.0,0.0,0.0,0.0,0.0
+E062,Heuristica,Heuristica completada,True,True,False,52594.86983293991,0.0,0.0,0.0,0.0,0.0,0.0
+E069,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E069,HiGHS,Sin incumbente al limite,True,False,False,0.0,50673.0,7539.0,0.0,0.0,0.0,0.0
+E069,Gurobi,Factible sin certificado,True,True,False,37684.8932962963,0.0,0.0,0.0,0.0,0.0,0.0
+E069,Heuristica,Heuristica completada,True,False,False,43026.13146296296,729.0,27.0,0.0,0.0,0.0,0.0
+E064,CBC,Factible sin certificado,True,True,False,47783.224736306336,0.0,0.0,0.0,0.0,0.0,0.0
+E064,HiGHS,Factible sin certificado,True,True,False,44667.41810186461,0.0,0.0,0.0,0.0,1.364012149389598e-16,0.0
+E064,Gurobi,Factible sin certificado,True,True,False,44047.31960724096,0.0,0.0,0.0,0.0,0.0,0.0
+E064,Heuristica,Heuristica completada,True,True,False,52982.1439463035,0.0,0.0,0.0,0.0,0.0,0.0
+E068,CBC,Inviable demostrado,True,False,False,24203.1748944328,411.0000103999997,17.0,10163.174908810975,134.0,0.47534595999999996,0.9155709000000001
+E068,HiGHS,Inviable demostrado,True,False,False,0.0,28035.0,4946.0,0.0,0.0,0.0,0.0
+E068,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E068,Heuristica,Heuristica completada,True,False,False,14035.917702288994,9236.0,528.0,0.0,0.0,0.0,0.0
+E065,CBC,Inviable demostrado,True,False,False,24972.88067063532,3.090000015504302e-05,3.0000000151630957e-05,10572.880688395833,260.0,0.48821683000000005,1.0188248999999998
+E065,HiGHS,Inviable demostrado,True,False,False,0.0,28035.0,4946.0,0.0,0.0,0.0,0.0
+E065,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E065,Heuristica,Heuristica completada,True,False,False,14396.283037037038,8870.0,528.0,0.0,0.0,0.0,0.0
+E067,CBC,Inviable demostrado,True,False,False,18681.04885464206,2541.933251,134.0,4641.048894010961,260.0,0.4848500000000513,0.05982899999999991
+E067,HiGHS,Inviable demostrado,True,False,False,0.0,28035.0,4946.0,0.0,0.0,0.0,0.0
+E067,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E067,Heuristica,Heuristica completada,True,False,False,14035.882111111112,9359.0,528.0,0.0,0.0,0.0,0.0
+E070,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E070,HiGHS,Factible sin certificado,True,True,False,37971.17123366503,0.0,0.0,0.0,0.0,0.0,0.0
+E070,Gurobi,Factible sin certificado,True,True,False,36841.079639980744,0.0,0.0,0.0,0.0,0.0,0.0
+E070,Heuristica,Heuristica completada,True,True,False,42878.59165170571,0.0,0.0,0.0,0.0,0.0,0.0
+E099,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E099,HiGHS,Factible sin certificado,True,True,False,51960.22885185185,0.0,0.0,0.0,2.1207175378398754e-13,7.815970093361102e-14,4.327994975183419e-15
+E099,Gurobi,Factible sin certificado,True,True,False,49685.625907407404,0.0,0.0,0.0,0.0,0.0,0.0
+E099,Heuristica,Heuristica completada,True,True,False,60350.2712989418,0.0,0.0,0.0,0.0,0.0,0.0
+E098,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E098,HiGHS,Factible sin certificado,True,True,False,51603.479637971155,0.0,0.0,0.0,0.0,0.0,0.0
+E098,Gurobi,Factible sin certificado,True,True,False,49448.82432114976,0.0,0.0,0.0,0.0,0.0,0.0
+E098,Heuristica,Heuristica completada,True,True,False,60600.63186529859,0.0,0.0,0.0,0.0,0.0,0.0
+E097,CBC,Factible sin certificado,True,True,False,51039.4937037037,0.0,0.0,0.0,0.0,0.0,0.0
+E097,HiGHS,Factible sin certificado,True,True,False,51032.715351851846,0.0,0.0,0.0,0.0,0.0,0.0
+E097,Gurobi,Factible sin certificado,True,True,False,49596.64435185185,0.0,0.0,0.0,0.0,0.0,0.0
+E097,Heuristica,Heuristica completada,True,True,False,59623.76673015873,0.0,0.0,0.0,0.0,0.0,0.0
+E091,CBC,Inviable demostrado,True,False,False,16003.901022551685,85.00008050000002,8.0,1963.9010765709777,27.0,0.47565744,0.0
+E091,HiGHS,Inviable demostrado,True,False,False,0.0,16536.0,2521.0,0.0,0.0,0.0,0.0
+E091,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E091,Heuristica,Heuristica completada,True,False,False,14005.620222222222,1514.0,24.0,0.0,0.0,0.0,0.0
+E092,CBC,Inviable demostrado,True,False,False,16488.902304973457,28.000031000000163,7.0,2448.9023295067113,15.0,0.4927703000000001,0.0
+E092,HiGHS,Inviable demostrado,True,False,False,0.0,16536.0,2521.0,0.0,0.0,0.0,0.0
+E092,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E092,Heuristica,Heuristica completada,True,False,False,13951.204125581658,1409.0,23.0,0.0,0.0,0.0,0.0
+E093,CBC,Inviable demostrado,True,False,False,56232.87293729441,2323.00010072,133.0,13032.872916516673,607.0,0.49632288,1.628323
+E093,HiGHS,Inviable demostrado,True,False,False,0.0,77174.0,30681.0,0.0,0.0,0.0,0.0
+E093,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E093,Heuristica,Heuristica completada,True,False,False,43166.58617460316,23941.0,1910.0,0.0,0.0,0.0,0.0
+E096,CBC,Inviable demostrado,True,False,False,50900.36633939542,9224.000004649999,273.0,8780.366296715798,4104.5633,0.49931441,1.9434597
+E096,HiGHS,Inviable demostrado,True,False,False,0.0,77174.0,30681.0,0.0,0.0,0.0,0.0
+E096,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E096,Heuristica,Heuristica completada,True,False,False,42110.65882632708,26832.0,1913.0,0.0,0.0,0.0,0.0
+E095,CBC,Inviable demostrado,True,False,False,42119.99954915763,0.00045346000095491945,0.00041182000131811947,2.3534333195129875e-05,24370.719,0.49972114,37092.0
+E095,HiGHS,Inviable demostrado,True,False,False,0.0,77174.0,30681.0,0.0,0.0,0.0,0.0
+E095,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E095,Heuristica,Heuristica completada,True,False,False,42109.2567037037,27374.0,1913.0,0.0,0.0,0.0,0.0
+E094,CBC,Inviable demostrado,True,False,False,50890.69397734583,8096.000019,139.0,7690.693913455974,4181.4323,0.49524691,0.00030920000000000947
+E094,HiGHS,Inviable demostrado,True,False,False,0.0,77174.0,30681.0,0.0,0.0,0.0,0.0
+E094,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E094,Heuristica,Heuristica completada,True,False,False,43189.637609098616,24281.0,1910.0,0.0,0.0,0.0,0.0
+E100,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E100,HiGHS,Sin incumbente al limite,True,False,False,0.0,69892.0,14659.0,0.0,0.0,0.0,0.0
+E100,Gurobi,Factible sin certificado,True,True,False,49860.61909566915,0.0,0.0,0.0,0.0,0.0,0.0
+E100,Heuristica,Heuristica completada,True,True,False,61274.92000917358,0.0,0.0,0.0,0.0,0.0,0.0
+E019,CBC,Inviable demostrado,True,False,False,42415.22030903327,0.00016700000213631938,6.000000212225132e-05,295.2203756162444,473.76985,0.49117880999999997,419.59026
+E019,HiGHS,Inviable demostrado,True,False,False,0.0,58103.0,30652.0,0.0,0.0,0.0,0.0
+E019,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E019,Heuristica,Heuristica completada,True,False,False,42050.7575978836,7582.0,155.0,0.0,0.0,0.0,0.0
+E017,CBC,Inviable demostrado,True,False,False,43523.12506074961,0.00012099999815973206,6.999999823165126e-05,323.125113297222,102.0,0.4946499999999787,511.89486
+E017,HiGHS,Inviable demostrado,True,False,False,0.0,58103.0,30652.0,0.0,0.0,0.0,0.0
+E017,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E017,Heuristica,Heuristica completada,True,False,False,43062.75458201059,5788.0,82.0,0.0,0.0,0.0,0.0
+E012,CBC,Optimo certificado numericamente,True,True,True,8728.735468599407,0.0,0.0,0.0,0.0,0.0,0.0
+E012,HiGHS,Optimo certificado numericamente,True,True,True,8728.735468599407,0.0,0.0,0.0,0.0,0.0,0.0
+E012,Gurobi,Optimo certificado numericamente,True,True,True,8728.735468599407,0.0,0.0,0.0,0.0,0.0,0.0
+E012,Heuristica,Heuristica completada,True,True,False,12143.784577444272,0.0,0.0,0.0,0.0,0.0,0.0
+E015,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E015,HiGHS,Factible sin certificado,True,True,False,51000.429,0.0,2.0605739337042905e-13,0.0,2.0525206409118242e-13,2.0525206409118242e-13,8.223192048731808e-14
+E015,Gurobi,Factible sin certificado,True,True,False,50558.841166666665,0.0,0.0,0.0,0.0,0.0,0.0
+E015,Heuristica,Heuristica completada,True,True,False,59253.4932037037,0.0,0.0,0.0,0.0,0.0,0.0
+E020,CBC,Inviable demostrado,True,False,False,42452.51488662605,63.000008200000025,13.0,332.51482227533825,399.05842,0.49889000000001715,308.05842
+E020,HiGHS,Inviable demostrado,True,False,False,0.0,58103.0,30652.0,0.0,0.0,0.0,0.0
+E020,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E020,Heuristica,Heuristica completada,True,False,False,42085.180387044515,7269.0,143.0,0.0,0.0,0.0,0.0
+E018,CBC,Inviable demostrado,True,False,False,43461.16833984977,0.00011000000040439772,6.000000030326191e-05,261.16838971811626,202.08088,0.46851055,357.34867
+E018,HiGHS,Inviable demostrado,True,False,False,0.0,58103.0,30652.0,0.0,0.0,0.0,0.0
+E018,Gurobi,Inviable demostrado,False,False,False,,,,,,,
+E018,Heuristica,Heuristica completada,True,False,False,43097.228204651685,5635.0,81.0,0.0,0.0,0.0,0.0
+E014,CBC,Factible sin certificado,True,True,False,53319.241776676594,0.0,0.0,0.0,0.0,0.0,0.0
+E014,HiGHS,Factible sin certificado,True,True,False,50430.48969535185,0.0,0.0,0.0,1.9895196601282805e-13,2.55351295663786e-15,0.0
+E014,Gurobi,Factible sin certificado,True,True,False,50000.110171840875,0.0,0.0,0.0,0.0,0.0,0.0
+E014,Heuristica,Heuristica completada,True,True,False,61224.18125878397,0.0,0.0,0.0,0.0,0.0,0.0
+E011,CBC,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,0.0,0.0,0.0
+E011,HiGHS,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,0.0,0.0,0.0
+E011,Gurobi,Optimo certificado numericamente,True,True,True,8984.65487037037,0.0,0.0,0.0,0.0,0.0,0.0
+E011,Heuristica,Heuristica completada,True,True,False,12617.407722222222,0.0,0.0,0.0,0.0,0.0,0.0
+E013,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E013,HiGHS,Factible sin certificado,True,True,False,50527.37677777777,0.0,0.0,0.0,0.0,0.0,0.0
+E013,Gurobi,Factible sin certificado,True,True,False,50109.06394444444,0.0,0.0,0.0,0.0,0.0,0.0
+E013,Heuristica,Heuristica completada,True,True,False,58115.9055,0.0,0.0,0.0,0.0,0.0,0.0
+E016,CBC,Sin incumbente al limite,False,False,False,,,,,,,
+E016,HiGHS,Factible sin certificado,True,True,False,51705.18410683921,0.0,0.0,0.0,0.0,0.0,0.0
+E016,Gurobi,Factible sin certificado,True,True,False,50625.90314220076,0.0,0.0,0.0,0.0,0.0,0.0
+E016,Heuristica,Heuristica completada,True,True,False,62096.28119421622,0.0,0.0,0.0,0.0,0.0,0.0

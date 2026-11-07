@@ -1,0 +1,4 @@
+metodo,programadas,certificadas,factibles,inviables_demostradas,tiempo_certificado_mediana_s,GAP_max_pct,proporcion_certificada
+CBC,100,18,57,24,4.381739882999909,10.287754722363067,0.18
+Gurobi,100,38,76,24,0.9530210635000742,0.4606889773965262,0.38
+HiGHS,100,25,72,24,5.255715125999998,7.293983808177768,0.25
