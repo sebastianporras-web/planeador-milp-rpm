@@ -14,3 +14,7 @@ No usar Volver a ejecutar todos los trabajos para iniciar el conjunto completo d
 Los Secrets existentes WLSACCESSID, WLSSECRET y LICENSEID siguen en GitHub; no se copian al código ni se comparten. La app mantiene su configuración operativa. Las dependencias experimentales permanecen fijadas en experimento_19/requirements.txt.
 
 El protocolo describe el supuesto de intercambio entre referencias del mismo estrato. La falta de fechas no se soluciona inventando ventas. La aceptación académica de ese alcance corresponde al director. El issue no se cierra antes de auditar resultados y ajustar la tesis y la presentación.
+
+## Arranque automático controlado
+
+Los commits normales sobre este módulo ejecutan solo verificar. Un commit cuyo mensaje incluye [estudio100 completo] inicia el mismo alcance completo que la ejecución manual. El arranque se hace una sola vez después de validar código, manifiesto y protocolo. No repetir esa etiqueta para obtener un resultado más favorable.
