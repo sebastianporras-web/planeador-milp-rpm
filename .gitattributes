@@ -2,3 +2,7 @@ evidencia_estudio/** -text
 monte_carlo_reference.json -text
 *.zip binary
 *.xlsx binary
+
+# Preservar hashes del estudio transversal en Windows y Linux.
+experimento_19_empirico/** -text
+.github/workflows/experimento-19-empirico.yml text eol=lf
