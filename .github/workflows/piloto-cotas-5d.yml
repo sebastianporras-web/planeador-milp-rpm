@@ -1,0 +1,118 @@
+name: Diagnostico de cota E029 cinco dias
+on:
+  push:
+    branches: [piloto-optimizacion-cotas-5d]
+    paths:
+      - 'experimento_19_empirico/piloto_cotas_5d.py'
+      - 'experimento_19_empirico/solver_benchmark.py'
+      - '.github/workflows/piloto-cotas-5d.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: piloto-cotas-5d
+  cancel-in-progress: false
+jobs:
+  preparar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - name: Generar y comparar entradas
+        run: |
+          python experimento_19_empirico/generar_instancias.py --salida entradas_100
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          a = Path('entradas_100/manifest.csv').read_bytes()
+          b = Path('experimento_19_empirico/entradas_publicadas/manifest.csv').read_bytes()
+          if hashlib.sha256(a).digest() != hashlib.sha256(b).digest():
+              raise SystemExit('Manifiesto distinto del experimento original')
+          PY
+          python experimento_19_empirico/piloto_cotas_5d.py \
+            --entradas entradas_100 --salida revision --id E029 \
+            --perfil foco2 --solo-modelo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: entradas-cota-${{ github.run_id }}
+          path: entradas_100/
+          retention-days: 90
+  resolver:
+    needs: preparar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        perfil: [foco2, foco3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-cota-${{ github.run_id }}
+          path: entradas_100
+      - name: Registrar entorno
+        run: |
+          mkdir -p resultado
+          python -m pip freeze > resultado/dependencias.txt
+          lscpu > resultado/cpu.txt
+          free -b > resultado/memoria.txt
+      - name: Resolver y medir holguras
+        env:
+          WLSACCESSID: ${{ secrets.WLSACCESSID }}
+          WLSSECRET: ${{ secrets.WLSSECRET }}
+          LICENSEID: ${{ secrets.LICENSEID }}
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python experimento_19_empirico/piloto_cotas_5d.py \
+            --entradas entradas_100 --salida resultado --id E029 \
+            --perfil '${{ matrix.perfil }}' --limite 1800
+      - name: Guardar resultados y registro nativo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cotas-E029-${{ matrix.perfil }}-${{ github.run_id }}
+          path: resultado/
+          retention-days: 90
+          if-no-files-found: error
+  resumir:
+    needs: [preparar, resolver]
+    if: ${{ always() && needs.preparar.result == 'success' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cotas-E029-*-${{ github.run_id }}
+          path: bloques
+      - name: Comparar perfiles sin declarar certificados ausentes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          filas = sorted(Path('bloques').glob('*/resultado.json'))
+          if len(filas) != 2:
+              raise SystemExit(f'Se esperaban dos perfiles, llegaron {len(filas)}')
+          for archivo in filas:
+              r = json.loads(archivo.read_text(encoding='utf-8'))
+              print(r['id'], r['perfil'], 'certificado=', r['certificado'],
+                    'factible=', r['factible'], 'GAP=', r['GAP_pct'],
+                    'nodos=', r['nodos'], 'segundos=', r['segundos_resolver'])
+              print('Holguras:', {k: (v['activas_en_incumbente'], v['total'])
+                                     for k, v in (r.get('holguras') or {}).items()})
+          PY
