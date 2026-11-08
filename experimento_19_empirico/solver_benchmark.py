@@ -90,6 +90,8 @@ def resolver(prob, nombre, log, threads=1, seed=42, perfil='base', limite=None):
                     OutputFlag=1, LogToConsole=0)
         if perfil == 'agresivo':
             opts.update(MIPFocus=3, Cuts=2, Symmetry=2, Presolve=2)
+        elif perfil == 'foco2':
+            opts.update(MIPFocus=2, Cuts=2, Symmetry=2, Presolve=2)
         solver = pulp.GUROBI(env=env, msg=True, warmStart=warm, timeLimit=limite,
                              logPath=str(log), **opts)
     else:
