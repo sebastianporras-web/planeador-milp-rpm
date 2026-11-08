@@ -1,0 +1,233 @@
+name: Estudio consolidado de cien instancias
+on:
+  push:
+    branches: [estudio-100-estratificado]
+    paths:
+      - 'experimento_19_empirico/ejecutar_estratificado.py'
+      - 'experimento_19_empirico/extension_certificacion_5d.py'
+      - 'experimento_19_empirico/consolidar_estratificado.py'
+      - '.github/workflows/estudio-100-estratificado.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: estudio-100-estratificado
+  cancel-in-progress: false
+jobs:
+  preparar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - name: Probar y regenerar entradas originales
+        run: |
+          python -m pytest experimento_19_empirico/test_estudio.py -q
+          python experimento_19_empirico/generar_instancias.py --salida entradas_100
+          python - <<'PY'
+          from pathlib import Path
+          import csv, hashlib
+          a = Path('entradas_100/manifest.csv').read_bytes()
+          b = Path('experimento_19_empirico/entradas_publicadas/manifest.csv').read_bytes()
+          assert hashlib.sha256(a).digest() == hashlib.sha256(b).digest(), 'Manifiesto cambiado'
+          with Path('entradas_100/manifest.csv').open(encoding='utf-8', newline='') as f:
+              filas = list(csv.DictReader(f))
+          assert len(filas) == 100
+          assert sum(int(r['horizonte_dias']) == 5 for r in filas) == 36
+          assert sum(int(r['horizonte_dias']) == 5 and int(r['referencias_solicitadas']) in (150, 200) for r in filas) == 24
+          PY
+          python experimento_19_empirico/extension_certificacion_5d.py \
+            --entradas entradas_100 --salida revision --id E014 \
+            --perfil reforzado --solo-modelo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100/
+          retention-days: 90
+  heuristica:
+    needs: preparar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100
+      - name: Resolver cien referencias heurísticas
+        run: |
+          python experimento_19_empirico/ejecutar_estratificado.py \
+            --instancias entradas_100 --salida resultado --metodo Heuristica
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estratificado-Heuristica-base-${{ github.run_id }}
+          path: resultado/
+          retention-days: 90
+  libres:
+    needs: preparar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 270
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        bloque: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        metodo: [CBC, HiGHS]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100
+      - name: Registrar entorno
+        run: |
+          mkdir -p resultado
+          python -m pip freeze > resultado/dependencias.txt
+          lscpu > resultado/cpu.txt
+      - name: Resolver bloque sin inicio heredado
+        run: |
+          python experimento_19_empirico/ejecutar_estratificado.py \
+            --instancias entradas_100 --salida resultado \
+            --metodo '${{ matrix.metodo }}' --bloque '${{ matrix.bloque }}'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estratificado-${{ matrix.metodo }}-base-b${{ matrix.bloque }}-${{ github.run_id }}
+          path: resultado/
+          retention-days: 90
+  gurobi_base:
+    needs: preparar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 270
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        bloque: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100
+      - name: Registrar entorno
+        run: |
+          mkdir -p resultado
+          python -m pip freeze > resultado/dependencias.txt
+          lscpu > resultado/cpu.txt
+      - name: Resolver bloque con Gurobi
+        env:
+          WLSACCESSID: ${{ secrets.WLSACCESSID }}
+          WLSSECRET: ${{ secrets.WLSSECRET }}
+          LICENSEID: ${{ secrets.LICENSEID }}
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python experimento_19_empirico/ejecutar_estratificado.py \
+            --instancias entradas_100 --salida resultado \
+            --metodo Gurobi --bloque '${{ matrix.bloque }}'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estratificado-Gurobi-base-b${{ matrix.bloque }}-${{ github.run_id }}
+          path: resultado/
+          retention-days: 90
+  gurobi_reforzado:
+    needs: [preparar, gurobi_base]
+    if: ${{ always() && needs.preparar.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        bloque: [1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimento_19/requirements.txt
+      - run: python -m pip install -r experimento_19/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100
+      - name: Registrar entorno
+        run: |
+          mkdir -p resultado
+          python -m pip freeze > resultado/dependencias.txt
+          lscpu > resultado/cpu.txt
+      - name: Resolver tres casos grandes de cinco días
+        env:
+          WLSACCESSID: ${{ secrets.WLSACCESSID }}
+          WLSSECRET: ${{ secrets.WLSSECRET }}
+          LICENSEID: ${{ secrets.LICENSEID }}
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          python experimento_19_empirico/ejecutar_estratificado.py \
+            --instancias entradas_100 --salida resultado \
+            --metodo Gurobi_reforzado --bloque '${{ matrix.bloque }}'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estratificado-Gurobi-ref-b${{ matrix.bloque }}-${{ github.run_id }}
+          path: resultado/
+          retention-days: 90
+  resumir:
+    needs: [preparar, heuristica, libres, gurobi_base, gurobi_reforzado]
+    if: ${{ always() && needs.preparar.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: entradas-estratificado-${{ github.run_id }}
+          path: entradas_100
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: estratificado-*-${{ github.run_id }}
+          path: bloques
+      - name: Verificar 400 registros y 24 análisis adicionales
+        run: |
+          python experimento_19_empirico/consolidar_estratificado.py \
+            --instancias entradas_100 --bloques bloques --salida consolidado
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidado-100-${{ github.run_id }}
+          path: consolidado/
+          retention-days: 90
