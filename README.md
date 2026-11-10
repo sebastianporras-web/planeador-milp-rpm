@@ -18,7 +18,7 @@ es el perfil heredado de ejecución por consola, sin paquetes duplicados.
 - `certificacion_numerica.py`: cierre numérico y error tipado de certificación.
 - `optimizar_rpm.py` e `integracion_selectiva.py`: solución multiperiodo selectiva.
 - `monte_carlo_reference.json`: referencia histórica ORIGINAL en la raíz.
-  No está incluido en este respaldo; conservar el del repositorio vigente.
+  Está incluido en la raíz. La copia histórica anterior se conserva por separado.
 
 ## Solvers y resultados
 HiGHS es el valor predeterminado; CBC está disponible y Gurobi depende de su
@@ -78,7 +78,7 @@ No sustituyen las 60 certificaciones ni una prueba de carga del servidor.
 
 ## Instancia de regresión y privacidad
 `python validar_instancia.py` comprueba la instancia nominal publicada, no una carga arbitraria.
-El Excel contiene datos de planta; conservar el repositorio privado y revisar los permisos antes de publicar información operativa.
+El repositorio se encuentra público. `AnexodeDatosxlsx.xlsx` y su copia del expediente están accesibles. Antes de difundir el enlace, comprobar que RPM autorizó publicar esos datos. Si requieren reserva, revisar permisos y copias del historial; borrar solo el archivo actual no elimina las versiones anteriores.
 
 ## Expediente del estudio
 La carpeta `evidencia_estudio/` conserva las evidencias nominales y la validación histórica, los scripts y sus hashes. Su README explica la reproducción. Los planes históricos se auditan sin ejecutar nuevamente los optimizadores.
@@ -88,6 +88,20 @@ Instalación comprobada en Python 3.12. Las versiones históricas de las corrida
 
 ## Estudio de cien instancias
 
-La ejecución completa y su auditoría están en [experimento_19_empirico/resultados_publicados](experimento_19_empirico/resultados_publicados/). Contiene 400 registros de cuatro métodos, estados, brechas, perfiles y el inventario de cien problemas sintéticos. Los resultados distinguen optimalidad numérica, planes completos sin certificado e inviabilidad; no afirman que las cien instancias tengan GAP cero.
+La ejecución completa y su auditoría están en [experimento_19_empirico/resultados_publicados](experimento_19_empirico/resultados_publicados/). La consulta por tipo de soporte se hace desde [soportes_instancias_100](soportes_instancias_100/), donde figuran el manifiesto, las tablas y el inventario de procedencia. Ambos directorios contienen algunos CSV y JSON idénticos: el primero mantiene las rutas usadas por los scripts; el segundo agrupa la documentación para revisión.
+
+El estudio reúne 400 registros de cuatro métodos, estados, brechas y perfiles de cien problemas sintéticos. Los resultados distinguen optimalidad numérica, planes completos sin certificado e inviabilidad; no afirman que las cien instancias tengan GAP cero.
+
+El estudio factorial previo de 144 instancias permanece en [experimento_19](experimento_19/) como antecedente, sin mezclarse con los resultados del estudio vigente de cien instancias.
 
 Los resúmenes nominales del 25 de octubre y la distinción entre sus versiones de Python y las del respaldo anterior están en [evidencia_estudio/nominal_2026_10_25](evidencia_estudio/nominal_2026_10_25/). El PDF del repositorio y el RAR de fuentes siguen siendo la versión anterior: el autor revisará el nuevo editable antes de publicarlo.
+
+## Copias de conservación y control de versiones
+
+- `AnexodeDatosxlsx.xlsx` aparece en la raíz para los programas y en `evidencia_estudio/evidencia/` para el expediente. Ambas rutas contienen el mismo archivo.
+- `evidencia_estudio/fuentes_verificadas/` conserva fuentes utilizadas en la comprobación de procedencia. Algunas coinciden exactamente con los módulos actuales; otras representan versiones diferentes. No conviene sustituirlas sin repetir la auditoría.
+- El protocolo de generación figura tanto en entradas como en resultados del estudio nuevo. El segundo ejemplar documenta el protocolo asociado a los resultados publicados.
+- `soportes_instancias_100/` reúne 24 copias exactas de archivos que permanecen en `experimento_19_empirico/`. El inventario permite comprobar su identidad por objeto Git. No deben confundirse con experimentos adicionales.
+- Los resultados del 17 y del 25 de octubre corresponden a ejecuciones distintas. Se conservan en sus carpetas originales, sin combinar estadísticas ni reemplazar trazas.
+
+Los archivos con contenido idéntico comparten un objeto en Git. Su presencia en varias rutas facilita las comprobaciones y no duplica por sí sola ese objeto en el historial. Los archivos CSV y JSON de los expedientes mantienen sus bytes originales durante el checkout para evitar alteraciones de las huellas por diferencias de fin de línea.

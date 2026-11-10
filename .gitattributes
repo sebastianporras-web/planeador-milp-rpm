@@ -6,3 +6,6 @@ monte_carlo_reference.json -text
 # Preservar hashes del estudio transversal en Windows y Linux.
 experimento_19_empirico/** -text
 .github/workflows/experimento-19-empirico.yml text eol=lf
+
+# Conservar intactos los archivos del expediente de cien instancias.
+soportes_instancias_100/** -text
