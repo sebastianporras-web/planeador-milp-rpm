@@ -1,0 +1,83 @@
+name: Comprobar arranque de la app RPM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app.py"
+      - "pages/**"
+      - ".streamlit/config.toml"
+      - "requirements*.txt"
+      - "carga_limpia.py"
+      - "carga_flexible.py"
+      - "operacion_flexible.py"
+      - "comparacion_solvers.py"
+      - "rpm_core.py"
+      - "motor_horizonte.py"
+      - "horizonte_automatico.py"
+      - "solver_config_rpm.py"
+      - "gurobi_rpm.py"
+      - "tests/test_app_smoke.py"
+      - ".github/workflows/verificar-app.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Instalar dependencias del despliegue
+        run: python -m pip install -r requirements.txt
+      - name: Verificar dependencias y sintaxis
+        run: |
+          python -m pip check
+          python -m compileall -q app.py pages tests
+      - name: Probar CBC y HiGHS con instancias pequeñas
+        run: python -m unittest discover -s tests -p "test_revision.py" -v
+      - name: Cargar interfaz de estudio y demanda total
+        run: python -m unittest discover -s tests -p "test_app_smoke.py" -v
+      - name: Comprobar inicio del servidor Streamlit
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          import time
+          from urllib.request import urlopen
+
+          server = subprocess.Popen(
+              [sys.executable, "-m", "streamlit", "run", "app.py",
+               "--server.headless=true", "--server.port=8501"],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+          )
+          try:
+              deadline = time.monotonic() + 45
+              while time.monotonic() < deadline:
+                  if server.poll() is not None:
+                      raise RuntimeError(f"Streamlit terminó antes de iniciar (código {server.returncode})")
+                  try:
+                      with urlopen("http://127.0.0.1:8501/_stcore/health", timeout=2) as response:
+                          if response.status == 200:
+                              print("Servidor Streamlit: saludable")
+                              break
+                  except OSError:
+                      pass
+                  time.sleep(1)
+              else:
+                  raise TimeoutError("Streamlit no respondió /_stcore/health")
+          finally:
+              server.terminate()
+              try:
+                  server.wait(timeout=10)
+              except subprocess.TimeoutExpired:
+                  server.kill()
+                  server.wait()
+          PY
