@@ -1,0 +1,21 @@
+{
+  "registros": 400,
+  "instancias": 100,
+  "protocolos_identicos": 10,
+  "modelos_identicos_entre_motores": 100,
+  "planes_exportados": 357,
+  "planes_completos_verificados": 273,
+  "certificados_numericos_verificados": 81,
+  "inviables_concordantes": 24,
+  "errores": 0,
+  "residuos_maximos_planes_completos": {
+    "demanda": 3.333369136271358e-10,
+    "capacidad": 0.0,
+    "enlace": 2.278689120061017e-06,
+    "integridad": 2.279022449896797e-06,
+    "dominio": 2.279022449896797e-06
+  },
+  "manifest_sha256": "e4664dd6d8b9526dd359996758982affb91142a8b2d47bc94702a191d336c472",
+  "alcance": "Auditoría aritmética y documental de planes guardados; no ejecuta solvers ni prueba formalmente la inviabilidad.",
+  "auditor_sha256": "4dad09d6b814c389013ee69aad022b33240887d22402d62518d574cb94a57206"
+}

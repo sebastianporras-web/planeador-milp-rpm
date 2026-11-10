@@ -1,0 +1,12 @@
+metodo,estado,casos
+CBC,Factible sin certificado,39
+CBC,Inviable demostrado,24
+CBC,Optimo certificado numericamente,18
+CBC,Sin incumbente al limite,19
+Gurobi,Factible sin certificado,38
+Gurobi,Inviable demostrado,24
+Gurobi,Optimo certificado numericamente,38
+HiGHS,Factible sin certificado,47
+HiGHS,Inviable demostrado,24
+HiGHS,Optimo certificado numericamente,25
+HiGHS,Sin incumbente al limite,4
