@@ -1,0 +1,20 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Indicadores para interpretar el plan}
+El trabajo define la ocupación de una máquina en un día como $L_{jt}=\sum_i(C_{ij}x_{ijt}+S_jy_{ijt})$. A partir de esta se calculan utilización $u_{jt}=100L_{jt}/K_{jt}$ y holgura $h_{jt}=K_{jt}-L_{jt}$. Para resumir el sistema se utiliza una razón de sumas:
+\begin{equation}
+u_{\mathrm{global}}=100\frac{\sum_{j,t}L_{jt}}{\sum_{j,t}K_{jt}}.
+\end{equation}
+Con esta expresión se pondera cada recurso en función de su capacidad. La media simple de utilizaciones coincide con esa razón cuando las capacidades son iguales, como ocurre en las instancias nominales. La razón de sumas mantiene la interpretación cuando los recursos tienen disponibilidades distintas.
+
+La proporción de preparación viene dada por $p_S=100\sum_{i,j,t}S_jy_{ijt}/Z_H$. Que baje del caso diario al de tres días no acredita una mejora debida a la ampliación del horizonte, pues el volumen del lote y el conjunto de referencias también varían. El indicador describe la composición de cada objetivo; para un experimento causal del horizonte haría falta tener la demanda inalterable.
+
+Para comprobar el cumplimiento se ha de recurrir a $r_i=\sum_{j,t}x_{ijt}-D_i$ como referencia. De lo contrario un total producido equivalente al pedido podría disimular un excedente en una referencia y un vacío en otra. De los 60 planes analizados el máximo de $|r_i|$ es cero, lo que tiene más valor como comprobación que un agregado del 100\,\% en toda regla.
+
+El tablero debe dar a conocer el horizonte y la demanda total así como el estado frente al objetivo. Unos minutos sin contexto no informan de si se está ante un caso diario o multiperiodo, o bien una solución provisional. El valor de los indicadores reside en su vínculo con la instancia, no en acumular tarjetas en la interfaz.
+
+\subsection{Implicaciones operativas de los resultados}
+Con la asignación de cada día se concentra la carga en los equipos más eficientes, de modo que al resto le queda capacidad de sobra. Para que esa holgura pueda hacer las veces de reserva operativa hay que conocer qué referencias son de transferir y el coste en procesamiento y preparación extra que conlleva el cambio. El agregado óptimo es un buen punto de referencia, pero no constituye por sí mismo una política de contingencia.
+
+La reducción nominal de 2.137 minutos frente a la heurística permite dar prioridad a una prueba de implementación. Lo recomendable es que un piloto mida lo que resta de tal diferencia una vez que se han considerado la disponibilidad del personal, las paradas y los cambios de preparación de los que se ha hecho cargo. Si la secuencia modifica los alistamientos, el asunto ya no es una simple actualización del certificado sino un problema de programación pormenorizada.
+
+En tres días el resultado deja ver la diferencia entre una decisión de capacidad y otra de eficiencia. La cota muestra que el lote no cabe en dos días con los supuestos nominales, así que el modelo de carga se inclina por una distribución eficiente en un periodo de tres. Si se quisiera reducir a dos días habría que cambiar la demanda, la tecnología o la capacidad y resolver una nueva instancia con todos sus costos y restricciones.

@@ -1,0 +1,109 @@
+% !TeX root = ../Trabajo_RPM.tex
+\clearpage
+\section{Construcción de instancias y heurística reproducible}\label{an:construccion}
+\subsection{Origen computacional de la demanda}
+Se ha utilizado como archivo fuente del estudio \texttt{AnexodeDatosxlsx.xlsx}. El lector extrae de la hoja \texttt{MODELO PL} los tiempos y la demanda, así como los alistamientos de \texttt{Data de Máquinas}. Al hacer coincidir las referencias con tiempo y demanda se obtienen 99 filas. El total del vector entero es de 14.188 unidades. No obstante, el expediente no da fechas de pedido que sirvan para dar sentido a ese vector ya sea como una muestra aleatoria o como órdenes confirmadas de un día dado.
+
+En el supuesto multiperiodo el lector utiliza \texttt{DATOS SIMULADOS} para los tiempos, los pasa de segundos a minutos y los pone en relación con \texttt{Unidades Vendidas (SEMESTRE)}. Que la hoja se llame así no hace de estos coeficientes unos cronometrajes observados. De la intersección resultan 200 referencias. Llamemos $V_i$ a las unidades semestrales e $I_c$ a las 99 referencias en común con el caso diario. El código realiza el cálculo de:
+\begin{align}
+\widehat d_i&=V_i/180,\\
+b&=\frac{\sum_{i\in I_c}\widehat d_i}{\sum_{i\in I_c}D_i^{(1)}}
+=2,3743174983554183,\\
+\widetilde d_i&=\widehat d_i/b,\\
+D_i^{(3)}&=\max\{1,\lfloor3\widetilde d_i+0,5\rfloor\}\quad(V_i>0).
+\end{align}
+El resultado es $\sum_i\widetilde d_i=15.330,494399474108$ y $\sum_iD_i^{(3)}=45.987$. El redondeo se hace por referencia, de no ser así el total arrojaría otra cifra. El factor $b$ se encarga de la escala agregada del subconjunto en común. No hay un diseño de validación externa que estime un sesgo.
+
+El 180 como denominador es una convención del lector y no un calendario laboral acreditado. En esta calibración se anula algebraicamente: $\widetilde d_i=V_i\sum_{k\in I_c}D_k^{(1)}/\sum_{k\in I_c}V_k$. Con esta identidad el lote puede verse como una construcción proporcional a las ventas y atada al total diario de las referencias de uso común.
+
+Históricamente el factor tres ha tenido su papel en la formación del lote. Con las cantidades puestas, la prueba de horizonte deja el vector tal cual y demuestra que no se puede hacer en dos días. La conclusión depende del lote construido, no acredita que el procedimiento haya hallado tres días con base en pedidos externos ajenos a esa primera opción.
+
+Por lo que respecta a la comprobación documental, se han reconstruido las dos matrices y las demandas a partir del libro. Las demandas y los alistamientos se corresponden de forma exacta con los CSV certificados; la diferencia absoluta en tiempos no llega a $2,23\times10^{-16}$ min/unidad. La comprobación acredita el origen computacional y la correspondencia de los archivos; no sustituye la verificación empírica de cada coeficiente.
+
+\subsection{Heurística voraz de referencia}\label{an:heuristica}
+La regla que se pone en práctica con \texttt{politica\_empirica} es de carácter programado, no una transcripción avalada de las decisiones de los supervisores. Al procesar las referencias lo hace por demanda descendente y, en cada caso, tiene en cuenta a las máquinas por tiempo unitario en orden ascendente; el costo conjunto de preparación y procesamiento no se toma como criterio de ordenación.
+
+\begin{enumerate}
+	\item Poner a cero las cantidades $x_{ij}$ e inicializar la capacidad remanente $r_j=K_j$ y la demanda pendiente $p_i=D_i$.
+	\item Dar paso a las referencias siguiendo el orden decreciente de $D_i$ que da \texttt{pandas.sort\_values}.
+	\item Con cada referencia se recorre a las máquinas por $C_{ij}$ de menor a mayor. Antes de asignar, se comprueba que la capacidad residual cubra el alistamiento $S_j$; el descuento efectivo ocurre en la actualización del paso siguiente.
+	\item En caso de que haya capacidad positiva se procede a asignar:
+\[
+q=\min\left\{p_i,\max\left[0,\left\lfloor\frac{r_j-S_j}{C_{ij}}+10^{-10}\right\rfloor\right]\right\}.
+\]
+Si $q>0$, actualizar $x_{ij}\leftarrow q$, $p_i\leftarrow p_i-q$ y $r_j\leftarrow r_j-C_{ij}q-S_j$.
+\item Continuar hasta completar la referencia o agotar máquinas. Conservar cualquier faltante. Comparar cargas solo si todos los $p_i$ son cero.
+\end{enumerate}
+Se hace una visita a cada par. La implementación utiliza una marca de preparación pagada para que no se produzca un cobro de más en el par. El $10^{-10}$ no es capacidad extra autorizada sino un resguardo numérico del piso; la verificación posterior ha de ser superada por el plan.
+
+El código no pide una ordenación estable ni establece un desempate secundario, de modo que los empates quedan a merced del orden que la biblioteca devuelva con las entradas de por medio. Para poder reproducir el resultado histórico hay que atenerse al plan exportado, al código y al orden de entrada. La reconstrucción se hace manteniendo dichas condiciones y sin un desempate lexicográfico que altere el plan de referencia. Con 13.684,488555555557 min y cero unidades pendientes, la diferencia con el plan diario certificado es de 2.137,0760 min. El archivo \texttt{comparacion\_asignaciones.csv} contiene el contraste por referencia y sus diferencias negativas; en un óptimo conjunto una asignación puede empeorar para liberar capacidad y reducir la carga total.
+
+\clearpage
+\section{Formulación del maestro y validez de la reducción}\label{an:maestro}
+\subsection{Maestro agregado con capacidad constante}
+Para las instancias nominales la formulación es tal que $K_{jt}=K=1.440$. Como $a_{ij}$ se asume el total del par en el horizonte y con $n_{ij}$ se hace referencia a los días de producción positiva. La cota diaria de la ecuación~\eqref{eq:U} va a ser $U_{ij}$. El maestro inicial dispone de:
+\begin{align}
+\min\quad &\sum_{i,j}(C_{ij}a_{ij}+S_jn_{ij}),\\
+\sum_j a_{ij}&=D_i &&\forall i,\\
+\sum_i(C_{ij}a_{ij}+S_jn_{ij})&\leq HK &&\forall j,\\
+n_{ij}\leq a_{ij}&\leq U_{ij}n_{ij} &&\forall i,j,\\
+0\leq a_{ij}&\leq\min\{D_i,HU_{ij}\},\\
+0\leq n_{ij}&\leq\min\{H,D_i\},\qquad a_{ij},n_{ij}\in\mathbb Z.
+\end{align}
+En el caso de que $U_{ij}=0$ los dos valores se anulan. La condición $n_{ij}\leq a_{ij}$ hace que no haya lugar a activaciones vacías. Dado que $S_j\geq0$, la supresión de una activación que no produce nada deja la factibilidad intacta y no incrementa el objetivo, de modo que se puede dar por hecho un óptimo sin tales activaciones.
+
+El código incorpora $\sum_j n_{ij}\geq\lceil D_i/\max_jU_{ij}\rceil$. También refuerza pares donde $D_i=qU_{ij}+r$, $0<r<U_{ij}$ y $q\geq1$, mediante
+\[
+a_{ij}\leq rn_{ij}+q(U_{ij}-r).
+\]
+Para $n_{ij}\leq q$, el lado derecho es al menos $U_{ij}n_{ij}$; para $n_{ij}\geq q+1$, es al menos $D_i$. La desigualdad es válida sobre el dominio entero y puede cortar puntos fraccionarios.
+
+\subsection{Detalle temporal y subproblema de distribución}
+Para las máquinas del conjunto $J_d$, el maestro añade $x_{ijt},y_{ijt}$ con
+\[
+\sum_t x_{ijt}=a_{ij},\quad \sum_t y_{ijt}=n_{ij},\quad
+ y_{ijt}\leq x_{ijt}\leq U_{ij}y_{ijt},\quad
+\sum_i(C_{ij}x_{ijt}+S_jy_{ijt})\leq K.
+\]
+Los dominios entero y binario se mantienen en las variables. En el caso de cada máquina que aún no se ha agregado, el subproblema pone $a_{ij},n_{ij}$ a los valores del maestro y procura activaciones y cantidades diarias que cumplan con tales restricciones. Una vez dadas las cantidades, su objetivo, $\sum_{i,t}x_{ijt}$, es invariable; lo que importa es la factibilidad.
+
+De no ser posible una distribución por parte del subproblema, el algoritmo pasa la máquina a $J_d$ y resuelve un nuevo maestro. Es lícito añadir el modelo temporal en su totalidad, aun cuando el subproblema haya concluido sin más: ello no supone un corte que califique de infactible una asignación sin probarlo. Con cada iteración abierta se incorpora una máquina como mínimo. Cuando se han tratado todas, el maestro es el modelo completo con refuerzos válidos. Si bien el número de incorporaciones tiene fin, ese argumento no acota el tiempo para resolver cada MILP.
+
+El código dispone las cargas de la máquina de modo que $L_{j,t}\geq L_{j,t+1}$. Dicha ruptura de simetría se justifica porque la capacidad es la misma en todos los días, la demanda se requiere al final del horizonte y no existen acoplamientos entre máquinas por día. Así, cualquier permutación de días en una máquina deja intactas las cantidades, el costo y el cumplimiento. No sería así con capacidades variables, entregas intermedias o personal compartido.
+
+\subsection{Cota lagrangiana por referencia}
+Sean $\lambda_j\geq0$ multiplicadores de capacidad agregada. Al relajar esa capacidad, la función lagrangiana es
+\[
+\mathcal L(a,n;\lambda)=\sum_{i,j}(1+\lambda_j)(C_{ij}a_{ij}+S_jn_{ij})-HK\sum_j\lambda_j.
+\]
+En un plan viable, el sumando $\sum_j\lambda_j(L_j-HK)$ no es positivo. Una cota inferior se alcanza al hacer la minimización en un dominio de mayor amplitud. Si se define a $f_i(\lambda)$ como el mínimo con respecto a la demanda y los dominios de sus pares, se tiene que:
+\[
+L(\lambda)=\sum_i f_i(\lambda)-HK\sum_j\lambda_j\leq Z^*.
+\]
+Los multiplicadores no negativos se obtienen de los precios duales de la relajación lineal, si es que hay. Para la validez de la cota lagrangiana no hace falta tener multiplicadores óptimos; con $\lambda=0$ ya se tiene una cota válida.
+
+La programación dinámica se ocupa de las máquinas y de las cantidades enteras. Tomando como referencia a $F_{i,k}(v)$ para el menor costo de producción de $v$ unidades de $i$ en las $k$ primeras máquinas, la recurrencia conceptual es
+\[
+F_{i,k}(v)=\min_{(q,n)\in\mathcal Q_{ik},\ q\leq v}
+\{F_{i,k-1}(v-q)+(1+\lambda_k)(C_{ik}q+S_kn)\},
+\]
+con $F_{i,0}(0)=0$, $F_{i,0}(v>0)=+\infty$ y
+$\mathcal Q_{ij}=\{(0,0)\}\cup\{(q,n):1\leq n\leq H,\ n\leq q\leq\min(D_i,nU_{ij})\}$.
+Para la cantidad $q>0$, basta con usar el menor número admisible de activaciones para calcular el mínimo libre, pues $S_j\geq0$. La implementación busca acelerar esa evaluación mediante mínimos en ventanas de cantidades.
+
+\Needspace{25\baselineskip}
+\subsection{Descarte condicional y conservación de un óptimo}
+Sea $f_{i,-j}(v)$ el costo mínimo de producir $v$ unidades con todas las máquinas salvo $j$. Al fijar $(a_{ij},n_{ij})=(q,n)$, una cota del objetivo completo es
+\[
+B_{ij}(q,n)=L(\lambda)-f_i(\lambda)+f_{i,-j}(D_i-q)
+ +(1+\lambda_j)(C_{ij}q+S_jn).
+\]
+En el caso de que $B_{ij}(q,n)>UB+\tau$, ninguna solución va a presentar una mejora sobre el plan factible de valor $UB$. El plan se asume como tal, por lo que tampoco se desecha alguna solución con un valor óptimo igual o menor a $UB$. El margen positivo es un criterio conservador para el descarte, pero no viene a reemplazar la aritmética certificada de intervalos.
+
+El código utiliza
+\[
+\tau=\max\{10^{-5},\ 10^{-8}\max(1,|UB|,|L|,\sum_i|f_i|)\}.
+\]
+Por cada número de activaciones se archivan los extremos de las cantidades que han pasado la prueba y se traza su envolvente convexa. El segmento entre esos extremos cubre el total de las cantidades que se conservan para un $n$ dado. La envolvente no elimina ninguna de las retenidas, si bien es posible que contenga algún punto de más. Conviene verificar que el plan de $UB$ se sostenga en los intervalos de guarda antes de dar por buena la reducción.
+
+Si bien el argumento da base a la reducción matemática, la implementación se hace en punto flotante y atiene a las tolerancias que se observan. No hay que tomarlo como una verificación formal de todo lo que el programa prescribe.

@@ -1,0 +1,28 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Lógica de la prueba y uso del inicio factible}
+Incluso después de hallar un buen plan, el motor debe cerrar la prueba de optimalidad. Los planes factibles reducen la cota superior; la ramificación, las cotas y los cortes elevan la inferior. Un incumbente próximo al óptimo no describe el trabajo que resta para descartar otras asignaciones. El motor puede seguir explorando aunque el objetivo del mejor plan parezca estable.
+
+De una primera solución se obtienen las activaciones y cantidades en cuestión. PuLP tiene la posibilidad de pasar valores iniciales a las interfaces que lo admitan \cite{pulpstart}, aunque conviene comprobar en el registro del motor si el motor los aceptó. Si bien partir de ahí puede servir para podar nodos cuyo objetivo es peor que sus cotas, por sí solo no acredita la inexistencia de un plan mejor. En tres días, empezar con el valor que al fin se certifica muestra la distinción entre tener un plan de calidad y acreditar la cota inferior.
+
+Mediante la relajación lagrangiana las restricciones de acoplamiento se convierten en términos penalizados del objetivo, de modo que se pueden generar cotas para problemas enteros \cite{fisher}. En este caso su función es recortar alternativas con pruebas condicionales. Para que sea válido, toda cota empleada ha de ser menor que el valor de cualquier solución que cumpla la condición en juego. De no ser así y se descartara una alternativa por mero cálculo heurístico, la igualdad de las cotas ya no certificaría el problema original.
+
+El procedimiento selectivo mantiene otra división: el maestro se encarga de la carga agregada y el subproblema de verificar que se pueda repartir entre los días. Si la distribución no sale adelante, la primera cota no pasa a ser el plan definitivo. Se añade detalle temporal a la máquina conflictiva para dar más fuerza al maestro sin necesidad de arrancar con todas las variables máquina-día del modelo. El procedimiento termina cuando el plan factible en su totalidad y la cota del maestro se ajustan al criterio numérico establecido.
+
+\subsection{Controles numéricos y de terminación}
+En la documentación de Gurobi las tolerancias de factibilidad e integralidad se hacen distintas de los parámetros de brecha \cite{numeric}. Poner en marcha una solicitud de brecha cero no hace desaparecer la aritmética de punto flotante. El informe mantiene los valores sin redondear para detectar residuos y no deja que una presentación con escaso número de decimales sirva de criterio de aceptación.
+
+El control del resultado combina el estado nativo de terminación, la coherencia de $LB$ y $UB$, y la revisión del plan exportado. Un estado óptimo no basta si el plan viola restricciones; un plan factible sin cota no respalda el óptimo; una brecha redondeada a cero puede ocultar una interrupción.
+
+La falta de límite interno de tiempo se valida en las opciones que van al motor, no se conforma con quitar un control de la interfaz. El expediente guarda logs y parámetros para hacer la distinción entre una corrida que se ha quedado sin corte interno y otra que ha consumido su presupuesto. Y si el proceso se interrumpe por cancelación, cierre del servidor o memoria, el registro debe identificar la interrupción aunque se cuente con una solución factible.
+
+\begin{table}[H]\centering\small
+\caption{Afirmaciones que permite cada tipo de evidencia}
+\begin{tabular}{p{39mm}p{55mm}p{51mm}}\toprule
+Evidencia & Afirmación admisible & Afirmación no sustentada\\\midrule
+Plan verificado & Cumple demanda, capacidad y dominio & Es necesariamente óptimo\\
+Cotas consistentes y estado óptimo & Óptimo numérico de la instancia resuelta & Los datos representan sin error la planta\\
+Cota que excluye dos días y plan en tres & Horizonte mínimo de tres días para el lote & Todo catálogo de igual tamaño necesita tres días\\
+Diez corridas por motor & Variación observada bajo el protocolo & Tiempo garantizado en otros equipos\\
+Escenarios reoptimizados & Desempeño condicionado a demandas simuladas & Robustez del mismo plan fijo ante cualquier demanda\\\bottomrule
+\end{tabular}
+\end{table}

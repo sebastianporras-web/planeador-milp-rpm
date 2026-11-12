@@ -1,0 +1,800 @@
+% !TeX program = pdflatex
+% !TeX encoding = UTF-8
+\documentclass[12pt,a4paper,oneside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[provide=*,main=spanish]{babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}\renewcommand{\refname}{Referencias}\renewcommand{\listtablename}{Índice de tablas}}
+\usepackage{lmodern,microtype,amsmath,amssymb,booktabs,longtable,array,graphicx,xcolor}
+\usepackage[left=25mm,right=25mm,top=24mm,bottom=24mm,headheight=14pt]{geometry}
+\usepackage{lscape}
+\usepackage{setspace,enumitem,caption,float,fancyhdr,titlesec,tikz,needspace}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[hidelinks,pdfauthor={Sebastián Felipe Porras Rincón},pdftitle={Mejora del sistema de producción en la empresa RPM Colombia S.A.S. mediante modelos de gerencia de operaciones}]{hyperref}
+\setstretch{1.12}
+\clubpenalty=10000
+\widowpenalty=10000
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\setlist{nosep,leftmargin=*}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\definecolor{azul}{HTML}{233B54}
+\titleformat{\section}{\large\bfseries}{\thesection.}{.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{.6em}{}
+\titlespacing*{\section}{0pt}{14pt}{7pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small RPM Colombia S.A.S.}\fancyhead[R]{\small Planificación de la producción}\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{.3pt}
+\newcommand{\fuente}[1]{\par\vspace{3pt}{\footnotesize\textit{Fuente: #1.}\par}}
+\newcommand{\num}[1]{\ensuremath{#1}}
+\makeatletter\renewcommand{\@pnumwidth}{3em}\renewcommand{\@tocrmarg}{4em}\makeatother
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+\includegraphics[width=75mm]{figuras/logo_color.pdf}\par
+\vspace{9mm}
+{\large Facultad de Ingeniería}\par
+Maestría en Ingeniería Industrial\par
+\vspace{21mm}
+{\LARGE\bfseries Mejora del sistema de producción en la empresa RPM Colombia S.A.S. mediante modelos de gerencia de operaciones\par}
+\vspace{19mm}
+{\large\bfseries Sebastián Felipe Porras Rincón}\par
+\vspace{5mm}
+Trabajo de grado para optar al título de\par
+Magíster en Ingeniería Industrial\par
+\vspace{17mm}
+Director\par
+{\large David Álvarez Martínez}\par
+\vfill
+Bogotá, Colombia\par
+2026
+\end{center}
+\end{titlepage}
+\pagenumbering{roman}
+\hypersetup{pageanchor=true}
+\begingroup\setstretch{1.0}\tableofcontents\endgroup
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+\begin{center}
+{\Large\bfseries Mejora del sistema de producción en la empresa RPM Colombia S.A.S. mediante modelos de gerencia de operaciones\par}
+\vspace{3mm}
+Sebastián Felipe Porras Rincón\par
+{\small Universidad de los Andes · Maestría en Ingeniería Industrial}
+\end{center}
+\section*{Resumen}
+La compañía RPM Colombia S.A.S. enfrenta el problema de asignar referencias a máquinas cuyas capacidades y tiempos de alistamiento difieren. En este trabajo proponemos un modelo de programación lineal entera mixta que busca minimizar la carga agregada de producción y comparamos los planes que éste produce con los de una heurística usada por la compañía. Enfocamos nuestra evaluación en el análisis de 100 instancias sintéticas donde se varía la intensidad de la demanda, el tamaño del catálogo de productos, el horizonte, la capacidad de las máquinas y la matriz de tiempos de alistamiento. El generador de instancias remuestrea los factores relativos de ventas semestrales dentro de estratos de volumen, de modo que se logra una representación de la heterogeneidad entre productos, pero no se asigna una variabilidad diaria que no puede estimarse con los datos disponibles. Para cada instancia ejecutamos una vez el algoritmo heurístico de referencia y los solvers CBC, HiGHS y Gurobi (sin proporcionarles una solución inicial). Verificamos los resultados obtenidos para asegurar que todas las restricciones sean respetadas, y determinamos, para cada instancia, si la solución es completa, si se obtuvo un certificado numérico de optimalidad o si la instancia es inviable. Gurobi logró encontrar solución en los 76 problemas donde existía una, y pudo garantizar la optimalidad en 41 de estos. Todos los planes completos obtenidos por Gurobi tienen GAP menor al 0.18\,\%. En comparación con la heurística, en las instancias donde ésta es capaz de obtener un plan que cubre toda la demanda, logramos una reducción promedio de la carga agregada cercana al 22\,\% (incluyendo los incumbentes para los que no se logró certificar la optimalidad). Estos resultados sugieren que es más efectivo realizar una asignación conjunta de las referencias y dan una idea de las limitaciones de una heurística local en la toma de decisiones cuando existe competencia por capacidad. También se presentan casos nominales y Monte Carlo histórico para complementar la evidencia presentada y con alcance distinto. La mejora que logramos es en el modelo de producción, pero no se reporta una medición en ahorro económico obtenido en la planta.
+
+\textbf{Palabras clave:} programación entera mixta; asignación de producción; capacidad; alistamiento; certificación de optimalidad.
+\par\medskip
+\Needspace{6\baselineskip}
+\noindent\textbf{Abstract}\par\smallskip
+\noindent
+RPM Colombia S.A.S. assigns products to machines with different capacities, processing times, and setup requirements. This work formulates a mixed integer linear programming model that minimizes the aggregate production load and compares its production plans with a reference heuristic. The main experiment studies 100 synthetic instances with different demand intensity, product catalogue size, planning horizon, machine capacity, and processing time matrix. The synthetic demand generator resamples the relative sales factors per semester within demand volume strata. The generated instances capture variability among products, but not daily demand variability, which could not be identified in the available data. Each instance is run once with the heuristic and once with CBC, HiGHS, and Gurobi, and no starting solution is inherited by any run. An audit of the exported production plans classifies them as feasible and complete, and distinguishes numerical optimality certificates from infeasible plans. Gurobi finishes with a known feasible solution for all 76 problems with a feasible solution, and verifies optimality for 41 of them. All complete production plans have a final gap lower than 0.18\,\%. Gurobi's production plans, which cover all the demand, have an average load reduction with respect to the heuristic's of around 22\,\%, even counting incumbent solutions without an optimality certificate. These results support a joint allocation of products, and point out limitations of the local rule when products compete for capacity. Additional supporting evidence is presented on nominal examples and using Monte Carlo methods on historical data. The presented improvements relate to the workload modeled; financial savings at the shop floor are not measured.
+
+\section{Problema de decisión y propósito del estudio}
+RPM Colombia, es una empresa encargada de la producción de artículos plásticos por encargo. Cuenta con diez máquinas de producción que operan en turnos. Los supervisores de las máquinas, utilizan su experiencia y conocimiento del negocio para asignar las referencias según el volumen a producir, las prioridades de la empresa y la disponibilidad de las maquinas. El conocimiento es un elemento fundamental en la operación y por ello este modelo busca complementar el proceso con un criterio cuantificable que pueda comparar opciones y brindar trazabilidad del proceso de asignación de referencias.
+
+La decisión radica en establecer qué día y cuántas unidades de cada referencia ha de producir una máquina en un horizonte multiperiodo. Una máquina con menor tiempo unitario puede requerir un gran alistamiento o absorber capacidad que otra referencia requiera, por lo que no basta con optar por el menor tiempo unitario de forma aislada. El modelo tiene en cuenta de manera conjunta la demanda, el procesamiento, la preparación y la disponibilidad nominal.
+
+El fin último es plantear y someter a evaluación un modelo de asignación que reduzca al mínimo la carga nominal para dar respuesta a la demanda. A tal efecto, el trabajo persigue cuatro objetivos: caracterizar el rendimiento de cada máquina y referencia; poner de relieve unos indicadores para la interpretación de la asignación; definir la función objetivo junto con sus variables y restricciones; y, tras valorar los resultados, ofrecer criterios de planificación a RPM Colombia. Las expresiones son lineales, pero las cantidades enteras y las activaciones binarias hacen que la formulación sea un MILP.
+
+La cuestión de investigación que se plantea es \textit{qué tipo de asignación de cantidades permite satisfacer la demanda y respetar la capacidad de que se dispone, todo ello reduciendo la carga de preparación y procesamiento, y con qué pruebas se puede defender su optimalidad}. Para abordar esta cuestión, se consideran tres niveles: la calidad de los datos de entrada, la validez del modelo dentro de su ámbito y el hecho de que las soluciones han sido comprobadas por la computadora. El certificado de optimalidad lo que garantiza es que los resultados son óptimos para los parámetros y restricciones que figuran en el modelo, no que los tiempos de operación son correctos o que las combinaciones referencia-máquina son técnicamente compatibles.
+
+El núcleo del análisis de este estudio reside en la comparación realizada utilizando cien instancias sintéticas basadas en la dispersión transversal de las ventas por referencia. En la sección~\ref{sec:instancias} se detalla el diseño de estas instancias y se presenta la comparación de la heurística con los tres motores sin un inicio heredado. Los dos casos nominales sirven para mostrar la formulación y sus certificados, y Monte Carlo histórico mantiene su alcance complementario. De esta forma se consigue no confundir las repeticiones de un mismo problema con la diversidad de demanda.
+
+\subsection{Alcance operativo}
+La capacidad del sistema se ha supuesto en 1.440 minutos diarios/máquina, aunque no se presenta en el expediente un calendario neto considerando las deducciones por mantenimiento, averías, paradas o insuficiencia de personal; por tanto el resultado se basa en esta capacidad disponible nominal. El responsable de planta debe verificar la capacidad neta disponible, los recursos de preparación y las compatibilidades antes de ejecutar una orden. Se trata de una decisión por cantidades y no de una secuenciación detallada. El modelo no considera las precedencias ni el momento exacto de inicio de ejecución. Tampoco considera tiempos de cambio de acuerdo a la secuencia, ni inventario al final de periodo, ni liberaciones de órdenes o entregas en un punto exacto. El modelo permite asignar una referencia a varias máquinas y días. El modelo considera un alistamiento para cada combinación activa de referencia, máquina y día. En este caso, el modelo considera alistamiento cada vez que la referencia es activa en una máquina cada día. No se considera una medida de alistamiento al comenzar el día. Si el alistamiento se mantiene en la planta, de un día a otro, debe modelarse y recalcularse.
+La calidad y el desperdicio son indicadores gerenciales y el modelo no los optimiza por falta de información comparativa para máquinas y productos. El modelo asume que la demanda debe ser cumplida al 100\,\%. No es una prueba de que se mejora un indicador histórico de servicio. El cumplimiento de la demanda tampoco es una prueba de que hay mejoras en términos de defectos, costos o tiempos de entrega reales.
+
+\section{Fundamentos y enfoque metodológico}
+\input{secciones/ruta_metodologica}
+\subsection{Fundamentos de la formulación}
+Con la programación entera es posible incluir decisiones binarias y costos fijos por activación en un modelo lineal \cite{taha}. En este modelo se requiere de la activación de una preparación si una máquina va a fabricar una referencia. La asignación generalizada es el punto de partida para la inclusión de recursos, capacidades y decisiones \cite{cattrysse}; en este problema a los anterior se añaden las decisiones enteras y la activación por periodo.
+
+Cuando se trata de planificar máquinas con alistamientos se puede distinguir entre la asignación de la carga y la secuencia de fabricación \cite{unlu}. Esta distinción marca el alcance del modelo: la carga es cuantificada, pero no se intenta programar un taller flexible completo. La utilización de la hoja de recursos permite obtener un alistamiento por máquina que puede ser utilizado para modelar una preparación fija pero no para realizar cálculos de cambios dependientes de la secuencia o del molde.
+
+\subsection{Tipos de evidencia}
+El informe separa los resultados de las instancias nominales de las conclusiones que surgen de los análisis de sensibilidad y de simulación. Los registros, las comprobaciones, los planes de ejecución, los parámetros y los valores de entrada de las 60 corridas nominales se han dejado sin alteraciones en el resultado de la ejecución del 25 de octubre de 2026 (26 de octubre UTC). Esta revisión compara las salidas de las corridas nominales con los registros de respaldo. Se describen en los anexos las fuentes de los análisis de Monte Carlo, imputación y agrupación históricos que siguen dentro del alcance del informe original. No se ha hecho nada para convertir el resultado de las dos instancias nominales en valores certificados a posteriori tras su finalización.
+
+En cuanto a las unidades de análisis, las define la tabla~\ref{tab:instancias}. No es lo mismo multiplicar una demanda diaria por el número de días que alterar el horizonte con un lote fijo. De igual modo, al comparar uno y tres días se recurre a dos instancias concretas y no a la misma demanda distribuida en otras tantas ventanas.
+
+\begin{table}[H]\centering\small
+\caption{Instancias originales utilizadas en la validación}\label{tab:instancias}
+\begin{tabular}{lrr}\toprule
+Característica & Caso diario & Caso de tres días\\\midrule
+Referencias con demanda positiva & 99 & 200\\
+Máquinas & 10 & 10\\
+Horizonte de la corrida (días) & 1 & 3\\
+Demanda total (unidades) & 14.188 & 45.987\\
+Pares producto--máquina & 990 & 2.000\\
+Capacidad total (min) & 14.400 & 43.200\\
+Repeticiones por optimizador & 10 & 10\\\bottomrule
+\end{tabular}
+\fuente{matrices C, D y S y protocolo de las corridas}
+\end{table}
+
+La revisión de antecedentes y su relación con el modelo figura en el anexo~\ref{an:desarrollo_complementario}.
+
+\section{Datos, calidad y caracterización}\label{sec:datos}
+\subsection{Tiempos nominales y cobertura}
+Los minutos de procesamiento por unidad de la referencia $i$ en la máquina $j$ se denotan con $C_{ij}$, el tiempo de preparación con $S_j$ y la demanda con $D_i$. Se mantiene la exactitud de los coeficientes a efectos de resolver y comprobar; el redondeo queda para las tablas que se presenten. Un redondeo anticipado podría modificar la capacidad o las asignaciones, así como las mínimas diferencias de unas alternativas a otras.
+
+En el caso de las 99 referencias diarias hay 990 combinaciones posibles, de las cuales 819 (un 82,73\%) cuentan con registros directos. Las 171 restantes requieren una hipótesis de tiempo o bien una restricción de compatibilidad justificada. Que no haya observación no es prueba de imposibilidad técnica, del mismo modo que un tiempo estimado no acredita que el par sea viable en la práctica.
+
+La revisión hace una distinción entre dos matrices. Por un lado está la \textit{matriz nominal publicada}, la que se emplea en las certificaciones vigentes y los resultados principales. La \textit{matriz reconstruida} parte de los registros de origen a los que se han aplicado reglas explícitas de estimación y depuración. No son lo mismo: un repaso histórico ha dejado constancia de discrepancias en 174 celdas, 171 de pares sin observar y tres con registro. El método de imputación que dio mejor resultado en una validación posterior no se aplicó retrospectivamente a todos los coeficientes de la publicación.
+
+\subsection{Evaluación de una regla de imputación}
+Con la revalidación histórica se han cotejado cuatro estimadores (media global, por referencia y por máquina, así como el modelo aditivo) ocultando las observaciones. De las 100 particiones hechas, la media por máquina ha sido la opción más ventajosa en 96 de ellas con un MAE medio de 0,1888 min/unidad. Esto la hace idónea para aplicar como una regla reproducible de reconstrucción en la muestra, si bien no avala la precisión de las celdas que de entrada faltaban. Las discrepancias y los resúmenes correspondientes figuran en el anexo~\ref{an:datos}.
+
+Respecto al plan nominal diario, 98 de los 99 pares activos cuentan con soporte directo. El otro par acumula 1.337 unidades, lo que supone un 9,42\% del volumen. La importancia de un dato que falta se mide por la producción que le corresponde y no únicamente por el tanto por ciento de celdas ausentes. Por ello, antes de poner en marcha dicho plan es necesario medir el par activo sin observación para verificar su compatibilidad.
+
+\subsection{Concentración de demanda y grupos descriptivos}
+La demanda de la instancia diaria se concentra en 28 de las 99 referencias, que por sí solas representan el 80\,\% del volumen. Conviene hacer la distinción entre un producto de gran volumen y una referencia de menor volumen dada esta estructura, no obstante, reservarles una máquina requiere un examen de la capacidad de la solución y del costo total antes de proceder.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{figuras/pareto.pdf}
+\caption[Concentración de la demanda diaria]{Concentración de la demanda de la instancia diaria. La curva se recalculó con el vector de demanda certificado.}
+\end{figure}
+
+Para el análisis de los productos se han considerado la demanda, así como la variación de los tiempos entre máquinas. El coeficiente de Silhouette, el cual representa un resumen de los valores de cohesión y separación de los grupos \cite{rousseeuw}, ha preferido dos grupos de productos (0,709). Sin embargo, para una mayor interpretación, se han mantenido tres grupos, uno de baja escala (42 referencias), otro de rotación media (52 referencias), y el último de alto volumen (cinco referencias). Esto tiene un Silhouette de 0,555. Por tanto, se ha dado prioridad a una interpretación de los grupos más que al máximo permitido por el coeficiente.
+
+Respecto a las máquinas, el análisis histórico basado en tres variables de desempeño arrojó grupos de 1, 1 y 8. Tanto K-Means como Ward han llegado a esa misma partición; este último es un método de agrupación jerárquico \cite{ward}. Que dos algoritmos coincidan con idénticos datos no constituye una validación externa ni da pie a considerar a los ocho equipos como intercambiables, pues sus preparaciones y tiempos son diferentes.
+
+El número de grupos no se corresponde con el de días de producción. Los grupos describen patrones, mientras que el horizonte viene determinado por la demanda fija, las capacidades y si es viable trazar un plan. Por su parte, no se recurre a ensayos con las mismas variables que dieron lugar a los grupos para sostener causalidad o validar familias productivas independientes.
+
+El anexo~\ref{an:desarrollo_complementario} documenta la construcción de los vectores y sus supuestos.
+
+\section{Construcción de la referencia heurística}\label{sec:heuristica}
+La caracterización describe las referencias y los recursos. La etapa heurística formaliza la regla de asignación utilizada como referencia en RPM y construye un plan reproducible para compararlo con el MILP. Ambos procedimientos utilizan la misma demanda, los mismos tiempos y las mismas capacidades. La diferencia de carga refleja las decisiones de asignación y activación dentro de esa instancia común.
+
+\subsection{Regla de asignación y control de capacidad}
+La heurística se encarga de ordenar las referencias en función de la demanda, de mayor a menor. En el caso de cada referencia, se recorre a las máquinas por tiempo unitario, de menor a mayor, y se le adjudican las unidades que su capacidad residual depara, con el descuento del alistamiento si se pone en marcha el par. Si quedan unidades pendientes, la heurística continúa con la máquina siguiente; cuando cubre la demanda de la referencia, pasa a la siguiente referencia. El anexo~\ref{an:heuristica} detalla tanto el algoritmo como la forma de resolver empates.
+
+El algoritmo contempla el número de productos, la activación, la carga y los productos faltantes. Sin embargo, un producto de lote particular elegido como producto rápido podría no satisfacer todas las necesidades de productos del lote. Podría estar utilizando una capacidad que sería útil para otro producto, o podría estar desparramando la producción, en contra de la concentración de la producción para un producto que el MILP habría hecho para evitar una preparación. Debido a estas interacciones, se hace necesario comparar la heurística con una solución de optimización de conjunto.
+
+\subsection{Producto de la etapa y criterio de comparación}
+Con la regla aplicada diariamente tenemos 13.684 minutos de carga, sin faltantes. En el plan se incluye entonces la referencia RPM para este lote. El plan no asigna fechas ni decisiones a los individuos que no estaban en el archivo histórico. Para poder realizar la comparación porcentual es necesario que el plan formal y el plan heurístico incluyan las mismas unidades. Si la heurística no atiende toda la demanda, en el análisis se incluye esta información y se conserva el porcentaje de reducción para las unidades en las que se pudo armar pareja.
+
+Una vez calculada esta referencia, la sección~\ref{sec:modelo} se encarga de plantear la decisión conjunta. En la sección~\ref{sec:resultados} contrasta los planes obtenidos mediante la heurística y el modelo MILP, y examina las
+reasignaciones que explican las diferencias en la carga agregada de producción.
+
+\section{Asignación MILP diaria y extensión multiperiodo}\label{sec:modelo}
+En la ruta de comparación en el mapa usamos una misma fórmula para los casos de uno, tres y cinco días. Los ejemplos del caso de un día y tres días son representativos de cómo se extiende la asignación para el horizonte multiperiodo. Para una misma cantidad en el lote, mantenemos la demanda, los tiempos unitarios, los alistamientos y capacidades de las máquinas por día. Con el índice tiempo, se incluye el número de días en el horizonte, pero la demanda no es función del número de días.
+
+\subsection{Conjuntos, parámetros y variables}
+Con $I$ y $J$ como conjuntos de referencias y de máquinas y tomando a $T_H=\{1,\ldots,H\}$ como los días del horizonte. La demanda $D_i$ corresponde a la del lote que debe completarse en el periodo. Como datos de entrada el modelo tiene $C_{ij}>0$, $S_j\geq0$ y la capacidad $K_{jt}>0$, siendo esta última de 1.440 minutos en las instancias evaluadas. Las unidades producidas se representan por $x_{ijt}\in\mathbb Z_{\geq0}$ y $y_{ijt}\in\{0,1\}$ indica si una preparación está o no activada. De la capacidad y la demanda se obtiene la cota de enlace:
+\begin{equation}
+U_{ijt}=\max\left\{0,\min\left[D_i,\left\lfloor\frac{K_{jt}-S_j}{C_{ij}}\right\rfloor\right]\right\}.
+\label{eq:U}
+\end{equation}
+Al ser $U_{ijt}=0$, la combinación de que se trata no es idónea para producir una unidad con la capacidad y preparación exigidas. El modelo respalda tal restricción con sus supuestos, si bien no en el sentido más estricto cuando se tienen presentes las interacciones de las referencias.
+
+\subsection{Modelo de asignación para un horizonte fijo}
+\begin{align}
+\min\quad Z_H &=\sum_{t\in T_H}\sum_{j\in J}\sum_{i\in I}(C_{ij}x_{ijt}+S_jy_{ijt}) \label{eq:obj}\\
+\text{sujeto a}\quad
+\sum_{t\in T_H}\sum_{j\in J}x_{ijt}&=D_i && i\in I, \label{eq:dem}\\
+\sum_{i\in I}(C_{ij}x_{ijt}+S_jy_{ijt})&\leq K_{jt} &&j\in J,\ t\in T_H, \label{eq:cap}\\
+x_{ijt}&\leq U_{ijt}y_{ijt} &&i\in I,\ j\in J,\ t\in T_H, \label{eq:link}\\
+x_{ijt}&\in\mathbb Z_{\geq0},\quad y_{ijt}\in\{0,1\}.\label{eq:dom}
+\end{align}
+Con la ecuación~\eqref{eq:dem} se hace necesario cubrir con exactitud la demanda de cada referencia, algo que un porcentaje de cobertura general no está en condiciones de ofrecer. La ecuación~\eqref{eq:cap} reúne el procesamiento y la preparación bajo un mismo presupuesto de capacidad. La ecuación~\eqref{eq:link} exige activar el par cuando existe producción. De haber una preparación positiva, una activación carente de unidades no aporta al objetivo y se puede descartar sin menoscabo de la factibilidad.
+
+Al poner $H=1$ se tiene el caso de cada día. Para una referencia con demanda positiva la desigualdad $\sum_{j,t}y_{ijt}\geq1$ es de aplicación; esto refuerza la relajación sin apartar las soluciones enteras que sean factibles. La diferencia entre las 1.099 restricciones de la formulación diaria de base y las 1.198 filas del modelo resuelto se debe a los 99 cortes de cobertura.
+
+$Z_H$ representa la suma de minutos de ocupación en distintas máquinas, no el tiempo transcurrido hasta cerrar la última orden ni un gasto en dinero. Hay que tener en cuenta que minimizar la carga total no es lo mismo que equilibrar la utilización, pues la solución podría volcar la producción a los equipos más eficientes y dejar holgura en los demás. La carga máxima se da como dato descriptivo, no como un makespan optimizado.
+
+\subsection{Tamaño y alcance de la formulación}
+La formulación diaria contiene 990 variables enteras de cantidad y 990 binarias, sin que haya variables continuas de decisión. Si se toman 200 referencias, diez máquinas y un periodo de tres días, la representación en su forma totalmente desagregada pasa a tener 6.000 variables de cantidad y otras tantas binarias. La formulación de base incluye 200 igualdades de demanda, 30 desigualdades de capacidad y 6.000 enlaces, lo que suma 6.230 restricciones antes de aplicar refuerzos.
+
+No hay que confundir estos conteos de concepto con el tamaño del maestro selectivo empleado en las corridas nominales documentadas. Para el caso de los tres días, el maestro final que se registra consta de 5.200 variables y 10.924 restricciones. El hecho de reducir las variables va de la mano con el fortalecimiento de las restricciones; no es automático que un número inferior de columnas signifique menos filas ni se puede inferir de ello el tiempo de cálculo.
+\input{secciones/modelo}
+
+\subsection{Justificación del horizonte de tres días}\label{sec:horizonte}
+La calibración descrita en el anexo~\ref{an:construccion} ha establecido el lote multiperiodo con un factor de 3. Una vez que se han fijado las 45.987 unidades, se mantiene el vector de demandas y se busca el menor horizonte de tiempo posible. La prueba no estima un horizonte de tiempo a partir de un vector de pedidos no relacionado con la construcción del lote. Para un vector de demanda fijo se define el horizonte mínimo por
+\begin{equation}
+	H^*=\min\{H\in\mathbb Z_{\geq1}:\mathcal F_H(D)\neq\varnothing\},
+	\label{eq:hmin}
+\end{equation}
+donde $\mathcal F_H(D)$ representa el conjunto de planes factibles para un vector de demanda fijo $D$ y un horizonte de tiempo de $H$ días. Esto significa que en primer lugar se determina el menor horizonte de tiempo factible, y una vez determinado, se minimiza la carga de trabajo para dicho horizonte. Así, que un plan haya resultado óptimo para un horizonte de 3 días no implica que sea un plan óptimo para un horizonte de 2 días.
+En el caso del lote de 200 referencias y 45.987 unidades se establece una cota inferior en la carga de trabajo,
+\begin{equation}
+	L(D)=\sum_{i\in I}D_i\min_{j\in J}C_{ij}
+	+ |I^+|\min_{j\in J}S_j,
+	\label{eq:cotaH}
+\end{equation}
+donde $I^+=\{i:D_i>0\}$. Cada unidad debe ser producida, como mínimo, en el menor tiempo unitario posible de su referencia, y cada referencia con demanda positiva debe ser preparada al menos una vez. Por tanto, la cota inferior está dada por la suma de elecciones optimistas sin requerir que sean alcanzables dentro de una misma asignación factible. La cota inferior permite obtener una condición necesaria sobre la capacidad, pero no un plan de producción.
+
+El cálculo con las matrices conservadas produce
+\begin{equation}
+L(D)=29.748,4944\ \text{min}>2(10)(1.440)=28.800\ \text{min}.
+\end{equation}
+La carga mínima supera la capacidad de uno y dos días. El plan certificado demuestra factibilidad en tres. Ambas evidencias establecen $H^*=3$ para este lote y estos parámetros. El resultado depende de las cantidades, los tiempos y la capacidad; no del número de clusters ni únicamente de las 200 referencias. Un cambio en los datos exige repetir la prueba.
+
+El hecho de que en el pasado se haya obtenido factibilidad en dos días con 30.656 unidades no va en contra de lo demostrado aquí, pues se empleaba otro lote. El vector de esta demostración da un total de 45.987 unidades. La demanda no se mueve en una búsqueda de horizonte; hacerla proporcional al número de días de cuenta sería alterar el problema a resolver.
+
+\section{Estrategia de resolución y certificación}\label{sec:resolucion}
+\subsection{Cotas, relajación y criterio numérico}
+Con el fin de minimizar, una solución factible e íntegra da lugar a una cota superior $UB$, en tanto que la relajación o el trabajo del solver ofrece una cota inferior $LB$. El óptimo se sujeta a $LB\leq Z_H^*\leq UB$. En el caso de $UB>0$, la brecha relativa se formula de la siguiente manera:
+\begin{equation}
+g=100\frac{\max\{0,UB-LB\}}{|UB|}.
+\end{equation}
+Para evitar las mínimas brechas negativas que la aritmética de punto flotante puede originar, se recurre al máximo con cero; también se mantiene la magnitud $|UB-LB|$ a fin de comprobar el cierre. Que un GAP se muestre como 0,00\% por redondeo no basta para atestiguar la optimalidad.
+
+En las nuevas corridas se pide un GAP relativo y absoluto de cero sin poner límite interno de tiempo. Si bien CBC hace uso de ramificación y cortes \cite{cbc}, HiGHS y Gurobi tienen parámetros distintos para cada una de las dos brechas \cite{highs,gurobi}. Tal configuración obliga a proseguir con la prueba, pero no asegura una duración finita en la práctica ni quita las tolerancias de factibilidad, integralidad o precisión numérica. Quitar el límite del optimizador no hace desaparecer los externos de la infraestructura.
+
+Se dice que una corrida es buena cuando el estado nativo respalda la optimalidad de la corrida, cuando la corrida satisface cotas coherentes, y cuando el plan entero satisface la verificación dentro de una tolerancia de $10^{-5}$. Nuestros certificados son de naturaleza numérica; no es posible tener una prueba formal de la aritmética racional, o una certificación independiente de la implementación del solver.
+
+\subsection{Fortalecimiento y desagregación selectiva}
+La cota de enlace de la Ecuaci{\'o}n~\eqref{eq:U} cumple su funci{\'o}n, porque evita el uso de constantes de magnitud artificial. La formulación MILP mantiene esta cota de enlace durante el proceso de resolución. Para el horizonte de tres d{\'i}as, se describe en los registros un procedimiento de desagregaci{\'o}n selectiva con poda lagrangiana: se resuelve un maestro agregado y se comprueba si sus asignaciones se distribuyen en el tiempo de manera factible para cada d{\'i}a; si no es el caso, se desagregan las m{\'a}quinas que corresponda.
+
+El maestro agregado arroja una cota de 34.131 minutos, que no es el {\'o}ptimo del modelo multiperiodo completo. El subproblema es incapaz de distribuir la asignaci{\'o}n de M1. Con M1 desagregada, el maestro arroja una cota de 34.132 minutos. Dentro del margen de tolerancia, la cota se ajusta a la del {\'o}ptimo de un plan completo que respete las capacidades d{\'i}a por d{\'i}a, m{\'a}quina por m{\'a}quina. La igualdad de la cota con el plan verificado permite cerrar la brecha para esta instancia. En los anexos~\ref{an:prueba} y~\ref{an:maestro} se detallan la prueba, el maestro, la distribuci{\'o}n y la decisi{\'o}n de poda.
+
+La poda descrita en los registros usa programaci\'{o}n din\'{a}mica \cite{taha} y una cota lagrangiana para fijar a cero 579 de los 2.000 pares del agregado. Esta acci{\'o}n es leg{\'i}tima si la cota condicional excluye toda posibilidad de mejora de la soluci{\'o}n factible, dados los errores de redondeo. No se trata de eliminar pares que sean lentos. En los registros y en los rastros del c{\'o}digo queda documentada la implementaci{\'o}n que se ha usado. La auditor{\'i}a en la revisi{\'o}n respalda las cotas, los planes y las salidas, pero no sustituye la demostraci{\'o}n formal del c{\'o}digo de poda.
+
+\subsection{Protocolo nominal de referencia}
+Mantener diez repeticiones por horizonte y solver con una semilla del 42 al 51 y un solo hilo de trabajo, variando el orden de los solvers en cada repetición. En los dos casos ejemplo. La trazabilidad de esta ejecución es: Python 3.14.9, PuLP 3.3.0, HiGHS 1.15.1, Gurobi 13.0.3 y CBC Devel (usando cbcbox 2.924). Nótese que no es CBC 2.10.3 que algunas distribuciones de PuLP tienen. El log ha sido tomado de una máquina Linux x86\_64 con 16 CPU lógicas disponibles. No se referencia el modelo específico de procesador en el log.
+
+Todos los solvers han empezado con la misma solución factible para cada horizonte. En el caso de un día, dicha solución factible proviene de una heurística determinista con valor 13.684 minutos. En el caso de tres días, se ha tomado una solución factible previamente encontrada por HiGHS que coincide con la solución certificada. La solución factible inicial se provee como cota superior para todos los solvers. Cada solver debe encontrar su propia cota inferior y realizar su propia prueba de cierre. El tiempo usado en las repeticiones no está contaminado por el tiempo requerido previamente para encontrar la solución factible.
+
+Las diez repeticiones son en la misma instancia, pero con diferentes semillas y ambientes. No son diez muestras independientes de demanda. Las semillas no resultan en una trayectoria aleatoria con la misma característica entre los diversos solvers. Este protocolo estandarizado es para poder registrar los resultados de estabilidad y tiempo, no para establecer un ranking universal de solvers o para generalizar a otras instancias.
+
+En el anexo~\ref{an:desarrollo_complementario} se describen las pruebas numéricas de certificación.
+
+\section{Resultados nominales y certificación cruzada}\label{sec:resultados}
+En esta sección se muestran los resultados para dos casos estables y sus certificados. En la Sección~\ref{sec:instancias} se muestra la comparación más relevante, sobre variedad de instancias. Los resultados para los estados y tiempos de los certificados no se confunden con los de las repeticiones nominales.
+En esta sección se muestran los resultados para los dos casos mencionados, plan diario y multiperiodo. Se muestran los resultados para las cantidades, el tiempo de preparación y la carga en máquinas. Luego se comparan los resultados para la certificación con los tres motores. La comparación que se hace en esta sección con la heurística es para el caso diario, considerando la misma cobertura de la demanda. Los resultados para 100 problemas se muestran en la Sección~\ref{sec:instancias}.
+
+\subsection{Plan diario}
+El valor certificado para 99 referencias es
+\begin{equation}
+Z_1^*=11.547,4126=9.147,2106+2.400,2020\ \text{min},
+\end{equation}
+El primer sumando se debe al procesamiento y el segundo a la preparación. Con 99 pares activos el plan da cobertura a las 14.188 unidades. No hay ninguna referencia que se parta entre más de una máquina en el plan conservado, algo que viene dado por la solución y no por una restricción del modelo. En cuanto a la ocupación global, es un 80,2\% de los 14.400 minutos de los que se dispone, mientras que la holgura total es de 2.852,5874 minutos. Los alistamientos representan el 20,79\% del objetivo. La figura~\ref{fig:diario} hace la distinción entre los dos componentes para cada máquina.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{figuras/carga_diaria.pdf}
+\caption[Carga diaria por máquina]{Carga del plan diario certificado, con separación de procesamiento y preparación.}\label{fig:diario}
+\fuente{plan CBC, repetición 1; cálculo directo con C y S}
+\end{figure}
+
+M7, M8 y M9 están a punto de su capacidad diaria. El resto de las máquinas tienen un margen amplio, M10 sobre todo. Pero esa holgura no debe tomarse como capacidad que se pueda cambiar de una a otra con facilidad: mover un producto podría encarecer el tiempo unitario, hacer falta una preparación o exigir una compatibilidad por confirmar. De la forma en que se usan tampoco se extrae ningún consejo para desinvertir en equipos.
+
+La referencia heurística de la sección~\ref{sec:heuristica} atiende el mismo lote sin faltantes. La mejora nominal es
+\begin{equation}
+R=100\frac{13.684,4886-11.547,4126}{13.684,4886}=15,6168\%.
+\end{equation}
+Los 2.137 minutos de diferencia corresponden a carga nominal evitada frente a la heurística. No se trata de una rebaja del plazo calendario ni de un ahorro real que se haya cuantificado en un ensayo de planta. La comparación tiene su validez en que los dos planes cubren el mismo lote y se rigen por las mismas normas.
+
+\begin{table}[H]\centering\small
+\caption{Cambios de asignación que ilustran la mejora diaria}
+\begin{tabular}{p{51mm}p{35mm}p{24mm}r}\toprule
+Referencia abreviada & Heurística: máquina/unidades & MILP & Reducción (min)\\\midrule
+Envase 1000 PET Capri nuevo, 31 g & M1/145; M2/502 & M6/647 & 120,1660\\
+Tapa negra EGO GEL 500 ml & M5/21; M10/21 & M5/42 & 83,7983\\
+Conjunto base LZC limón 450 g & M2/68 & M7/68 & 78,3678\\\bottomrule
+\end{tabular}
+\fuente{heurística reconstruida y plan CBC diario, repetición 1; identificadores completos en el CSV de respaldo}
+\end{table}
+El primer cambio concentra 647 unidades en M6 y evita repartirlas entre M1 y M2. El segundo elimina una preparación en M10. Son contribuciones individuales al ahorro conjunto; otras referencias pueden aumentar su carga para liberar capacidad donde produce más beneficio.
+
+\subsection{Plan de tres días}
+El valor actualizado para 200 referencias es
+\begin{equation}
+Z_3^*=34.132,1434=28.663,9914+5.468,1520\ \text{min}.
+\end{equation}
+Se cumplen las 45.987 unidades y todas las capacidades máquina--día. La ocupación agregada es del 79,01\% de 43.200 minutos y la holgura total es de 9.067,8566 minutos. La preparación equivale al 16,02\% del objetivo. El plan exportado registra 207 activaciones producto--máquina--día para 200 referencias: en el plan CBC, repetición 1, cinco referencias tienen varias activaciones y cuatro utilizan varias máquinas. Los dos conteos describen propiedades distintas: una referencia puede activar la misma máquina en días diferentes. La figura~\ref{fig:tres} muestra la carga desagregada del plan de referencia.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{figuras/carga_tres_dias.pdf}
+\caption[Carga por máquina y día]{Distribución diaria de la carga en un plan certificado de tres días.}\label{fig:tres}
+\fuente{plan CBC, repetición 1; activaciones reconstruidas a partir de producción positiva}
+\end{figure}
+
+El estudio en su versión anterior se ceñía a un plan de 34.234,8717 minutos con una brecha positiva y factible. La nueva evidencia ha venido a sustituirlo como valor nominal de referencia; la reducción se sitúa en 102,7283 minutos, o sea el 0,3001\% del incumbente previo. Lo que más destaca del cambio es la verificación de todo el plan y el cierre de cotas. De todas formas, lo anterior queda documentado como un antecedente histórico, no como un fracaso en la certificación del resultado de hoy.
+
+Los porcentajes de ocupación agregados no van en contra de la necesidad de tres días. La cota inferior de carga de 29.748 minutos supera los 28.800 minutos disponibles en dos días y demuestra su inviabilidad; el tercero aporta 14.400 minutos. Incluso con el horizonte mínimo acreditado, las unidades indivisibles, los alistamientos y las capacidades locales pueden dar lugar a holguras.
+
+\input{secciones/metricas}
+
+\subsection{Certificación cruzada con CBC, HiGHS y Gurobi}\label{sec:comparacion}
+Con la corrida de verificación del 25 de octubre de 2026 (26 de octubre en UTC) se dan por actualizadas las duraciones del experimento nominal. Los datos, las demandas y las capacidades se mantienen inalterados; el viejo expediente queda archivado y sus tiempos no se confunden con los de esta muestra.
+
+Las 60 corridas quedan registradas en óptimo y pasan la prueba de factibilidad. En el horizonte diario de las treinta, el objetivo es 11.547 minutos; las otras treinta, de tres días, coinciden en 34.132 minutos. No se aprecia variación de calado en el valor de un motor respecto al otro. La comparación versa sobre el esfuerzo que hace falta para certificar y conseguir ese valor de acuerdo con lo que marca el protocolo.
+
+\begin{table}[H]\centering\small
+\caption{Tiempo total por corrida y frecuencia de certificación}\label{tab:tiempos}
+\begin{tabular}{clrrrr}\toprule
+Días & Motor & Certificadas & Media (s) & DE (s) & Rango (s)\\\midrule
+1 & CBC & 10/10 & 13,529 & 0,665 & 12,824--14,746 \\
+1 & Gurobi & 10/10 & 1,296 & 0,212 & 1,061--1,719 \\
+1 & HiGHS & 10/10 & 6,824 & 1,030 & 5,900--9,480 \\
+3 & CBC & 10/10 & 49,230 & 16,056 & 28,745--69,427 \\
+3 & Gurobi & 10/10 & 9,614 & 0,156 & 9,428--9,972 \\
+3 & HiGHS & 10/10 & 28,555 & 2,130 & 25,216--31,692 \\
+\bottomrule\end{tabular}
+\fuente{corrida del 25 de octubre de 2026, hora de Colombia; diez repeticiones por fila; DE muestral; tiempo total registrado por la aplicación}
+\par\smallskip\begin{minipage}{.96\linewidth}\footnotesize
+\textit{Nota:} las corridas de tres días empiezan del mismo plan que el obtenido antes con HiGHS, donde el objetivo es idéntico al óptimo confirmado. Los tiempos omiten la obtención previa de ese inicio. Cada motor lleva a cabo su propia prueba de cierre de cotas.
+\end{minipage}
+\end{table}
+
+El mejor valor medio es el que se encontró utilizando Gurobi, seguido de HiGHS y después de CBC. La relación de las medias de CBC a Gurobi es de aproximadamente 5,12 en un periodo de tres días y la de HiGHS a Gurobi es de 2,97, cifras que si bien describen el experimento realizado no constituyen una estimación de aceleraciones garantizadas que fuesen válidas para cualquier otra formulación, máquina o versión. En lo que respecta a la dispersión de CBC en tres días, es la mayor de los demás motores: el máximo de sus diez ejecuciones fue de 69,427 s, cosa que no impidió cerrar la distancia que ha separado tal motor de Gurobi.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{figuras/tiempos.pdf}
+\caption[Tiempo por repetición y optimizador]{Tiempo total por repetición. Las escalas verticales difieren entre horizontes.}
+\end{figure}
+
+Los tiempos reportados son los totales, incluyendo todas las etapas que la aplicación mide durante cada corrida, y no sólo el tiempo de ejecución del solver central. Ambos tiempos son registrados en el anexo digital. En tres días se incluyen la compilación, la poda, los maestros y la verificación de distribución; no se puede determinar el tiempo para encontrar un inicio común a partir del tiempo medio de certificación. No hicimos experimentos de ablación para poder atribuir parte de la ganancia de tiempo a un corte o poda en particular, o a un cambio de versión o a un inicio factible.
+
+El hecho de que los certificados sean los mismos en estas dos instancias muestra la robustez del método en estas dos instancias, pero no nos da diez demostraciones matemáticas independientes de la corrección de los datos. Se registra el identificador, la semilla, el motor, la versión, el objetivo, las cotas, la brecha, los residuos y el tiempo para poder revisarlos. Las tablas con las diez repeticiones están en el anexo~\ref{an:certificaciones}, mientras que en el texto principal sólo presentamos la síntesis del experimento nominal.
+
+El anexo~\ref{an:desarrollo_complementario} conserva la lectura estadística de las repeticiones.
+
+\input{secciones/estudio_instancias}
+
+\section{Sensibilidad y Monte Carlo histórico}\label{sec:escenarios}
+El escenario estudia el efecto sobre los resultados cuando cambian los datos. Utiliza la toma de decisiones previamente desarrollada, pero hace un tipo de análisis diferente al de la certificación nominal. En la sensibilidad actual de demanda y capacidad se usa el protocolo que no tiene el límite interno. El Monte Carlo mantiene la distribución, los criterios de terminación, y los archivos de historias. Estos resultados son de un experimento distinto al de las 60 corridas nominales.
+
+\subsection{Dependencia respecto de los coeficientes}
+Una vez realizada la revalidación histórica con la matriz reconstruida, el óptimo diario fue de 11.430 minutos, frente a los 11.547 minutos de la matriz nominal. Se registraron 21 cambios de asignación. Este resultado no puede ser entendido como una mejora del algoritmo, a nivel operativo, debido a que los coeficientes del problema no son los mismos. Si evaluamos el plan nominal sin reoptimizar con la matriz reconstruida obtenemos un resultado de 11.973 minutos. Comparando los dos resultados podemos observar como la procedencia de los tiempos en la toma de decisiones, puede ser más importante que las pequeñas diferencias entre las configuraciones del solver.
+
+La ejecución actual de sensibilidad de capacidad identifica a M8 como el recurso con mayor respuesta al incremento evaluado: 30 minutos adicionales reducen el objetivo en 5,4161 minutos. M7 y M9 aportan reducciones de 3,2289 y 0,3550 minutos; las otras siete máquinas registran cero a la precisión mostrada. El cociente $\eta_j=[Z(K)-Z(K+30e_j)]/30$ mide una diferencia finita, no un precio sombra del MILP. La tabla~\ref{tab:capacidad_actual} recoge los resultados que muestra la aplicación.
+
+En sensibilidad de demanda, la aplicación resuelve cinco factores entre 0,8 y 1,2 después de convertir la demanda escalada en unidades enteras. Los cinco escenarios muestran estado óptimo y GAP reportado cero. Para el factor 1,2, el objetivo es de 13.641,1764 minutos; el caso base conserva 11.547 minutos. La tabla~\ref{tab:sensibilidad_actual} identifica la demanda efectiva y los objetivos de esta ejecución.
+
+\subsection{Escenarios de demanda}
+Con un ejercicio histórico de Monte Carlo se han generado 1.000 demandas y reoptimizado cada escenario a partir de factores uniformes e independientes que van de 0,85 a 1,15. Hay que tener en cuenta que la distribución es una hipótesis de tipo experimental y no una estimación validada de los pedidos reales. Reoptimizar tras ver una demanda no acredita que el plan nominal siga siendo viable ante dicha perturbación.
+
+Según lo expuesto en el documento de base, la revalidación deja constancia de 1.000 comparaciones factibles entre MILP y heurística. No hay GAP numéricamente cero en ninguna; el máximo se sitúa en 1,1879\%. En cuanto a los incumbentes, la mejora media ha sido del 15,2\% (15,2\% de mediana) y con una desviación estándar de 0,7724 puntos porcentuales. Las cotas ubican la media óptima de la muestra en un tramo entre 15,2\% y 15,3\%, un rango que describe la incertidumbre de optimización más que de un intervalo de confianza de la población.
+
+Estos valores son de carácter histórico y se cotejan con los CSV obtenidos, sin que se trate de una nueva simulación para esta revisión. El anexo~\ref{an:historico} guarda el procedimiento y hace la salvedad de las cifras de 15,14\% de una ejecución anterior. Tampoco las 60 certificaciones nominales vienen a sustituir los registros de los 1.000 escenarios o a hacer óptimos sus incumbentes.
+
+El anexo~\ref{an:desarrollo_complementario} presenta el generador y las verificaciones de Monte Carlo.
+
+\section{Aplicación, evidencia y uso operativo}\label{sec:aplicacion}
+Esta aplicación hace un recuento de las salidas del recorrido metodológico, es decir, los datos identificados, los planes, los indicadores y la evidencia de resolución. La certificación respalda las instancias nominales y son los escenarios los que se encargan de su interpretación. El usuario tiene a mano ambas fuentes con el estado de cada una para descargar los archivos y pasar revista a las decisiones tomadas.
+
+Por su parte, la herramienta computacional articula la carga de datos, la opción de horizonte y la resolución para proceder a la descarga de resultados. En este caso lo valioso es que mantiene un vínculo comprobable entre lo que se ha introducido y lo que se obtiene. Un plan descargado ha de dejar constancia de la instancia, los parámetros y el estado de solución de origen; con una hoja que diga ``óptimo’’ pero carente de cotas o validación no se tiene suficiente prueba.
+
+Los resultados se exponen técnicamente diferenciando el valor objetivo y sus partes, la demanda de referencia, la carga, holgura y uso por máquina y día, las preparaciones, el estado de terminación, $LB$, $UB$ y GAP, la duración, qué versión de motor se emplea y los residuos de verificación. Con la demanda invariable, la interfaz se encarga de calcular el horizonte mínimo. El indicador da a ver tres días para el lote nominal y en la comparación se tienen en cuenta los supuestos de uno y tres días. Los módulos de certificación de costes y de verificación de días mínimos se han implementado como módulos separados. Un plazo sin resolver no es una situación óptima.
+
+Para el plan y el informe, la aplicación permite la descarga en tres niveles: plan diario, plan de multiperiodo y archivo de certificación. Aunque el plan incluye solo la activación y el número de unidades, el archivo de certificación incluye estos datos más parámetros, logs y matrices. El inventario de pruebas para los archivos de certificación se pueden ver en el anexo~\ref{an:repro}. En los archivos de certificación no se incluye la información de licencia, que no es necesaria para la certificación del motor que se utiliza.
+
+La herramienta podría ser implementada por RPM de manera gradual. El equipo en planta debería comprobar la compatibilidad de los pares de equipo que están actualmente activos, los tiempos en los que se concentra la carga, y la capacidad neta que se debería utilizar (en lugar de la capacidad nominal). Una vez esto se haya comprobado, se puede llevar a cabo un piloto con el plan, y guardar información de las preparaciones, las incidencias y la producción. Esta información permitiría cuantificar el impacto del plan en la operación, aparte de la mejora que se obtenga del uso del motor.
+
+En el anexo~\ref{an:desarrollo_complementario} se describe cómo se han implementado los controles de carga y exportación de la aplicación.
+
+
+\section{Discusión de los hallazgos y alcance operativo}
+La limitación más importante de nuestro estudio es que solo se cuenta con trazabilidad parcial de los tiempos. Aunque podemos controlar una regla de imputación para las celdas observadas, esto no nos permite hablar abiertamente del proceso generador de los tiempos que componen la matriz nominal publicada. El hecho de que nuestro modelo de programación resuelva satisfactoriamente la matriz nominal mencionada no implica que no sea conveniente contar con una regla de imputación que pueda ser validada técnicamente; el documento indica esta dualidad.
+Nuestro modelo asume que las máquinas tienen una capacidad nominal de 24 horas por día y no hace ningún tipo de ajuste por fallos, mantenimientos o uso en común de las máquinas. Suponemos que los alistamientos no dependen de la secuencia ni del producto. En caso de que fuese necesario, por ejemplo, mantener un alistamiento entre días o que éste dependa del producto, habría que incluir variables y parámetros adicionales en el modelo, lo que cambiaría su formulación y nos obligaría a recalcular los planes y sus certificados.
+
+El modelo asume que la demanda está disponible desde el comienzo y se debe satisfacer en una ventana común. La función objetivo no considera clientes y no penaliza la tardanza. Tampoco contempla la reposición de inventarios con realimentación. Así, nuestro modelo se limita a un problema de asignación estática de producción. La incertidumbre operativa, la secuencia y la planificación dinámica necesitarían datos y formulaciones adicionales. La comparación central del estudio se realiza con 100 instancias y una única ejecución de cada uno de los métodos, sin considerar un inicio heredado. Tanto HiGHS como Gurobi resuelven 76 problemas del total que resultan ser factibles, aunque Gurobi logra certificar más óptimos y presenta la menor brecha máxima con el protocolo de comparación seguido. Las dos instancias nominales mantienen el inicio informado y la estrategia selectiva y se presentan como casos ilustrativos. El remuestreo transversal nos permite incrementar la diversidad de problemas, pero no sustituye a una serie temporal de pedidos. La estratificación y la selección previa de celdas que llevamos a cabo acotan los intervalos y contrastes del estudio.
+
+La verificación independiente re-calcula la demanda, capacidad, enlace, integralidad, no-negatividad y objetivo para los planes que hemos exportado. Para el horizonte de tres días, reconstruye la activación para los bloques que están produciendo. Los logs atestiguan las cotas y terminación. Como esta verificación se limita a los 1,000 planes históricos que ya tenemos, y los nominales, no es una sustitución por una auditoría formal de los optimizadores, ni atestigua sobre los cronometrajes del optimizador. No requiere poner de nuevo en marcha los optimizadores.
+
+\section{Conclusiones}
+Los experimentos a 100 instancias avalan la propuesta de realizar la asignación de referencias en parejas para máquinas dentro de los supuestos del modelo. La heurística logró resolver 68 instancias, y Gurobi pudo encontrar una solución completa para 76 de ellas. Los 8 casos restantes corresponden a situaciones donde la regla de asignación de referencias deja demanda insatisfecha. Gurobi consiguió para las instancias que resolvió completamente una reducción promedio en la carga de un 21,8\,\%. El intervalo de confianza del 95\,\% del bootstrap condicional, de 19,5\,\% a 24,8\,\%, debe interpretarse como la incertidumbre que hay en el diseño del sistema de referencia y en las instancias de Gurobi a las que se pueden comparar; no es un intervalo para pronosticar el ahorro que se tendrá en instancias futuras.
+
+A partir de la caracterización, se ha podido determinar el nivel de cobertura de esta y el origen de los tiempos utilizados en el caso RPM Colombia. Gracias a los 819 pares de los 990 que tiene el caso diario, ha sido posible diferenciar entre los coeficientes e información que fueron medidos y los que no lo fueron. Al contrastar el resultado con la matriz reconstruida y el plan de fabricación obtenido se pueden saber cuales de estos datos deben ser verificados en planta. Aunque las agrupaciones permiten caracterizar la heterogeneidad de referencias, no determinan el horizonte de producción.
+
+El MILP determina simultáneamente tamaños de lote enteros, encendidos y capacidad utilizada. Con el plan diario, se han satisfecho 14.188 unidades con una utilización de 11.547 minutos (un 15,6\,\% menor que el plan factible). La capacidad agregada del plan se sitúa en el 80,2\,\%, aunque hay máquinas cuya carga es muy alta y otras con mayor holgura. Si se realiza un análisis por recursos se puede observar este tipo de diferencias que no son visibles a nivel global.
+
+Para el lote de 200 referencias con 45.987 unidades en total, se obtiene un valor óptimo certificado de 34.132 minutos. Al obtener una cota inferior para la carga total, se eliminan dos de los días y el plan factible asume que se necesita al menos tres días. El lote utilizado se ha creado a partir del ajuste de ventas y de la capacidad documentada, y no es un lote real de tres días concretos que se va a describir en la conclusión.
+
+Para el problema principal de estudio, CBC ha logrado certificar el óptimo numérico en 20 casos, HiGHS en 31, y Gurobi en 41. Todos los solvers dan las mismas 24 instancias como infactibles. Gurobi ha resuelto las otras 76 instancias, obteniendo siempre un valor del GAP por debajo del 0,18\,\% en cada plan. El máximo de los GAP de las 32 instancias factibles con cinco días fue de 0,179452\,\%. Al analizar los resultados por factores, se observa que Gurobi logra el primer óptimo certificado en 41 de las 42 instancias en las que algún solver ha logrado certificar el óptimo numérico, al menos para la ejecución realizada.
+
+Monte Carlo mantiene 1.000 casos perturbados como prueba histórica adicional. En todos los escenarios los incumbentes que resultan factibles superan a la heurística y alcanzan una reducción promedio de 15,2\%, pero no pueden ser calificados con el nombre, pues las brechas son positivas. Lo que se ve aquí es que con reoptimización bajo los supuestos de simulación el plan se adapta, pero no es una prueba de que un plan fijo sea robusto.
+
+La aplicación une los datos, los planes, los indicadores y la evidencia que se puede exportar para apoyar la asignación. Para utilizarlo operacionalmente hay que verificar compatibilidades, medir tiempos de interés y verificar capacidades nominales contra efectivas. Esta investigación demuestra la mejora en carga computacional, y corresponderá a un piloto en planta determinar el impacto operacional y si se traduce a una mejora económica o de servicio.
+
+La generación estratificada aprovecha la diferencia entre referencias tal como se observa, sin inventar fechas de venta. El supuesto de intercambiabilidad y la proporción de celdas seleccionadas son parte del supuesto sobre el cual se interpreta. El siguiente paso para RPM es comenzar a registrar pedidos fechados y capacidad neta, y así validar el modelo operacionalmente. Los resultados obtenidos muestran que sí hay una evaluación piloto por hacerse con respecto a la asignación, pero no una declaración de que la mejora económica ya ha sido lograda.
+
+\clearpage
+\phantomsection\addcontentsline{toc}{section}{Referencias}
+\begin{thebibliography}{99}\small
+\bibitem{taha} Taha, H. A. (2017). \textit{Operations Research: An Introduction}, 10.ª ed. Pearson.
+\bibitem{cattrysse} Cattrysse, D. G. y Van Wassenhove, L. N. (1992). A survey of algorithms for the generalized assignment problem. \textit{European Journal of Operational Research}, 60(3), 260--272. \url{https://doi.org/10.1016/0377-2217(92)90077-M}.
+\bibitem{unlu} Unlu, Y. y Mason, S. J. (2010). Evaluation of mixed integer programming formulations for non-preemptive parallel machine scheduling problems. \textit{Computers \& Industrial Engineering}, 58(4), 785--800. \url{https://doi.org/10.1016/j.cie.2010.02.012}.
+\bibitem{law} Law, A. M. (2015). \textit{Simulation Modeling and Analysis}, 5.ª ed. McGraw-Hill.
+\bibitem{rousseeuw} Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. \textit{Journal of Computational and Applied Mathematics}, 20, 53--65. \url{https://doi.org/10.1016/0377-0427(87)90125-7}.
+\bibitem{ward} Ward, J. H. (1963). Hierarchical grouping to optimize an objective function. \textit{Journal of the American Statistical Association}, 58(301), 236--244. \url{https://doi.org/10.1080/01621459.1963.10500845}.
+\bibitem{cbc} COIN-OR. \textit{CBC User's Guide: Introduction}. Documentación oficial. \url{https://coin-or.github.io/Cbc/intro.html}. Consulta: 19 de octubre de 2026.
+\bibitem{highs} HiGHS. \textit{List of options}. Documentación oficial, parámetros \texttt{mip\_rel\_gap} y \texttt{mip\_abs\_gap}. \url{https://ergo-code.github.io/HiGHS/dev/options/definitions/}. Consulta: 19 de octubre de 2026.
+\bibitem{gurobi} Gurobi Optimization. \textit{Optimizer Reference Manual: Parameter Reference}. Parámetros MIPGap y MIPGapAbs. \url{https://docs.gurobi.com/projects/optimizer/en/current/reference/parameters.html}. Consulta: 19 de octubre de 2026.
+
+\bibitem{mula} Mula, J., Poler, R., García-Sabater, J. P. y Lario, F. C. (2006). Models for production planning under uncertainty: A review. \textit{International Journal of Production Economics}, 103(1), 271--285. \url{https://doi.org/10.1016/j.ijpe.2005.09.001}.
+\bibitem{dauzere} Dauzère-Pérès, S., Ding, J., Shen, L. y Tamssaouet, K. (2024). The flexible job shop scheduling problem: A review. \textit{European Journal of Operational Research}, 314(2), 409--432. \url{https://doi.org/10.1016/j.ejor.2023.05.017}.
+\bibitem{li} Li, Z. e Ierapetritou, M. (2008). Process scheduling under uncertainty: Review and challenges. \textit{Computers \& Chemical Engineering}, 32(4--5), 715--727. \url{https://doi.org/10.1016/j.compchemeng.2007.03.001}.
+\bibitem{fisher} Fisher, M. L. (1981). The Lagrangian relaxation method for solving integer programming problems. \textit{Management Science}, 27(1), 1--18. \url{https://doi.org/10.1287/mnsc.27.1.1}.
+\bibitem{miplib} Gleixner, A. et al. (2021). MIPLIB 2017: data-driven compilation of the 6th mixed-integer programming library. \textit{Mathematical Programming Computation}, 13, 443--490. \url{https://doi.org/10.1007/s12532-020-00194-3}.
+\bibitem{pedregosa} Pedregosa, F. et al. (2011). Scikit-learn: Machine learning in Python. \textit{Journal of Machine Learning Research}, 12(85), 2825--2830. \url{https://jmlr.org/papers/v12/pedregosa11a.html}.
+\bibitem{bertsimas} Bertsimas, D. y Sim, M. (2004). The price of robustness. \textit{Operations Research}, 52(1), 35--53. \url{https://doi.org/10.1287/opre.1030.0065}.
+\bibitem{pulpstart} COIN-OR. \textit{PuLP: How to warm-start a solver}. Documentación oficial. \url{https://coin-or.github.io/pulp/guides/how_to_mip_start.html}. Consulta: 19 de octubre de 2026.
+\bibitem{numeric} Gurobi Optimization. \textit{Tolerances and user-scaling}. Documentación oficial. \url{https://docs.gurobi.com/projects/optimizer/en/current/concepts/numericguide/tolerances_scaling.html}. Consulta: 19 de octubre de 2026.
+\bibitem{streamlit} Streamlit. \textit{Add statefulness to apps: Session State}. Documentación oficial. \url{https://docs.streamlit.io/develop/concepts/architecture/session-state}. Consulta: 19 de octubre de 2026.
+\bibitem{dolan2002} Dolan, E. D. y Moré, J. J. (2002). Benchmarking optimization software with performance profiles. \textit{Mathematical Programming}, 91, 201--213. \url{https://doi.org/10.1007/s101070100263}.
+\bibitem{davison1997} Davison, A. C. y Hinkley, D. V. (1997). \textit{Bootstrap Methods and their Application}. Cambridge University Press. \url{https://doi.org/10.1017/CBO9780511802843}.
+\end{thebibliography}
+\label{finprincipal}
+\clearpage
+\appendix
+\setstretch{1.08}\small
+\renewcommand{\thepage}{A-\arabic{page}}\setcounter{page}{1}
+\fancyhead[R]{\small Anexos técnicos}
+\section*{Anexos técnicos y evidencia de respaldo}
+Con estos anexos se da apoyo al trabajo. Los anexos utilizan numeración de páginas con el prefijo A-. Las tablas de certificación se extienden a diez repeticiones por motor y horizonte. En el caso de la evidencia digital, los registros nativos y su exactitud se conservan; las cifras impresas, en cambio, han sido redondeadas para que resulten más legibles.
+
+\begin{itemize}
+	\item Anexo A: trazabilidad de los datos y reconstrucción histórica.
+	\item Anexo B: validez de cotas y certificación selectiva.
+	\item Anexo C: protocolo y sesenta certificaciones.
+	\item Anexo D: sensibilidad de los resultados en vigor y antecedentes de simulación.
+	\item Anexo E: verificación independiente y reproducción documental.
+	\item Anexo F: heurística e instancias construidas.
+	\item Anexo G: maestro, distribución diaria y poda lagrangiana.
+	\item Anexo H: resultados individuales de las cien instancias y trazabilidad de la ejecución.
+	\item Anexo I: desarrollo técnico complementario de métodos, datos y aplicación.
+\end{itemize}
+
+\section{Trazabilidad de los datos}\label{an:datos}
+\subsection{Cobertura observada de la instancia diaria}
+La documentación de origen registra hasta 30 mediciones por combinación procesada. La cobertura por máquina es la siguiente. Estos conteos pertenecen al análisis histórico del documento de base, no se infieren de la matriz C completada de los certificados.
+\begin{table}[H]\centering
+\caption{Pares con observación por máquina, de 99 posibles}
+\begin{tabular}{lrrrrrrrrrr}\toprule
+Máquina&M1&M2&M3&M4&M5&M6&M7&M8&M9&M10\\\midrule
+Observados&35&67&89&74&83&93&97&95&95&91\\\bottomrule
+\end{tabular}
+\end{table}
+La suma es 819; los 171 faltantes representan el 17,27\%. Una celda sin medición se debe identificar mediante una marca de procedencia, sin confundir el valor estimado con un cronometraje. La evaluación de compatibilidad técnica debe ser independiente de la presencia de observación.
+
+\subsection{Comparación de estimadores}
+Con un conjunto de prueba $V$ de celdas observadas ocultadas, se utilizan
+\begin{align}
+\mathrm{MAE}&=\frac{1}{|V|}\sum_{(i,j)\in V}|C_{ij}-\widehat C_{ij}|,\\
+\mathrm{RMSE}&=\sqrt{\frac{1}{|V|}\sum_{(i,j)\in V}(C_{ij}-\widehat C_{ij})^2}.
+\end{align}
+Los parámetros de cada estimador deben calcularse sin usar las celdas ocultadas. La media por máquina se estima con observaciones positivas del conjunto de entrenamiento de cada equipo. La exclusión de ceros requiere distinguir ausencia de dato de un valor físico válido; un procesamiento de duración cero no se interpreta como alternativa gratuita.
+\begin{table}[H]\centering\small
+\caption{Revalidación histórica de imputación, 100 particiones}
+\begin{tabular}{lrrr}\toprule
+Estimador&MAE medio&IC reportado del 95\%&Mejor en\\\midrule
+Media por máquina&0,1888&[0,1869; 0,1906]&96/100\\
+Media global&0,1992&[0,1975; 0,2010]&3/100\\
+Modelo aditivo&0,2066&[0,2046; 0,2086]&1/100\\
+Media por referencia&0,2180&[0,2159; 0,2201]&0/100\\\bottomrule
+\end{tabular}
+\fuente{revalidación documento de base; MAE en min/unidad}
+\end{table}
+Las particiones reutilizan una base de observaciones. El intervalo reportado resume la variación del error en esa evaluación; no estima la incertidumbre de todas las celdas sin observación ni demuestra un muestreo aleatorio de la producción de la empresa.
+
+\subsection{Diferencias entre matriz publicada y reconstruida}
+El documento de base reporta concordancia entre los coeficientes publicados en \texttt{MODELO PL} y \texttt{DATOS SIMULADOS}, tras convertir segundos a minutos y aplicar una tolerancia de $10^{-6}$. La reconstrucción con las medias positivas por máquina difiere de la matriz publicada en 174 celdas: 171 pares sin observación y tres con registro. Ninguna de las 171 imputaciones publicadas coincide con la media por máquina reconstruida dentro de esa tolerancia. La comparación identifica una discrepancia de procedencia; no autoriza a sustituir los coeficientes conservando los certificados originales.
+
+\begin{table}[H]\centering\small
+\caption{Discrepancias históricas en tres pares con observación}
+\begin{tabular}{p{73mm}rr}\toprule
+Par & Publicado & Reconstruido\\\midrule
+M1: SOBRETAPA VV VERDE SF QUALA &0,392222&0,405747\\
+M1: ENVASE 4 LTS SUAVIZANTE AZUL PE &0,075000&0,450000\\
+M5: MAQUILA ENV 400 CRISTAL 17 GR S.M. PET CAPRI &1,147407&0,562222\\\bottomrule
+\end{tabular}
+\fuente{revisión histórica de cronometrajes; unidades min/unidad}
+\end{table}
+En el primer par se constata un cero en 30 registros, a diferencia del segundo que cuenta con cinco observaciones positivas de ese mismo total. En lo que atañe al tercer par, la divergencia entre las hojas no se debe a una simple conversión de unidades. La matriz de publicación se queda con el resultado nominal y la reconstrucción pasa a ser un análisis de alternativa. Hacer otra cosa y cambiar los coeficientes sin más sería imposible para conciliar planes y certificados.
+
+\subsection{Agrupaciones y límites de interpretación}
+$D_i$ y $CV_i=\sigma(C_{i\cdot})/\mu(C_{i\cdot})$ son los parámetros que se usan para la segmentación histórica de los productos. Un valor de $CV_i$ bajo indica una relativa similitud en los tiempos nominales, aunque no debe tomarse como indicio de que existan moldes disponibles o capacidad remanente, ni de compatibilidad. En cuanto a los grupos 42, 52 y 5, su carácter es descriptivo; con dos bastaría para maximizar Silhouette en el análisis, pero se ha optado por tres en aras de la interpretación.
+
+Para el agrupamiento de las máquinas se ha tenido en cuenta el tiempo de alistamiento y la media y varianza de operación. M1 y M10 se erigen en grupos separados y el resto de los ocho equipos forman un tercer grupo. La concordancia con Ward da un índice de Rand ajustado de 1,000. Conviene precisar que esto indica una coincidencia entre las dos particiones y no que todas las máquinas sean del mismo grupo, pues el índice es de particiones y no de homogeneidad general.
+
+Las pruebas de Kruskal--Wallis sobre las variables de las agrupaciones no se toman como validación inferencial independiente. De igual modo, un alto alistamiento no se considera algo “mejor”; M2 tiene uno de los tiempos más elevados, lo que en el modelo implica una carga de preparación mayor.
+
+\section{Cotas y fundamento de la certificación selectiva}\label{an:prueba}
+\subsection{Validez de la cota de enlace}
+Si $x_{ijt}>0$, el enlace exige $y_{ijt}=1$. La capacidad local implica $C_{ij}x_{ijt}+S_j\leq K_{jt}$ al omitir términos no negativos de otras referencias. Como $C_{ij}>0$ y $x_{ijt}$ es entero,
+\[
+x_{ijt}\leq\left\lfloor\frac{K_{jt}-S_j}{C_{ij}}\right\rfloor.
+\]
+De la igualdad de demanda y la no negatividad se deduce que $x_{ijt}\leq D_i$. Es válida la menor de las dos cotas. En el caso de que el presupuesto no dé para una unidad y su preparación, el par ha de fijarse sin producción. La cota se vuelve a calcular ante cualquier variación en la demanda, los tiempos o la capacidad.
+
+\subsection{Cota de horizonte}
+En un plan de viabilidad, toda unidad de $i$ hace un consumo de por lo menos $\min_j C_{ij}$ y cada referencia positiva activa una preparación cuya duración no es inferior a $\min_jS_j$. La suma de los dos da la ecuación~\eqref{eq:cotaH}. Dado que la carga de un plan no puede exceder la capacidad del horizonte en su totalidad, si $L(D)>\sum_{j,t}K_{jt}$ el plan es infactible. La demostración utiliza cantidades no negativas y al menos una activación para cada referencia con demanda positiva; no comparte un único alistamiento entre referencias distintas.
+
+Con el lote fijo certificado se tiene un $L(D)$ de 29.748,49444444444 minutos. Puesto que la capacidad para dos días es de 28.800, el margen de 948,4944 minutos basta para descartar dicho horizonte, aún con elecciones de máquina lo más optimistas que sean. La cota descarta dos días y el plan factible de tres demuestra el horizonte mínimo, sin necesidad de resolver la instancia incompatible de dos días.
+
+\subsection{Maestro relajado y plan completo}
+Dado que $\mathcal F$ es el conjunto factible del modelo en su forma totalmente desagregada y $\mathcal R$ un maestro que hace una relajación de algunas de las restricciones diarias, si todo plan de $\mathcal F$ se puede representar en $\mathcal R$ sin un objetivo mayor, el óptimo del maestro constituye una cota inferior. Con un plan completo $\bar x\in\mathcal F$ a mano,
+\[
+Z_{\mathcal R}^*\leq Z_{\mathcal F}^*\leq Z(\bar x).
+\]
+El óptimo del modelo entero queda certificado cuando los extremos concuerdan según el criterio numérico en vigor. No es suficiente con la factibilidad de una distribución parcial; el plan de cierre ha de satisfacer tanto la demanda como la capacidad máquina por día.
+
+De las corridas de tres días se han documentado dos maestros. El primero, en su forma agregada, da 34.131,057833 minutos, pero al comprobar la distribución para M1 resulta infactible. El maestro de después incluye M1 por día y llega a 34.132,1433888890 minutos. El plan completo validado alcanza 34.132,1433888889. Las diferencias entre cotas son del orden de $10^{-10}$ minutos, muy inferiores a $10^{-5}$; el anexo~\ref{an:repro} presenta el máximo observado sobre las 60 corridas.
+
+Que un subproblema de distribución sea infactible no implica lo mismo para el problema de producción en su totalidad. Lo que indica es que la asignación agregada no se puede repartir con las decisiones ya tomadas en ese subproblema. Habrá que añadir detalle o rectificar la asignación, como se ha hecho en este caso.
+
+\subsection{Poda y preservación del óptimo}
+En el espacio de decisiones, una cota $L_B$ válida para una región condicional $B$ posibilita su descarte cuando $L_B>UB+\varepsilon$, con $\varepsilon$ como margen conservador. Debe tenerse en cuenta que si se aplica el criterio de no mejora hay que mantener por lo menos la solución factible de la que se deriva $UB$. Una evaluación heurística sin cota válida no justifica descartar regiones.
+
+Los datos de la corrida CBC 1 de tres días documentan una cota lagrangiana de 34.070,609557 minutos y un comienzo de 34.132,143389, con un margen de 0,0003639826 y 579 pares puestos a cero. Dicha cota lagrangiana es de entrada, no la cota final de certificación. El cierre definitivo se obtiene del maestro resuelto y del plan verificado en su totalidad. La auditoría documental comprueba los registros y sus huellas, pero no certifica haber revisado formalmente cada operación de programación dinámica del código de origen.
+
+\subsection{Simetría y ausencia de límites internos}
+La variedad de tiempos y preparaciones no permite considerar a las diez máquinas como meras copias intercambiables. Si en un día se dan iguales capacidades y no hay fechas internas, es posible que se presenten permutaciones en las etiquetas de día sin perder el objetivo ni la factibilidad; una ruptura de la simetría ha de tener su justificación en tal estructura. Un grupo descriptivo de las máquinas no da pie a establecer un orden de carga entre unas y otras. Pedir brechas cero no quiere decir que de por sí todas las instancias venideras vayan a concluir con celeridad. El criterio numérico de la corrida y el límite de recursos del entorno son condiciones diferentes. Una interrupción externa se debe reportar como tal, conservando incumbente y cota si existen, sin renombrar el estado como óptimo.
+
+\clearpage
+\section{Protocolo y tablas de certificación}\label{an:certificaciones}
+\subsection{Configuración conservada}
+\begin{table}[H]\centering\small
+\caption{Configuración del experimento de certificación}
+\begin{tabular}{p{49mm}p{100mm}}\toprule
+Elemento & Valor registrado\\\midrule
+Fecha de ejecución & 25 de octubre de 2026, Colombia; 26 de octubre, UTC\\
+Instancias & 99 referencias/1 día; 200 referencias/3 días\\
+Repeticiones & 10 por motor e instancia; 60 en total\\
+Semillas & 42, 43, \ldots, 51\\
+Hilos solicitados & 1 por solver; 16 CPU lógicas disponibles\\
+Límite interno de tiempo & Ninguno; valor nulo en el protocolo\\
+Brechas solicitadas & Relativa = 0; absoluta = 0\\
+Tolerancia de verificación & $10^{-5}$, con residuos y unidades identificados\\
+Cierre de cotas & Diferencia absoluta $\leq10^{-7}$ min y brecha relativa $\leq10^{-9}$; estado óptimo y plan válido\\
+Inicio diario & Heurística determinista factible\\
+Inicio de tres días & Plan común obtenido previamente con HiGHS\\
+Orden & Horizonte diario completo, luego tres días; motores alternados\\
+Sistema & Linux 6.12.94+, x86\_64; modelo físico de CPU no registrado\\
+Python / PuLP & 3.14.9 / 3.3.0\\
+Versiones de motores & CBC Devel/cbcbox 2.924; HiGHS 1.15.1; Gurobi 13.0.3\\\bottomrule
+\end{tabular}
+\end{table}
+
+CBC registra preprocesamiento, cortes Gomory, mochila y probing, heurísticas activas, ramificación fuerte con valor 5, incremento de objetivo cero y las dos semillas. Su línea de ejecución contiene \texttt{-ratio 0.0}, \texttt{-allow 0.0} y \texttt{-threads 1}; no contiene una orden de corte por segundos. La opción \texttt{timeMode elapsed} indica cómo se contabiliza el tiempo, no establece un límite. La versión usada se identifica por la huella del ejecutable en el protocolo.
+
+Las tablas siguientes presentan cotas con seis decimales y duración con tres. En cada una de las 60 filas, el estado es óptimo certificado numéricamente y la verificación del plan cumple. El CSV digital conserva cifras sin este redondeo, brecha absoluta, tiempos de solver, preparación, producción y huellas.
+
+\clearpage
+\subsection{Diez repeticiones por motor: un día}
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{lrrrrrr}
+\caption{Caso diario: 99 referencias, 14.188 unidades}\label{tab:60a}\\
+\toprule Motor&Rep.&Semilla&LB (min)&UB (min)&GAP (\%)&Total (s)\\\midrule\endfirsthead
+\toprule Motor&Rep.&Semilla&LB (min)&UB (min)&GAP (\%)&Total (s)\\\midrule\endhead
+\bottomrule\endfoot
+CBC & 1 & 42 & 11.547,412556 & 11.547,412556 & 0 & 12,824 \\
+CBC & 2 & 43 & 11.547,412556 & 11.547,412556 & 0 & 12,980 \\
+CBC & 3 & 44 & 11.547,412556 & 11.547,412556 & 0 & 14,240 \\
+CBC & 4 & 45 & 11.547,412556 & 11.547,412556 & 0 & 14,746 \\
+CBC & 5 & 46 & 11.547,412556 & 11.547,412556 & 0 & 14,321 \\
+CBC & 6 & 47 & 11.547,412556 & 11.547,412556 & 0 & 13,483 \\
+CBC & 7 & 48 & 11.547,412556 & 11.547,412556 & 0 & 13,175 \\
+CBC & 8 & 49 & 11.547,412556 & 11.547,412556 & 0 & 13,189 \\
+CBC & 9 & 50 & 11.547,412556 & 11.547,412556 & 0 & 13,347 \\
+CBC & 10 & 51 & 11.547,412556 & 11.547,412556 & 0 & 12,987 \\
+Gurobi & 1 & 42 & 11.547,412556 & 11.547,412556 & 0 & 1,719 \\
+Gurobi & 2 & 43 & 11.547,412556 & 11.547,412556 & 0 & 1,109 \\
+Gurobi & 3 & 44 & 11.547,412556 & 11.547,412556 & 0 & 1,484 \\
+Gurobi & 4 & 45 & 11.547,412556 & 11.547,412556 & 0 & 1,429 \\
+Gurobi & 5 & 46 & 11.547,412556 & 11.547,412556 & 0 & 1,440 \\
+Gurobi & 6 & 47 & 11.547,412556 & 11.547,412556 & 0 & 1,212 \\
+Gurobi & 7 & 48 & 11.547,412556 & 11.547,412556 & 0 & 1,137 \\
+Gurobi & 8 & 49 & 11.547,412556 & 11.547,412556 & 0 & 1,061 \\
+Gurobi & 9 & 50 & 11.547,412556 & 11.547,412556 & 0 & 1,247 \\
+Gurobi & 10 & 51 & 11.547,412556 & 11.547,412556 & 0 & 1,126 \\
+HiGHS & 1 & 42 & 11.547,412556 & 11.547,412556 & 0 & 6,369 \\
+HiGHS & 2 & 43 & 11.547,412556 & 11.547,412556 & 0 & 6,489 \\
+HiGHS & 3 & 44 & 11.547,412556 & 11.547,412556 & 0 & 6,050 \\
+HiGHS & 4 & 45 & 11.547,412556 & 11.547,412556 & 0 & 7,098 \\
+HiGHS & 5 & 46 & 11.547,412556 & 11.547,412556 & 0 & 6,616 \\
+HiGHS & 6 & 47 & 11.547,412556 & 11.547,412556 & 0 & 6,622 \\
+HiGHS & 7 & 48 & 11.547,412556 & 11.547,412556 & 0 & 7,337 \\
+HiGHS & 8 & 49 & 11.547,412556 & 11.547,412556 & 0 & 9,480 \\
+HiGHS & 9 & 50 & 11.547,412556 & 11.547,412556 & 0 & 5,900 \\
+HiGHS & 10 & 51 & 11.547,412556 & 11.547,412556 & 0 & 6,283 \\
+\end{longtable}}
+
+\clearpage
+\subsection{Diez repeticiones por motor: tres días}
+{\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{lrrrrrr}
+\caption{Caso multiperiodo: 200 referencias, 45.987 unidades}\label{tab:60b}\\
+\toprule Motor&Rep.&Semilla&LB (min)&UB (min)&GAP (\%)&Total (s)\\\midrule\endfirsthead
+\toprule Motor&Rep.&Semilla&LB (min)&UB (min)&GAP (\%)&Total (s)\\\midrule\endhead
+\bottomrule\endfoot
+CBC & 1 & 42 & 34.132,143389 & 34.132,143389 & 0 & 52,629 \\
+CBC & 2 & 43 & 34.132,143389 & 34.132,143389 & 0 & 60,841 \\
+CBC & 3 & 44 & 34.132,143389 & 34.132,143389 & 0 & 66,495 \\
+CBC & 4 & 45 & 34.132,143389 & 34.132,143389 & 0 & 37,920 \\
+CBC & 5 & 46 & 34.132,143389 & 34.132,143389 & 0 & 28,745 \\
+CBC & 6 & 47 & 34.132,143389 & 34.132,143389 & 0 & 40,459 \\
+CBC & 7 & 48 & 34.132,143389 & 34.132,143389 & 0 & 67,842 \\
+CBC & 8 & 49 & 34.132,143389 & 34.132,143389 & 0 & 37,940 \\
+CBC & 9 & 50 & 34.132,143389 & 34.132,143389 & 0 & 30,008 \\
+CBC & 10 & 51 & 34.132,143389 & 34.132,143389 & 0 & 69,427 \\
+Gurobi & 1 & 42 & 34.132,143389 & 34.132,143389 & 0 & 9,578 \\
+Gurobi & 2 & 43 & 34.132,143389 & 34.132,143389 & 0 & 9,575 \\
+Gurobi & 3 & 44 & 34.132,143389 & 34.132,143389 & 0 & 9,521 \\
+Gurobi & 4 & 45 & 34.132,143389 & 34.132,143389 & 0 & 9,726 \\
+Gurobi & 5 & 46 & 34.132,143389 & 34.132,143389 & 0 & 9,528 \\
+Gurobi & 6 & 47 & 34.132,143389 & 34.132,143389 & 0 & 9,428 \\
+Gurobi & 7 & 48 & 34.132,143389 & 34.132,143389 & 0 & 9,476 \\
+Gurobi & 8 & 49 & 34.132,143389 & 34.132,143389 & 0 & 9,689 \\
+Gurobi & 9 & 50 & 34.132,143389 & 34.132,143389 & 0 & 9,972 \\
+Gurobi & 10 & 51 & 34.132,143389 & 34.132,143389 & 0 & 9,646 \\
+HiGHS & 1 & 42 & 34.132,143389 & 34.132,143389 & 0 & 28,173 \\
+HiGHS & 2 & 43 & 34.132,143389 & 34.132,143389 & 0 & 31,692 \\
+HiGHS & 3 & 44 & 34.132,143389 & 34.132,143389 & 0 & 31,601 \\
+HiGHS & 4 & 45 & 34.132,143389 & 34.132,143389 & 0 & 25,216 \\
+HiGHS & 5 & 46 & 34.132,143389 & 34.132,143389 & 0 & 30,171 \\
+HiGHS & 6 & 47 & 34.132,143389 & 34.132,143389 & 0 & 27,294 \\
+HiGHS & 7 & 48 & 34.132,143389 & 34.132,143389 & 0 & 28,464 \\
+HiGHS & 8 & 49 & 34.132,143389 & 34.132,143389 & 0 & 26,224 \\
+HiGHS & 9 & 50 & 34.132,143389 & 34.132,143389 & 0 & 28,947 \\
+HiGHS & 10 & 51 & 34.132,143389 & 34.132,143389 & 0 & 27,766 \\
+\end{longtable}}
+
+\subsection{Lectura del certificado}
+La brecha cero de estas tablas se apoya en el estado del solver y en cotas, no solo en el formato decimal. Para tres días, la cota superior corresponde a un plan completo validado y la inferior al maestro final del procedimiento selectivo. El expediente conserva el primer maestro y el subproblema infactible de distribución, que no deben contarse como corridas adicionales del experimento.
+
+En las 60 corridas se incluyen 90 logs de los modelos diarios o maestros con la mejor resolución, a saber, 30 para un día y dos de cada uno de los 30 de tres días. No hay que confundir la cantidad de logs con la de instancias o repeticiones. El resto de los registros son de control o distribución de fases.
+
+\clearpage
+\section{Sensibilidad actual y análisis históricos}\label{an:historico}
+En este anexo se hace la distinción entre la comparación histórica de matrices y Monte Carlo y la sensibilidad de demanda y capacidad en vigor. De la ejecución más reciente dan fe las capturas E17 y E18 del expediente, y las tablas reproducen sus valores con el grado de exactitud que se aprecia en la propia aplicación.
+
+\subsection{Matriz nominal frente a reconstruida}
+\begin{table}[H]\centering\small
+\caption{Comparación histórica de dos matrices del caso diario}
+\begin{tabular}{lrr}\toprule
+Indicador & Nominal publicada & Reconstruida\\\midrule
+Objetivo MILP (min) &11.547,4126&11.429,9804\\
+Procesamiento (min)&9.147,2106&8.913,9684\\
+Preparación (min)&2.400,2020&2.516,0120\\
+Heurística factible (min)&13.684,4886&13.761,0987\\
+Mejora frente a heurística (\%)&15,6168&16,9399\\
+Unidades sobre pares sin observación&1.337&227\\
+Demanda atendida (unidades)&14.188&14.188\\\bottomrule
+\end{tabular}
+\end{table}
+El contraste identifica 21 referencias cuya asignación cambia. Al evaluar el plan nominal con los coeficientes reconstruidos, sin reoptimizarlo, la carga alcanza 11.972,8010 minutos. La diferencia con el óptimo reconstruido asciende a 542,8206 minutos. No hay que ver en ello un ahorro aplicado ni una variación real de un turno a otro, sino una comparación de modelos a partir de bases de datos alternativas.
+\subsection{Perturbaciones de demanda y capacidad}
+La aplicación conserva la matriz nominal y evalúa un factor de demanda por escenario. Convierte las cantidades escaladas en unidades enteras antes de resolver; el ajuste global de redondeo es de 2,6; 3,8; 0; 7,2 y $-2,6$ unidades, respectivamente.
+\begin{table}[H]\centering\small
+\caption{Sensibilidad actual de demanda en la aplicación}\label{tab:sensibilidad_actual}
+\begin{tabular}{rrrrl}\toprule
+Factor & Demanda (u.) & Objetivo (min) & GAP (\%) & Estado\\\midrule
+0,8 & 11.353 & 9.508,9380 & 0 & Óptimo\\
+0,9 & 12.773 & 10.517,4874 & 0 & Óptimo\\
+1,0 & 14.188 & 11.547,4126 & 0 & Óptimo\\
+1,1 & 15.614 & 12.585,3792 & 0 & Óptimo\\
+1,2 & 17.023 & 13.641,1764 & 0 & Óptimo\\\bottomrule
+\end{tabular}
+\fuente{captura E17; HiGHS seleccionado; GAP y certificación reportados por la aplicación; 25 de octubre de 2026, Colombia}
+\end{table}
+El código requiere que no haya límite interno y que las brechas objetivo, tanto relativa como absoluta, sean nulas. Con esas cinco se realiza el análisis de sensibilidad sin sumar al total de 60 repeticiones nominales. En el expediente se guardan los datos históricos de antes como versión anterior.
+
+En cuanto a la capacidad, cada escenario se carga con 30 minutos en una máquina de entre todas y se deja el resto de capacidades como están. La aplicación se encarga de calcular $\eta_j=(Z_{\mathrm{base}}-Z_j)/30$ y da a ver las diez filas de mejor estado, con GAP en cero y la certificación correspondiente.
+\begin{table}[H]\centering\small
+\caption{Respuesta a 30 minutos adicionales por máquina}\label{tab:capacidad_actual}
+\begin{tabular}{lrr}\toprule
+Máquina & Reducción del objetivo (min) & $\eta_j$ (min/min)\\\midrule
+M8 & 5,4161 & 0,1805\\
+M7 & 3,2289 & 0,1076\\
+M9 & 0,3550 & 0,0118\\
+M1, M2, M3, M4, M5, M6 y M10 & 0 & 0\\\bottomrule
+\end{tabular}
+\fuente{captura E18; valores transcritos de la tabla de capacidad crítica}
+\end{table}
+Con este incremento M8 es el que da la respuesta más alta. Si bien M9 se lleva la utilización máxima, su beneficio no es tan grande: la saturación y la sensibilidad de la función objetivo son dos propiedades diferentes. El cociente no es sino una respuesta finita del MILP. Para tomar una decisión de ampliación hay que sopesar los costos y la viabilidad técnica.
+
+\subsection{Revalidación de Monte Carlo}
+La regla histórica de generación de demanda es
+\[
+D_i^{(s)}=\max\{1,\lfloor D_i\epsilon_i^{(s)}+0,5\rfloor\},\qquad
+\epsilon_i^{(s)}\overset{\mathrm{ind}}{\sim}\mathcal U(0,85;1,15).
+\]
+El redondeo se lleva a cabo al entero más cercano, de modo que los medios se redondean hacia arriba y no por truncamiento. El diseño parte de la independencia de las referencias y del intervalo de variación como premisas. La simulación, por su parte, no tiene en cuenta correlaciones en los pedidos ni estacionalidad o eventos operativos para los que no se haya hecho una parametrización.
+
+Para la revalidación se ha usado HiGHS con 5 s de margen por escenario y una brecha relativa objetivo de $10^{-4}$; los tres casos sin resolver se han vuelto a intentar con 30 s, manteniendo los intentos. El procedimiento conservado produjo 1.000 planes factibles y otras tantas comparaciones completas. No hay ningún GAP de valor cero entre lo reportado, siendo el 1,1879\,\% el máximo.
+
+Si $E_s$ es el objetivo de una heurística que cumple toda la demanda y $LB_s\leq Z_s^*\leq UB_s$, la mejora óptima satisface
+\[
+100\left(1-\frac{UB_s}{E_s}\right)\leq R_s^*
+\leq100\left(1-\frac{LB_s}{E_s}\right).
+\]
+El intervalo preserva información del solver en lugar de tratar el incumbente como óptimo. Promediar los extremos acota la mejora óptima media de los escenarios evaluados.
+
+\begin{table}[H]\centering\small
+\caption{Resumen histórico reportado de los 1.000 escenarios revalidados}
+\begin{tabular}{lr}\toprule
+Medida & Valor\\\midrule
+Comparaciones factibles completas&1.000\\
+Escenarios con GAP numéricamente cero&0\\
+GAP máximo&1,1879\%\\
+Mejora media de incumbentes&15,1876\%\\
+Mediana de mejora&15,1681\%\\
+Desviación estándar&0,7724 p.p.\\
+Cotas de mejora óptima media&[15,1876\%; 15,2919\%]\\
+Intervalo t aproximado, media de incumbentes&[15,1397\%; 15,2355\%]\\
+Comparaciones con mejora positiva&1.000\\\bottomrule
+\end{tabular}
+\end{table}
+Al revisar los 1.000 archivos de cantidades y activaciones en custodia se ha verificado la demanda, la capacidad, el enlace, la integralidad, el dominio y el objetivo con una tolerancia de $10^{-5}$. Los estadísticos se han vuelto a calcular a partir de los registros sin necesidad de reactivar HiGHS. El respaldo digital conserva los residuos máximos.
+
+El intervalo t hace alusión al experimento simulado y al procedimiento que se lleva a cabo bajo presupuesto; no valida la distribución de los pedidos reales ni cuantifica la incertidumbre residual de optimización. En cuanto a la media de mejora del 15,14\% y su correspondiente intervalo [15,09\%; 15,19\%], son datos de una ejecución anterior y no se emplean como resumen actualizado ni se unen a esta revalidación.
+
+\clearpage
+\section{Auditoría de planes y reproducción documental}\label{an:repro}
+\subsection{Comprobaciones independientes}
+Se sometieron a reconstrucción cada una de las sesenta soluciones desde los archivos CSV exportados, así como las matrices de entrada. En el caso de un día se usó la exportación de cantidades y activaciones; en el caso de tres días se reconstruyeron  $y_{ijt}=1$ donde $x_{ijt}>0$. Se verificaron:
+\begin{align*}
+r_D&=\max_i\left|\sum_{j,t}x_{ijt}-D_i\right|,\\
+r_K&=\max_{j,t}\left[\sum_i(C_{ij}x_{ijt}+S_jy_{ijt})-K_{jt}\right]_+,\\
+r_U&=\max_{i,j,t}[x_{ijt}-U_{ijt}y_{ijt}]_+,\\
+r_{\mathrm{int}}&=\max\{\|x-\operatorname{round}(x)\|_\infty,\|y-\operatorname{round}(y)\|_\infty\},\\
+r_Z&=|Z(x,y)-UB|.
+\end{align*}
+También se han revisado no negatividad y dominio binario. Los residuos de capacidad y objetivo se expresan en minutos; los de demanda y enlace, en unidades. Una única tolerancia de aceptación no convierte esas magnitudes a una misma unidad física.
+
+\begin{table}[H]\centering\small
+\caption{Máximos de la comprobación independiente sobre 60 planes}
+\begin{tabular}{lr}\toprule
+Comprobación & Máximo observado\\\midrule
+Error de demanda por referencia (unidades)&0\\
+Exceso de capacidad máquina--día (min)&0\\
+Violación del enlace (unidades)&0\\
+Distancia a integralidad&0\\
+Violación de no negatividad y binariedad&0\\
+Diferencia objetivo recalculado--UB (min)&$5,46\times10^{-12}$\\
+Diferencia absoluta entre cotas (min)&$1,38\times10^{-10}$\\
+Planes que cumplen la revisión&60/60\\\bottomrule
+\end{tabular}
+\end{table}
+La comprobación valida las soluciones exportadas frente a las matrices conservadas. No vuelve a ejecutar los motores ni inspecciona los residuos internos de todos los nodos. La evidencia de optimalidad se apoya en los registros nativos y en la validez del procedimiento de cotas descrito en el anexo B.
+
+\subsection{Inventario de respaldo}
+\begin{table}[H]\centering\small
+\caption{Archivos del expediente digital y finalidad}
+\begin{tabular}{p{66mm}p{83mm}}\toprule
+Archivo o grupo&Contenido\\\midrule
+\texttt{C\_1d.csv}, \texttt{D\_1d.csv}, \texttt{S\_1d.csv}&Matrices nominales de un día\\
+\texttt{C\_3d.csv}, \texttt{D\_3d.csv}, \texttt{S\_3d.csv}&Matrices del lote fijo de tres días\\
+\texttt{protocolo.json}, \texttt{config.json}&Versiones, semillas, opciones, huellas e inicios\\
+\texttt{comparacion.csv}&60 registros con objetivos, cotas, tiempos y métricas\\
+\texttt{[h]d\_[motor]\_[rep]\_plan.csv}&Cantidades por referencia, máquina y día\\
+\texttt{*\_preparaciones.csv}&Activaciones del caso diario\\
+\texttt{*\_auditoria.json}, \texttt{*\_validacion.json}&Cotas, estados y verificaciones de la aplicación\\
+\texttt{logs/}&Salidas nativas y fases selectivas\\
+\texttt{auditoria\_independiente.csv}&Revisión nueva de los 60 planes\\
+\texttt{auditar.py}&Script de revisión y generación de figuras\\\bottomrule
+\end{tabular}
+\end{table}
+
+El expediente de la nueva corrida se incluye en \path{evidencia/evidencia_optimizadores.zip}; el anterior permanece en \path{evidencia/historico_nominal/}. El Excel comparativo conserva las 60 filas y sus resúmenes. Las tablas de esta revisión están en \texttt{tablas/}. El respaldo histórico se conserva en \path{evidencia/validacion_historica.zip}; el script \texttt{auditar\_monte\_carlo.py} verifica los mil planes almacenados y regenera las dos figuras de simulación. Las tablas incluyen los vectores de demanda, el resumen por escenario y los residuos de la revisión.
+
+El protocolo conserva las huellas SHA-256 de los once módulos de resolución y comparación. La revisión de esta entrega las contrasta con los archivos disponibles y conserva el resultado en \path{tablas/huellas_corrida_actual.json}. El directorio \path{fuentes_verificadas/} contiene los módulos coincidentes para su consulta; no sustituye la aplicación completa.
+
+Por su parte, el protocolo nominal hace uso de SHA-256 para dar identidad a los datos:
+\begin{quote}\small\ttfamily
+	576328e9236ca175cc9b30fcd5422204efc\\4089725d1cf8dc81a410bd2cc2223
+\end{quote}
+Se ha partido la huella en dos líneas a fin de que sea más legible, aunque el archivo digital la mantiene en toda su extensión. Con estas huellas se puede determinar de qué versión se trata, pero no constituyen una prueba de corrección matemática en sí.
+
+\input{secciones/anexo_metodo}
+\input{secciones/anexo_instancias}
+\clearpage
+\section{Desarrollo técnico complementario}\label{an:desarrollo_complementario}
+Este anexo reúne las explicaciones, ecuaciones y controles que amplían las secciones principales. Mantiene las fuentes y los resultados de cada bloque junto a su argumento técnico.
+\input{secciones/fundamentos}
+\input{secciones/datos}
+\input{secciones/resolucion}
+\input{secciones/experimento}
+\input{secciones/montecarlo}
+\input{secciones/aplicacion}
+\end{document}

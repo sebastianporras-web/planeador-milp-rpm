@@ -1,0 +1,14 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Lectura estadística de las repeticiones}
+El tiempo se resume por motor y horizonte con la media, los extremos y la desviación estándar muestral. La media describe el costo de las repeticiones observadas; la desviación muestra su variación bajo las condiciones y semillas del protocolo. Diez observaciones no bastan para estimar colas extremas ni prometer una duración máxima.
+
+Un conteo de resultados es lo que constituye el número de corridas certificadas, no una probabilidad de éxito universal. Que en dos ocasiones se dé una frecuencia de diez sobre diez no abarca toda combinación posible de demanda y capacidad. La diversidad de instancias es algo distinto a la magnitud de la repetición. MIPLIB muestra la conveniencia de elegir problemas representativos al comparar algoritmos de manera genérica \cite{miplib}; en este caso el propósito se ciñe al de RPM.
+
+Aunque la comparación se hace con un hilo por motor y los mismos datos, no homogeneiza los mecanismos internos de los motores. Una semilla idéntica en número no lleva a CBC, HiGHS y Gurobi a tomar decisiones de búsqueda equivalentes. El orden alternado mitiga la dependencia del momento de ejecución, pero no quita por completo la interferencia del entorno común.
+
+\subsection{Qué puede atribuirse a la estrategia de resolución}
+De lo que se ha observado en el cierre se puede concluir que la formulación, los refuerzos, el inicio informado y el procedimiento selectivo permitieron certificar las instancias evaluadas. No es posible, sin embargo, adjudicar el ahorro de tiempo a uno u otro componente. Para cuantificar tal contribución haría falta ensayos controlados con los datos, la versión y el equipo inalterados, de modo que se pueda ir suprimiendo un elemento a la vez.
+
+El tiempo del usuario abarca la carga de archivos, la preparación del modelo, la generación de resultados y su revisión. El tiempo nativo del solver mide solo una parte de ese proceso. El indicador principal de uso es el tiempo total de la aplicación y los tiempos de fase se archivan como evidencia digital; no se vuelven a sumar fases que ya forman parte del total.
+
+El estudio de cien instancias de la sección~\ref{sec:instancias} evalúa la búsqueda sin solución inicial heredada. Sus datos se interpretan por separado de estas repeticiones nominales. La evidencia de que se dispone sigue siendo válida para una operación que utiliza un plan factible ya existente, siempre y cuando se especifique que el coste de haberlo obtenido antes no se imputa a cada repetición.

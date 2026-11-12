@@ -1,0 +1,1 @@
+La comparación utiliza consolidado_400.csv (400 registros). Los objetivos de la heurística se extraen de evidencia/heuristica_cien_instancias.zip, de la misma ejecución de las cien entradas. El script comprueba sus SHA-256 contra datos_estudio_100/tabla_instancias_100.csv y genera heuristica_base.csv, la comparación emparejada, los intervalos y el perfil de factores.

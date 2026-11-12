@@ -1,0 +1,21 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Construcción y trazabilidad de las instancias}
+En el libro de estudio se halla la matriz de tiempos y la demanda diaria en \texttt{MODELO PL}; de las 99 referencias de uso común el lector dispone de 14.188 unidades. Con 200 referencias se cotejan los tiempos de \texttt{DATOS SIMULADOS} con las \texttt{Unidades Vendidas (SEMESTRE)}. Los segundos de la segunda hoja de coeficientes se pasan a minutos.
+
+No hay que confundir la demanda multiperiodo con un listado de pedidos confirmados. El código parte de dividir las ventas del semestre entre 180 y calibra la escala con la proporción de totales estimado y diario de las 99 referencias; el factor que se obtiene es 2,3743174983554183. La demanda así calibrada se ve multiplicada por tres y redondeada por referencia, dando un vector de 45.987 unidades. En el anexo~\ref{an:construccion} se pueden ver las fórmulas, las fuentes y la verificación con los CSV certificados.
+
+El ajuste se limita a una escala agregada, no hace una validación estadística de las demandas de cada uno. El 180 de denominador se anula en la razón de calibración y no describe un calendario laboral, ni el expediente aporta fechas de pedido para el vector diario. Tales limitaciones acotan la interpretación desde el punto de vista empresarial pero no tocan los óptimos de las instancias establecidas.
+
+Para lo que respecta al procesamiento, la preparación y la capacidad, las medidas son min/unidad, min/activación y min/máquina--día. La precisión de los tiempos se mantiene en la resolución y la trazabilidad permite identificar qué coeficientes utiliza cada resultado.
+
+\subsection{Indicadores de exposición al dato estimado}
+Sea $O_{ij}=1$ si existe observación directa del par y cero en otro caso. Se pueden distinguir dos indicadores de exposición del plan:
+\begin{align}
+E_{\mathrm{pares}}&=100\frac{\sum_{i,j,t}(1-O_{ij})y_{ijt}}{\sum_{i,j,t}y_{ijt}},\\
+E_{\mathrm{volumen}}&=100\frac{\sum_{i,j,t}(1-O_{ij})x_{ijt}}{\sum_iD_i}.
+\end{align}
+Con el plan de cada día, el primer indicador se sitúa en un 1,01\% de los pares activos y el segundo llega a 9,42\%. Que haya tal diferencia se debe a la elevada demanda que tiene la referencia del par sin observar. Limitarse a las celdas activas haría que el peso de dicho supuesto en la recomendación quedara por debajo de lo real.
+
+De estos indicadores se desprende una validación orientada: hay que medir en primer lugar los tiempos de los pares con más carga o volumen asignado. No se trata de un sustituto para el diseño de muestreo de tiempos ni de una forma de cuantificar el error de verdad. En el caso de que una nueva medición modifique un coeficiente, el plan y las cotas de la nueva matriz habrán de recalcularse; la huella del expediente viejo solo es válida para su versión original.
+
+El agrupamiento obedece a otra finalidad. El algoritmo y la estandarización de variables pueden cambiar la partición, y una biblioteca del estilo de scikit-learn da implementaciones reproducibles de los métodos de aprendizaje \cite{pedregosa}. Tener la implementación a mano no quiere decir que se elige el número de grupos por comodidad del horizonte. La partición histórica describe el catálogo. La viabilidad depende de las unidades, los tiempos, las activaciones y la capacidad del modelo.

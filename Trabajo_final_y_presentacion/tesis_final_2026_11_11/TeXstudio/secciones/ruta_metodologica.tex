@@ -1,0 +1,80 @@
+% !TeX root = ../Trabajo_RPM.tex
+En este trabajo se vinculan los datos de RPM a decisiones de asignación comprobables. En la Fig.~\ref{fig:ruta_metodologica_rpm}, se ilustra la diferencia entre el estudio de los cien problemas y los dos casos nominal y Monte Carlo histórico. El estudio en común entre ambos casos es que se realizaron a partir de 25 vectores de demanda. Con cada vector de demanda se obtuvo 4 variantes para capacidad y matriz. Cada uno de los caminos presenta sus protocolos y resultados particulares.
+
+\begin{landscape}
+\thispagestyle{plain}
+\begin{figure}[H]
+\centering
+{\Large\bfseries\color{azul} Datos, instancias y validación\par}
+\vspace{3mm}
+{\small Comparación y análisis complementarios sobre las matrices de RPM\par}
+\vspace{8mm}
+\begin{tikzpicture}[
+ box/.style={draw=azul!50,rounded corners=3pt,fill=azul!4,align=center,text width=3.55cm,minimum height=2.7cm,inner sep=5pt,font=\fontsize{9.5}{11.5}\selectfont},
+ core/.style={box,draw=azul,line width=1pt,fill=azul!12},
+ flow/.style={-{Stealth[length=2.2mm]},line width=.8pt,draw=azul!85},
+ aux/.style={flow,dashed,draw=black!60},
+ lab/.style={font=\fontsize{8}{9}\selectfont,fill=white,inner sep=2pt,text=azul,align=center}]
+\node[box] (data) at (0,4) {\textbf{Datos de RPM}\\[4pt]Ventas, tiempos,\\alistamientos y capacidad};
+\node[box] (prep) at (5,4) {\textbf{Caracterización}\\[4pt]Cobertura, reconstrucción\\y estratos de volumen};
+\node[core] (sample) at (10,4) {\textbf{Muestra sintética}\\[4pt]25 demandas $\times$ 4 variantes\\[4pt]\textcolor{azul}{100 problemas}};
+\node[box] (methods) at (15,4) {\textbf{Cuatro métodos}\\[4pt]Regla de RPM, CBC,\\HiGHS y Gurobi;\\una corrida por caso};
+\node[core] (report) at (20,4) {\textbf{Auditoría y contraste}\\[4pt]Cobertura y reducción\\de carga; cotas, GAP\\y factores};
+\node[box] (nominal) at (5,0) {\textbf{Casos nominales}\\[4pt]Demandas distintas de\\uno y tres días};
+\node[box] (cert) at (10,0) {\textbf{Certificación nominal}\\[4pt]60 repeticiones sobre\\dos problemas fijos};
+\node[box,draw=black!50,fill=black!3] (mc) at (15,0) {\textbf{Monte Carlo histórico}\\[4pt]1.000 escenarios;\\protocolo separado};
+\draw[flow] (data.east)--node[lab,above=3pt]{caracteriza} (prep.west);
+\draw[flow] (prep.east)--node[lab,above=3pt]{remuestrea} (sample.west);
+\draw[flow] (sample.east)--node[lab,above=3pt]{resuelve} (methods.west);
+\draw[flow] (methods.east)--node[lab,above=3pt]{contrasta} (report.west);
+\draw[flow] (data.south) to[out=-90,in=180] (nominal.west);
+\draw[flow] (nominal.east)--node[lab,above=3pt]{repite} (cert.west);
+\draw[flow] (cert.north east) to[out=35,in=230] (report.south west);
+\draw[aux] (nominal.south) to[out=-70,in=-110] node[lab,below=5pt]{perturba demanda} (mc.south);
+\draw[aux] (mc.north east) to[out=35,in=270] (report.south);
+\end{tikzpicture}
+\vspace{6mm}
+\caption[Mapa metodológico del trabajo]{Mapa metodológico del trabajo. La ruta superior compara la regla de RPM y el MILP en cien problemas: 25 demandas con cuatro variantes cada una, 400 registros, mejora de carga y calidad de cotas. La ruta inferior conserva los dos casos nominales y el Monte Carlo histórico con sus protocolos propios.}
+\label{fig:ruta_metodologica_rpm}
+\fuente{elaboración propia a partir del procedimiento y las evidencias del trabajo}
+\end{figure}
+\end{landscape}
+
+\subsection{Desarrollo de la ruta metodológica}
+\textbf{Datos, preparación y caracterización.}
+La caracterización registra la demanda, los tiempos de procesamiento, los alistamientos y la capacidad nominal. Los coeficientes observados se separan de los reconstruidos y se mantiene la precisión de cálculo y las unidades. La instancia queda descrita por la cobertura, la concentración de demanda y los agrupamientos; con estos no se fijan el horizonte ni se le adjudican familias al MILP. Lo que se obtiene en esta fase es una base de supuestos explícitos (véase la sección~\ref{sec:datos}).
+
+\textbf{Referencia heurística.}
+La implementación reproduce la regla de asignación de RPM y produce un plan para cada problema de la muestra. El registro conserva carga y demanda pendiente. La mejora porcentual compara planes que cubren idéntica demanda. La sección~\ref{sec:heuristica} explica la regla; las secciones~\ref{sec:resultados} y~\ref{sec:instancias} enlazan el caso nominal con las cien comparaciones.
+
+\textbf{Asignación diaria y extensión multiperiodo.}
+Para minimizar el trabajo de preparación y de procesamiento, respetando la capacidad de cada máquina y las demandas diarias, el MILP decide cuántas veces y en qué cantidad (enteras) activar la producción. Para cada lote, una cota superior permite deshacerse de horizontes de planificación demasiado pequeños, mientras que una solución factible prueba que el horizonte propuesto es suficiente (sección~\ref{sec:modelo}; la prueba del horizonte se da en la sección~\ref{sec:horizonte}). Las instancias nominales con horizonte de un y tres días satisfacen demandas distintas.
+
+\Needspace{9\baselineskip}
+\textbf{Resolución y certificación cruzada.}
+Se comprueba demanda, capacidad, enlaces, integridad y objetivo. Un certificado del número de cotas cerrado se basa en el estado del motor y en el cierre de cotas; la brecha (GAP) cuantifica también qué de cerca están los planes factibles a la cota inferior. La muestra central incluye 100 problemas y 400 registros (una ejecución para cada uno de los cuatro métodos, sin inicio heredado) (véase Sección~\ref{sec:instancias}). Las 60 repeticiones nominales conservan este protocolo como una ilustración de la formulación (véanse Secciones~\ref{sec:resolucion} y~\ref{sec:resultados}).
+
+\textbf{Sensibilidad y Monte Carlo histórico.}
+A través de la sensibilidad se cuantifican los cambios en la demanda y la capacidad con el protocolo de certificación, el cual no presenta un límite interno. En el modelo de simulación de Monte Carlo se conservan 1.000 escenarios históricos, la distribución de la demanda, el presupuesto de resolución y la brecha residual. Es importante recordar que la simulación es una herramienta que permite resumir la variabilidad existente bajo los supuestos planteados \cite{law}. El hecho de contar con certificados nominales no afecta el estado de las corridas de simulación. En la sección \ref{sec:escenarios} se presentan los dos análisis y en el anexo \ref{an:historico} se identifican las fuentes.
+
+\textbf{Aplicación, evidencia e interpretación.}
+Esta aplicación también relaciona los registros con las asignaciones de carga, el cumplimiento y la evidencia de resolución. También permite la exportación tanto de los planes como de los indicadores identificados en cada instancia (\ref{sec:aplicacion}). El objetivo es una representación de la carga nominal de procesamiento y preparación; una posterior evaluación en planta puede permitir comparar el objetivo con los tiempos y costos efectivamente observados.
+
+
+\clearpage
+\subsection{Trazabilidad de las etapas y sus resultados}
+La tabla~\ref{tab:trazabilidad_metodologica} relaciona las etapas del mapa con su desarrollo y su evidencia. La secuencia distingue preparación de datos, construcción de planes y comprobación de resultados.
+\begin{table}[H]\centering\small
+\caption{Etapas metodológicas, productos y ubicación de la evidencia}\label{tab:trazabilidad_metodologica}
+\begin{tabular}{p{33mm}p{65mm}p{44mm}}\toprule
+Etapa & Producto verificable & Desarrollo y respaldo\\\midrule
+Datos y caracterización & Matrices nominales, cobertura observada y análisis de reconstrucción & Sección~\ref{sec:datos}; anexos~\ref{an:datos} y~\ref{an:construccion}\\[4pt]
+Referencia heurística & Plan y cobertura de cada problema; carga en parejas completas & Secciones~\ref{sec:heuristica} y~\ref{sec:instancias}; anexo~\ref{an:heuristica}\\[4pt]
+Asignación MILP & Cantidades, activaciones y carga de los planes completos & Secciones~\ref{sec:modelo} y~\ref{sec:instancias}\\[4pt]
+Extensión multiperiodo & Plan de tres días y prueba del horizonte para el lote fijo & Apartado~\ref{sec:horizonte}; anexos~\ref{an:prueba} y~\ref{an:maestro}\\[4pt]
+Certificación cruzada & 60 corridas nominales; estados, cotas y planes verificados & Sección~\ref{sec:resolucion}; anexos C e~\ref{an:desarrollo_complementario}\\[4pt]
+Estudio de instancias & Cien problemas, cuatro métodos, reducción frente a la regla de RPM, GAP y perfil de factores & Sección~\ref{sec:instancias}; anexo~\ref{an:instancias100}\\[4pt]
+Análisis histórico & Sensibilidad actual y 1.000 escenarios históricos con protocolos separados & Sección~\ref{sec:escenarios}; anexos~\ref{an:historico} y~\ref{an:desarrollo_complementario}\\[4pt]
+Aplicación y evidencia & Consulta de indicadores y exportación de planes y registros & Sección~\ref{sec:aplicacion}; anexos E e~\ref{an:desarrollo_complementario}\\\bottomrule
+\end{tabular}
+\end{table}

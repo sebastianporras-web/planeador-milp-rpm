@@ -1,0 +1,24 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Ubicación del problema en la literatura}
+Mediante la planificación de producción se pasa de una necesidad de unidades a la asignación de recursos en un periodo dado. En su revisión, Mula et al.\ \cite{mula} hacen la distinción entre los modelos que abordan la incertidumbre con aproximaciones estocásticas o difusas, entre otras. Por su parte, el presente trabajo utiliza un modelo nominal determinista y deja el análisis de las demandas perturbadas para un experimento aparte; así se puede ver qué del resultado se debe a los coeficientes establecidos y qué a la variación de unos escenarios a otros.
+
+Los datos necesarios quedan delimitados por la separación entre planificación y programación detallada. Un problema de taller flexible podría contemplar la elección de máquina, precedencias y rutas de operaciones \cite{dauzere}, pero en este caso cada referencia es un requerimiento unitario de tiempo en una máquina apta. No hay etapas encadenadas que vayan a sincronizarse. Agregar ese grado de detalle sin los datos necesarios daría una falsa precisión y alteraría el alcance del estudio.
+
+Li e Ierapetritou \cite{li} consideran la incertidumbre una dificultad propia de la programación de procesos. En RPM son fuentes de incertidumbre la disponibilidad, la demanda y los tiempos estimados. Con perturbar solo la demanda no se da cobertura a las otras dos. De ahí que los resultados se presenten en tres bloques: un núcleo nominal certificado, la sensibilidad a coeficientes y un experimento con demanda variable. Cada uno tiene su criterio de terminación y responde a una cuestión concreta.
+
+La tabla~\ref{tab:literatura} relaciona estos antecedentes con las decisiones metodológicas del estudio. Las referencias fundamentan los métodos utilizados y delimitan su alcance. Las técnicas no implementadas se presentan como antecedentes, no como resultados del trabajo.
+\begin{table}[H]\centering\small
+\caption{Antecedentes y función dentro del estudio}\label{tab:literatura}
+\begin{tabular}{p{35mm}p{52mm}p{58mm}}\toprule
+Línea & Referencia & Aplicación y límite\\\midrule
+Asignación con capacidad & Cattrysse y Van Wassenhove \cite{cattrysse} & Interacción entre elección de recursos y capacidades; se añaden cantidades y activaciones.\\
+Programación de máquinas & Unlu y Mason \cite{unlu}; Dauzère-Pérès et al.\ \cite{dauzere} & Delimitación frente a secuenciación y taller flexible.\\
+Planificación incierta & Mula et al.\ \cite{mula}; Li e Ierapetritou \cite{li} & Separación de modelo nominal y evaluación por escenarios.\\
+Simulación & Law \cite{law} & Diseño de escenarios, resumen de variabilidad y lectura condicionada de intervalos.\\
+Relajación lagrangiana & Fisher \cite{fisher} & Fundamento de cotas inferiores; no prueba por sí sola el código particular.\\
+Experimentos MILP & Gleixner et al.\ \cite{miplib} & Necesidad de identificar instancias y condiciones de comparación.\\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Diseño del estudio de caso}
+El estudio de caso compara cien instancias sintéticas mediante un diseño computacional reproducible y conserva dos casos nominales como ilustración. La sección~\ref{sec:instancias} define el remuestreo, la fracción de celdas y las comparaciones emparejadas. La heurística aporta una referencia de asignación; no constituye un grupo de control experimental ni una reconstrucción validada de las decisiones históricas de los supervisores. La comparación exige igual cobertura de demanda e identifica los recursos y la carga de cada plan. Los certificados respaldan la optimalidad numérica de las matrices conservadas dentro de las tolerancias del protocolo. Medir un ahorro realizado en planta requeriría registros de ejecución y un diseño de evaluación operativo.

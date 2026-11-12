@@ -1,0 +1,41 @@
+% !TeX root = ../Trabajo_RPM.tex
+\clearpage
+\section{Inventario y resultados de las cien instancias}\label{an:instancias100}
+Las tablas de este anexo incluyen los cien problemas registrados antes de resolver. Pub. identifica la matriz publicada y Rec. la reconstruida. N conserva la capacidad nominal; M1--25 indica la reducción del 25\,\% en esa máquina. Los cuatro identificadores consecutivos de cada celda comparten demanda, tamaño y horizonte. La columna de huella muestra los primeros doce caracteres del SHA-256 del archivo de entrada; el manifiesto digital contiene los 64 caracteres. Ningún problema se retiró por su resultado.
+
+\subsection{Diseño e identidad de las entradas}
+{\footnotesize\setlength{\tabcolsep}{4pt}
+\input{tablas/inventario_instancias_100}
+}
+
+\subsection{Estado de cada método}
+Ópt. significa óptimo acreditado por estado, cotas y verificación; F, plan factible sin cierre; Inv., inviabilidad declarada de forma concordante; y SI, ausencia de incumbente. El porcentaje junto a F es el GAP final. Las brechas positivas menores de 0,001\,\% se imprimen como $<0,001$ en lugar de redondearlas a cero. Un guion indica que no existe un GAP comparable. La columna heurística indica unidades pendientes; cero significa demanda completa. Las cargas de planes parciales no se utilizan para calcular mejoras porcentuales.
+{\footnotesize\setlength{\tabcolsep}{5pt}
+\input{tablas/resultados_instancias_100}
+}
+
+\subsection{Protocolo de resolución y control de procedencia}\label{an:protocolo100}
+\begin{table}[H]\centering\small
+\caption{Configuración del estudio de cien instancias}\label{tab:protocolo100}
+\begin{tabular}{p{48mm}p{103mm}}\toprule
+Elemento & Valor conservado\\\midrule
+Generación & Semilla 191007; 25 celdas y cuatro variantes por celda.\\
+Remuestreo & Donantes con reemplazo dentro del tercil de venta semestral; supuesto de intercambiabilidad transversal.\\
+Ejecuciones & Una por instancia y método; 400 registros.\\
+Inicio heredado & No; \texttt{warm\_start=false}.\\
+Presupuesto por escala & Estratificado por tamaño y horizonte; igual para los tres motores de cada problema. Los valores exactos figuran en el CSV de resultados.\\
+Hilos y semilla de motores & Dos hilos; semilla 42; orden alternado.\\
+Modelo & MILP completo; refuerzos válidos comunes; hash del LP idéntico entre motores por instancia.\\
+Brechas objetivo & Relativa y absoluta solicitadas iguales a cero.\\
+Criterio de certificado & Estado nativo compatible, plan válido, diferencia de cotas $\leq10^{-7}$ min y brecha relativa $\leq10^{-9}$.\\
+Plan válido & Residuos de demanda, capacidad, enlace, integridad y dominio $\leq10^{-5}$.\\
+Entorno registrado & Versiones, bibliotecas y trabajador registrados en los archivos de la ejecución.\\
+CBC & \texttt{feasibilityPump off}, fijado antes del estudio para evitar el fallo nativo identificado en la ejecución previa.\\
+Intervalos & Bootstrap percentil por celdas comparables; 1.000 remuestreos; semilla 19042.\\
+Lectura del GAP & Brecha relativa entre las cotas finales del mismo problema; se conserva positiva aun cuando sea menor que el redondeo de la tabla.\\\bottomrule
+\end{tabular}
+\end{table}
+
+La fase principal de la ejecución \href{https://github.com/sebastianporras-web/planeador-milp-rpm/actions/runs/42441274388}{42441274388} produjo los 400 registros de la comparación central. El consolidado, las huellas de las cien entradas y los planes de la heurística acompañan el proyecto editable. Este protocolo estratificado y sus resultados se identifican por esa ejecución y no se combinan con la ejecución anterior de presupuesto uniforme publicada en la rama principal. La revisión cotejó la identidad de las entradas con el diseño original y confirmó 274 planes completos entre los cuatro métodos y 92 cierres numéricos entre los tres motores. El flujo global registró un fallo posterior al exportar cuatro diagnósticos auxiliares de inviabilidad; esa salida no forma parte de los 400 registros primarios ni de las tablas de este estudio.
+
+El caso E097 conserva un GAP positivo pese a la cercanía de sus cotas: la diferencia absoluta excede el umbral conservador de la auditoría. La tabla principal lo presenta como plan completo con brecha residual, mientras el inventario mantiene su identidad de entrada.

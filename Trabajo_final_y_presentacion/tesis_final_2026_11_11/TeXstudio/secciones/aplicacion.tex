@@ -1,0 +1,39 @@
+% !TeX root = ../Trabajo_RPM.tex
+\subsection{Arquitectura funcional y trazabilidad}
+El separador que realiza dicha aplicación es: lectura de entradas, modelado, ejecución del optimizador, verificación y exportación. Su código se puede inspeccionar para dar cuenta de tal separación del flujo, aunque no quiere decir que esto sustituya a la realización de una prueba de disponibilidad en un entorno de producción. Streamlit es responsable de la interfaz; los módulos de cálculo almacenan datos y resultados de una corrida.
+
+La trazabilidad vincula los resultados con una huella de datos y de configuración. De haber un cambio en la demanda, la capacidad o la matriz de tiempos, el plan que se ve ya no se ajustará a la nueva petición. El código identifica esa discrepancia antes de asociar los registros guardados con las nuevas entradas. La sesión de Streamlit guarda la información de unas interacciones a otras \cite{streamlit} y en los archivos exportados queda constancia reproducible. Que un archivo tenga un nombre coincidente no significa por ello que su contenido sea el mismo.
+
+\subsection{Carga de datos y controles previos}
+La estructura de carga distingue referencias y recursos. En las primeras se declaran el identificador, la demanda y los tiempos de procesamiento de cada máquina; en los segundos figuran las máquinas, los alistamientos y las capacidades. La plantilla que se puede descargar pone en orden tales campos sin plantear escenarios simulados como si de datos observados se tratara. Para las unidades y las reglas de relleno hay una guía aparte.
+
+La validación comprueba que la demanda sea entera y no negativa, que la identificación sea coherente, que haya correspondencia entre columnas y recursos, así como que los valores de capacidad y preparación sean de los admitidos. Deberán regirse por las normas del formato los tiempos faltantes o combinaciones incompatibles. Hay que tener en cuenta que en el modo de carga donde un cero desactiva una combinación, ese cero no es sinónimo de producción instantánea. Tal convención de la interfaz no viene a alterar los coeficientes positivos de las instancias nominales certificadas.
+
+\subsection{Horizonte automático y certificado}
+El modo automático mantiene fija la demanda total y se establecen cotas para el número de días. Un plan que sea viable aporta una cota superior al horizonte; de lo contrario, una condición de carga o una prueba de infactibilidad son necesarias para subir la inferior. Hasta que no haya coincidencia entre ambas el mínimo queda en suspenso. En esa búsqueda puede ser de utilidad presentar un plan descargable cuando su estado denota que el costo o el horizonte mínimo carecen aún de certificación.
+
+La versión revisada retira el selector manual del horizonte. Para el lote nominal mantiene las 45.987 unidades y determina el mínimo de tres días; la tabla de certificación utiliza ese valor junto al caso diario. El modelo optimiza después la carga para el horizonte demostrado. La demanda no aumenta durante la búsqueda de días.
+
+En las repeticiones los horizontes se dejan claros y no se hacen duplicados de filas cuando el de búsqueda coincide con uno ya seleccionado. De ser descartado un horizonte por una cota matemática antes de poner en marcha el solver, se anota como inviabilidad demostrada por cota. A dicha fila no se le asigna un tiempo de optimización de ficción ni se considera una repetición computacional más.
+
+\begin{table}[H]\centering\small
+\caption{Estados que deben diferenciarse al consultar la aplicación}
+\begin{tabular}{p{43mm}p{56mm}p{46mm}}\toprule
+Estado & Interpretación & Uso del archivo\\\midrule
+Plan factible de búsqueda & Existe una asignación validada; puede faltar prueba de costo o de mínimo de días & Revisión de carga y alternativa provisional\\
+Costo óptimo certificado & Cierre de cotas y plan verificado para el horizonte indicado & Evidencia de asignación óptima nominal\\
+Mínimo de días demostrado & Se excluyeron horizontes menores y existe plan en el indicado & Justificación de ventana mínima\\
+Inviable demostrado & No existe plan bajo las condiciones examinadas & Revisar demanda, compatibilidad o capacidad\\
+Interrumpida o sin conclusión & La ejecución no completó la prueba requerida & Conservar registros sin atribuir certificado\\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Resultados visibles y archivos de respaldo}
+La vista principal muestra la demanda resuelta, los días, el estado y la carga. Los gráficos presentan utilización y holgura por máquina y día; la tabla identifica referencia, máquina, día y cantidad. La preparación por activación figura separada del procesamiento.
+
+El Excel del plan reúne asignaciones, capacidades y estado. El de comparación registra corridas, motor, repetición, semilla, cotas, brechas, duración y auditoría. El comprimido conserva entradas, configuración y registros nativos para revisar planes y reproducir los resultados.
+
+Las credenciales de Gurobi se guardan en la configuración segura, fuera de entradas y archivos exportados. La versión, los parámetros y el log sustentan la identificación del motor.
+
+\subsection{Uso gerencial e implantación gradual}
+El supervisor revisa el plan propuesto frente a las restricciones de planta que el modelo no incorpora. Una incompatibilidad exige actualizar los datos y ejecutar otra corrida. Si cambia las cantidades, el certificado original deja de respaldar el plan editado hasta una nueva verificación y optimización.
