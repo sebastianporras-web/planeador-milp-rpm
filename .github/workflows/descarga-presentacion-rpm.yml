@@ -1,0 +1,32 @@
+name: Preparar descarga ZIP de presentacion HTML
+on:
+  push:
+    paths:
+      - '.github/workflows/descarga-presentacion-rpm.yml'
+permissions:
+  contents: write
+jobs:
+  empaquetar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generar archivo ZIP descargable
+        run: |
+          cd Trabajo_final_y_presentacion
+          python3 - <<'PY'
+          from zipfile import ZipFile, ZIP_DEFLATED
+          from pathlib import Path
+          html=Path("Presentacion_RPM.html")
+          content=html.read_text(encoding="utf-8")
+          assert '21,8 % (68 parejas completas de Gurobi)' in content
+          assert content.count('<section class="slide') == 21
+          with ZipFile("Presentacion_RPM_actualizada.zip", "w", compression=ZIP_DEFLATED, compresslevel=9) as z:
+              z.write(html,arcname="Presentacion_RPM.html")
+          PY
+      - name: Publicar ZIP
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
+          git commit -m "Publicar presentacion HTML en ZIP descargable"
+          git push
