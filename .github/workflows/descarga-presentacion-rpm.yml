@@ -79,56 +79,35 @@ jobs:
           p.write_text(html,encoding="utf-8")
           print("Repaired navigation, dialogs, export appendix, evidence button, and index labels")
           PY
-      - name: Generar PDF actualizado desde la presentacion restaurada
-        shell: bash
-        run: |
-          set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
-          if [ -z "$CHROME" ]; then echo "No browser found for PDF export"; exit 1; fi
-          echo "PDF browser: $CHROME"
-          OUT="$(pwd)/Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.pdf"
-          "$CHROME" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-pdf-header-footer --virtual-time-budget=5000 --print-to-pdf="$OUT" "file://$(pwd)/Trabajo_final_y_presentacion/Presentacion_RPM.html"
-          test -s "$OUT"
-          file "$OUT"
-          pdfinfo "$OUT" | grep 'Pages:'
-          PAGE_COUNT="$(pdfinfo "$OUT" | awk '/^Pages:/{print $2}')"
-          if [ "$PAGE_COUNT" -lt 21 ] || [ "$PAGE_COUNT" -gt 23 ]; then echo "Unexpected PDF page count: $PAGE_COUNT"; exit 1; fi
-          pdftotext "$OUT" - | grep -Fq '21,8' || { echo "Updated study results missing from PDF"; exit 1; }
-      - name: Incorporar PDF y empaquetar HTML mas PDF
+      - name: Empaquetar presentacion interactiva restaurada
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re,base64
-          from zipfile import ZipFile,ZIP_DEFLATED
-          folder=Path("Trabajo_final_y_presentacion")
-          html=folder/"Presentacion_RPM.html"
-          pdf=folder/"Presentacion_RPM_actualizada.pdf"
-          s=html.read_text(encoding="utf-8")
-          encoded=base64.b64encode(pdf.read_bytes()).decode("ascii")
-          pattern=r'(<script id="rpm-pdf-snapshot" type="application/octet-stream">)[\s\S]*?(</script>)'
-          s,n=re.subn(pattern,lambda m:m.group(1)+encoded+m.group(2),s,count=1)
-          assert n==1
-          assert s.count("<footer>")==1 and s.count('<section class="slide')==21
-          assert "21,8 % (68 parejas completas de Gurobi)" in s
-          html.write_text(s,encoding="utf-8")
-          zip_path=folder/"Presentacion_RPM_actualizada.zip"
-          with ZipFile(zip_path,"w",compression=ZIP_DEFLATED,compresslevel=9) as archive:
-              archive.write(html,arcname=html.name)
-              archive.write(pdf,arcname="Presentacion_RPM.pdf")
-          with ZipFile(zip_path) as verify:
-              assert set(verify.namelist())=={"Presentacion_RPM.html","Presentacion_RPM.pdf"}
-              assert b'id="printBtn"' in verify.read("Presentacion_RPM.html")
-          print("Updated PDF embedded and ZIP repacked:",zip_path.stat().st_size)
+          from zipfile import ZipFile, ZIP_DEFLATED
+          base=Path("Trabajo_final_y_presentacion")
+          p=base/"Presentacion_RPM.html"
+          data=p.read_text(encoding="utf-8")
+          required=["prev","next","backVisible","counter","indexBtn","fullBtn","printBtn","helpBtn","overlay"]
+          assert all('id="'+k+'"' in data for k in required)
+          assert data.count('<section class="slide')==21
+          assert data.count('<footer>')==1
+          assert '21,8 % (68 parejas completas de Gurobi)' in data
+          archive=base/"Presentacion_RPM_actualizada.zip"
+          with ZipFile(archive,"w",compression=ZIP_DEFLATED,compresslevel=9) as z:
+              z.write(p,arcname=p.name)
+          with ZipFile(archive) as z:
+              assert b'id="printBtn"' in z.read(p.name)
+          print("HTML navigation restored; ZIP bytes:",archive.stat().st_size)
           PY
-      - name: Publicar archivo HTML, PDF y ZIP corregidos
+      - name: Publicar HTML y ZIP corregidos
         shell: bash
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Trabajo_final_y_presentacion/Presentacion_RPM.html Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.pdf Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
+          git add Trabajo_final_y_presentacion/Presentacion_RPM.html Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
           if ! git diff --cached --quiet; then
-            git commit -m "Restaurar barra de navegacion y PDF integrado con 100 instancias"
+            git commit -m "Restaurar barra de navegacion y controles interactivos"
             git push
           fi
