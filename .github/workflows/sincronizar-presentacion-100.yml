@@ -1,0 +1,44 @@
+name: Sincronizar contenido de presentacion HTML con tesis de 100 instancias
+on:
+  push:
+    paths:
+      - '.github/workflows/sincronizar-presentacion-100.yml'
+permissions:
+  contents: write
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Actualizar diapositivas de resultados sin modificar recursos embebidos
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path("Trabajo_final_y_presentacion/Presentacion_RPM.html")
+          s=p.read_text(encoding="utf-8")
+          if "21,8 % (68 parejas completas de Gurobi)" in s:
+              print("Already applied")
+              raise SystemExit(0)
+          for n,body in [[17,"<h2>Aportes y resultados del estudio</h2><div class=\"review-body\"><div class=\"achievement-grid\"><div><strong>15,62 %</strong><h3>Asignación diaria</h3><p>Reducción de carga frente a la heurística de RPM sobre el caso nominal con demanda y capacidad idénticas.</p></div><div><strong>100 instancias</strong><h3>Evaluación ampliada</h3><p>25 celdas de demanda, cuatro variantes por celda y 400 registros de heurística, CBC, HiGHS y Gurobi.</p></div><div><strong>76 / 100</strong><h3>Factibilidad acreditada</h3><p>HiGHS y Gurobi obtuvieron 76 planes completos verificados; los tres motores coincidieron en 24 problemas inviables.</p></div><div><strong>21,8 %</strong><h3>Mejora frente a la heurística</h3><p>Media en las 68 parejas completas de Gurobi: intervalo bootstrap del 19,5 % al 24,8 %.</p></div></div><details class=\"consult-note\"><summary>Alcance de los resultados</summary><p>Las 100 instancias son sintéticas y no representan 100 jornadas observadas. La mejora del 21,8 % pertenece a parejas completas comparables y no debe confundirse con la reducción diaria del 15,62 % ni con el Monte Carlo histórico cercano al 15,2 %. Un plan factible no constituye por sí solo un óptimo certificado.</p></details></div><div class=\"sourcefoot\">Fuente: tesis final del 11 de noviembre de 2026; consolidado de 400 registros, comparacion_heuristica_100.csv y expediente soportes_instancias_100/.</div>"],[19,"<h2>Resultados de las 100 instancias: cobertura y calidad</h2><div class=\"review-body\"><p>Se mantuvieron idénticos datos de demanda, capacidad y alistamientos entre métodos para cada instancia. Los tres solvers resolvieron el mismo MILP sin solución inicial.</p><table class=\"review-table\"><thead><tr><th>Método</th><th>Planes completos</th><th>Óptimos acreditados</th><th>GAP mediano*</th><th>GAP máximo*</th></tr></thead><tbody><tr><td>Heurística RPM</td><td>68</td><td>—</td><td>—</td><td>—</td></tr><tr><td>CBC</td><td>54</td><td>20</td><td>1,5423 %</td><td>13,3623 %</td></tr><tr><td>HiGHS</td><td>76</td><td>31</td><td>0,6324 %</td><td>3,6061 %</td></tr><tr><td>Gurobi</td><td>76</td><td>41</td><td>0,0100 %</td><td>0,1795 %</td></tr></tbody></table><p class=\"protocol-note\">* GAP calculado solo sobre planes completos sin certificado de optimalidad (CBC: 34; HiGHS: 45; Gurobi: 35). No se incluyen los 24 problemas inviables. Los 76 planes de Gurobi presentan GAP inferior al 0,18 %; 68 no superan el 0,1 %.</p><details class=\"consult-note\"><summary>Diseño experimental y trazabilidad</summary><p>25 celdas con demanda remuestreada por estratos de volumen semestral; cuatro variantes por celda: capacidad nominal/reducida en M1 y tiempos publicados/reconstruidos. Intensidades 0,8; 1,0; 1,2 y 1,4; catálogos de 99, 150 y 200 referencias; horizontes de 1, 3 y 5 días. Cada instancia se ejecutó una vez por método.</p></details></div><div class=\"sourcefoot\">Fuente: tesis final del 11 de noviembre de 2026; consolidado de 400 registros, comparacion_heuristica_100.csv y expediente soportes_instancias_100/.</div>"],[20,"<h2>Comparación, alcance y evidencia trazable</h2><div class=\"review-body\"><table class=\"review-table\"><thead><tr><th>Hallazgo</th><th>Resultado</th><th>Interpretación y soporte</th></tr></thead><tbody><tr><td>Mejora frente a RPM</td><td>21,8 % (68 parejas completas de Gurobi)</td><td>IC bootstrap 95 %: 19,5–24,8 %; remuestreo de celdas, 1.000 réplicas</td></tr><tr><td>Comparación común a los tres motores</td><td>48 problemas completos</td><td>Mejora media: CBC 21,4 %; HiGHS 23,1 %; Gurobi 23,2 %</td></tr><tr><td>Horizonte de cinco días</td><td>32 planes completos con Gurobi; 9 óptimos</td><td>GAP máximo: 0,179452 % entre los planes de ese horizonte</td></tr><tr><td>Perfil de factores de tiempo</td><td>Gurobi: primer cierre en 41 de 42 casos con certificado</td><td>HiGHS: primer cierre en el caso restante; tiempos condicionados por el entorno de cómputo</td></tr><tr><td>Validación del modelo</td><td>100 problemas · 400 registros</td><td>Expediente en soportes_instancias_100/ y anexos de la tesis</td></tr></tbody></table><p class=\"protocol-note\">La evidencia diaria, las 60 corridas nominales con GAP cero y los 1.000 escenarios del Monte Carlo histórico son ensayos diferentes. No se suman a las 100 instancias ni sustituyen sus tasas de certificación.</p><p><a class=\"app-link secondary\" href=\"https://github.com/sebastianporras-web/planeador-milp-rpm/tree/main/soportes_instancias_100\" target=\"_blank\" rel=\"noopener noreferrer\">Consultar soportes de las 100 instancias</a></p></div><div class=\"sourcefoot\">Fuente: tesis final del 11 de noviembre de 2026; consolidado de 400 registros, comparacion_heuristica_100.csv y expediente soportes_instancias_100/.</div>"]]:
+              pattern=r'(<section class="slide[^"]*" id="slide'+str(n)+r'"[^>]*>)[\s\S]*?(?=<section class="slide|</main>)'
+              s,count=re.subn(pattern,lambda m:m.group(1)+body+"</section>",s,count=1)
+              if count!=1: raise RuntimeError(f"Slide {n}: {count} matches")
+          assert s.count('<section class="slide')==21
+          assert 'id="slide14"' in s and 'id="slide16"' in s and 'downloadEvidence' in s
+          p.write_text(s,encoding="utf-8")
+          print("HTML updated; size",p.stat().st_size)
+          
+          PY
+      - name: Publicar HTML revisado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Trabajo_final_y_presentacion/Presentacion_RPM.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Sincronizar diapositivas 17, 19 y 20 con estudio de 100 instancias"
+            git push
+          fi
