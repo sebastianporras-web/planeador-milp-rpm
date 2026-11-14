@@ -1,0 +1,135 @@
+name: Ajustar presentacion HTML a pantalla sin zoom
+on:
+  push:
+    paths:
+      - '.github/workflows/ajustar-presentacion-pantalla.yml'
+permissions:
+  contents: write
+jobs:
+  ajustar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Adaptar lienzo y actualizar ZIP
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          from zipfile import ZipFile, ZIP_DEFLATED
+          p=Path("Trabajo_final_y_presentacion/Presentacion_RPM.html")
+          s=p.read_text(encoding="utf-8")
+          style='<style id="rpm-viewport-fluid-v1">
+          /* Ajuste de ventana: presentación a ancho completo sin disminuir la letra. */
+          @media screen and (min-width:701px) {
+            html,body {width:100%;height:100%;margin:0;overflow:hidden!important}
+            #stage {
+              position:fixed!important;inset:0!important;left:0!important;top:0!important;
+              transform:none!important;transform-origin:top left!important;
+              width:100vw!important;height:100dvh!important;min-height:0!important;
+              max-width:none!important;overflow:hidden!important;
+            }
+            #stage>header {
+              position:absolute!important;top:0!important;left:0!important;right:0!important;
+              height:clamp(58px,8dvh,72px)!important;
+              padding-inline:clamp(20px,3.4vw,64px)!important;
+            }
+            #stage>section.slide {
+              position:absolute!important;
+              inset:clamp(58px,8dvh,72px) 0 clamp(58px,8dvh,68px)!important;
+              width:auto!important;height:auto!important;max-width:none!important;
+              padding:clamp(18px,2.8dvh,36px) clamp(26px,3.4vw,64px) 26px!important;
+              overflow-y:auto!important;overflow-x:hidden!important;
+              overscroll-behavior:contain;scrollbar-width:thin;
+              scrollbar-color:#ad9c88 transparent;
+            }
+            #stage>section.slide h2 {
+              font-size:clamp(30px,2.65vw,46px)!important;
+              margin-bottom:clamp(12px,2.2dvh,25px)!important;
+            }
+            #stage>section.slide h2:after {margin-top:12px!important}
+            #stage>section.slide>.sourcefoot {
+              position:relative!important;left:auto!important;right:auto!important;
+              bottom:auto!important;margin-top:18px!important;
+            }
+            #stage>footer {
+              position:absolute!important;bottom:0!important;left:0!important;right:0!important;
+              height:clamp(58px,8dvh,68px)!important;min-height:0!important;
+              padding:0 clamp(10px,1.6vw,25px)!important;
+              gap:clamp(5px,.5vw,9px)!important;flex-wrap:nowrap!important;
+            }
+            #stage>footer button {
+              font-size:clamp(12px,.94vw,16px)!important;
+              padding:8px clamp(7px,.68vw,12px)!important;
+            }
+            #stage>footer #counter {min-width:58px!important;font-size:clamp(13px,1vw,17px)!important}
+            #stage>footer #progress {max-width:90px!important;flex:1 1 35px!important}
+            #stage>footer #appDirect {font-size:clamp(11px,.85vw,16px)!important;padding:8px 10px!important}
+            #stage>.slide .tech-layout {
+              grid-template-columns:minmax(0,1.75fr) minmax(330px,1fr)!important;
+              gap:clamp(18px,2vw,32px)!important;
+            }
+            #stage>.slide .tech-scene svg {height:clamp(230px,34dvh,350px)!important}
+            #stage>.slide .review-body {max-height:none!important;overflow:visible!important}
+            #stage>.slide.network-slide {padding:clamp(18px,2.6dvh,26px) clamp(26px,3.4vw,64px)!important}
+          }
+          /* Mantener exactamente el formato de exportación en impresión. */
+          @media print {
+            #stage {position:static!important;width:1600px!important;height:auto!important;transform:none!important;overflow:visible!important}
+          }
+          </style>'
+          s,n=re.subn(r'<style id="rpm-viewport-fluid-v1">[\s\S]*?</style>','',s)
+          assert '</body>' in s and 'id="printBtn"' in s
+          assert s.count('<section class="slide')==21 and s.count('<footer>')==1
+          assert "21,8 % (68 parejas completas de Gurobi)" in s
+          s=s.replace('</body>',style+'</body>',1)
+          p.write_text(s,encoding="utf-8")
+          zpath=p.parent/"Presentacion_RPM_actualizada.zip"
+          with ZipFile(zpath,"w",compression=ZIP_DEFLATED,compresslevel=9) as z:
+              z.write(p,arcname="Presentacion_RPM.html")
+          with ZipFile(zpath) as z:
+              assert b'rpm-viewport-fluid-v1' in z.read("Presentacion_RPM.html")
+              assert b'id="printBtn"' in z.read("Presentacion_RPM.html")
+          print("CSS updated:",p.stat().st_size,"ZIP:",zpath.stat().st_size)
+          
+          PY
+      - name: Probar ancho completo y barra inferior en Chrome
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess,re,html,json,sys
+          p=Path("Trabajo_final_y_presentacion/Presentacion_RPM.html")
+          test=p.parent/"test_presentacion_viewport.html"
+          original=p.read_text(encoding="utf-8")
+          js="""<script>setTimeout(()=>{
+          const stage=document.querySelector('#stage'),footer=document.querySelector('footer'),slide=document.querySelector('.slide.active');
+          const a=stage.getBoundingClientRect(),b=footer.getBoundingClientRect(),c=slide?.getBoundingClientRect();
+          const data={windowWidth:window.innerWidth,windowHeight:window.innerHeight,stageWidth:a.width,stageHeight:a.height,stageLeft:a.left,stageTop:a.top,footerBottom:b.bottom,footerVisible:b.bottom<=window.innerHeight+2,slideWidth:c?.width,slideVisible:!!slide,navButtons:['prev','next','indexBtn','printBtn','backVisible'].every(x=>!!document.getElementById(x))};
+          document.body.setAttribute('data-rpm-screen-audit',JSON.stringify(data));
+          },250)</script>"""
+          test.write_text(original.replace("</body>",js+"</body>"),encoding="utf-8")
+          for w,h in ((1649,920),(1366,768)):
+           cmd=['google-chrome','--headless','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--hide-scrollbars',f'--window-size={w},{h}','--virtual-time-budget=1500','--dump-dom',test.absolute().as_uri()+'#2']
+           result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=55)
+           if result.returncode: raise RuntimeError('Chrome failed')
+           markup=result.stdout.decode('utf-8','replace')
+           match=re.search(r'data-rpm-screen-audit="([^"]+)"',markup)
+           if not match: raise RuntimeError('No viewport diagnostic in headless browser')
+           data=json.loads(html.unescape(match.group(1)))
+           print(f'QA {w}x{h}:',data)
+           assert abs(data['stageWidth']-data['windowWidth'])<3,data
+           assert abs(data['stageLeft'])<3,data
+           assert abs(data['footerBottom']-data['windowHeight'])<3,data
+           assert data['footerVisible'] and data['slideVisible'] and data['navButtons'],data
+          test.unlink()
+          
+          PY
+      - name: Guardar presentación corregida
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Trabajo_final_y_presentacion/Presentacion_RPM.html Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
+          git commit -m "Usar ancho completo y desplazamiento interno en presentacion HTML"
+          git push
