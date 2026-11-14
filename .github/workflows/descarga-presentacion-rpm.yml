@@ -1,4 +1,4 @@
-name: Preparar descarga ZIP de presentacion HTML
+name: Reparar navegacion y descarga de presentacion HTML
 on:
   push:
     paths:
@@ -6,27 +6,129 @@ on:
 permissions:
   contents: write
 jobs:
-  empaquetar:
+  reparar-y-empaquetar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Generar archivo ZIP descargable
+        with:
+          fetch-depth: 0
+      - name: Recuperar barra inferior y actualizar referencias internas
+        shell: bash
         run: |
-          cd Trabajo_final_y_presentacion
           python3 - <<'PY'
-          from zipfile import ZipFile, ZIP_DEFLATED
           from pathlib import Path
-          html=Path("Presentacion_RPM.html")
-          content=html.read_text(encoding="utf-8")
-          assert '21,8 % (68 parejas completas de Gurobi)' in content
-          assert content.count('<section class="slide') == 21
-          with ZipFile("Presentacion_RPM_actualizada.zip", "w", compression=ZIP_DEFLATED, compresslevel=9) as z:
-              z.write(html,arcname="Presentacion_RPM.html")
+          import subprocess
+          import re
+          import json
+          
+          p=Path("Trabajo_final_y_presentacion/Presentacion_RPM.html")
+          html=p.read_text(encoding="utf-8")
+          old=subprocess.check_output(["git","cat-file","-p","0a90a8aa7b05e6e908cf710ef0d6d35f8c82c8c0"]).decode("utf-8")
+          
+          def end_of_last_slide(text):
+              begin=text.index('id="slide20"')
+              return text.index("</section>",begin)+len("</section>")
+          
+          assert html.count('<section class="slide')==21
+          assert old.count('<section class="slide')==21
+          if "<footer>" not in html:
+              original_end=end_of_last_slide(old)
+              restored=old[original_end:old.index("</main>",original_end)]
+              assert "<footer>" in restored and 'id="overlay"' in restored and 'class="pdf-appendix"' in restored
+              at=end_of_last_slide(html)
+              html=html[:at]+restored+html[at:]
+          
+          for number,label in [(19,"Resultados de las 100 instancias"),(20,"Comparación, alcance y evidencia trazable")]:
+              html=re.sub(r'(<section class="slide[^"]*" id="slide'+str(number)+r'" aria-label=")[^"]+(")',lambda m:m.group(1)+label+m.group(2),html,count=1)
+          
+          s20=html.index('id="slide20"')
+          e20=end_of_last_slide(html)
+          slide20=html[s20:e20]
+          if 'id="downloadEvidence"' not in slide20:
+              oldline='</div><div class="sourcefoot">'
+              new='<div class="actions"><button id="downloadEvidence">Descargar datos de las gráficas</button></div></div><div class="sourcefoot">'
+              assert oldline in slide20
+              slide20=slide20.replace(oldline,new,1)
+              html=html[:s20]+slide20+html[e20:]
+          
+          for jsid in ("rpm-titles","rpm-views"):
+              pattern=r'(<script[^>]*id="'+jsid+r'"[^>]*>)([\s\S]*?)(</script>)'
+              match=re.search(pattern,html)
+              assert match,jsid
+              value=json.loads(match.group(2))
+              if jsid=="rpm-titles":
+                  value[19]="Resultados de las 100 instancias"
+                  value[20]="Comparación, alcance y evidencia trazable"
+              else:
+                  for n in (17,19,20):
+                      start=html.index(">",html.index('id="slide'+str(n)+'"'))+1
+                      end=html.index("</section>",start)
+                      value["base:"+str(n)]["html"]=html[start:end]
+              txt=json.dumps(value,ensure_ascii=False,separators=(",",":")).replace("</","<\\/")
+              html=html[:match.start(2)]+txt+html[match.end(2):]
+          
+          expected=["prev","next","backVisible","counter","progress","indexBtn","fullBtn","laserBtn","printBtn","appDirect","helpBtn","overlay","modalTitle","modalBody","toast","downloadEvidence"]
+          for id in expected:
+              assert 'id="'+id+'"' in html,"Missing "+id
+          assert "<footer>" in html and "</footer>" in html
+          assert 'class="pdf-appendix"' in html
+          assert "21,8 % (68 parejas completas de Gurobi)" in html
+          assert html.count('<section class="slide') == 21
+          assert html.count('id="rpm-pdf-snapshot"')==1
+          assert html.count("</main>")==1
+          p.write_text(html,encoding="utf-8")
+          print("Repaired navigation, dialogs, export appendix, evidence button, and index labels")
           PY
-      - name: Publicar ZIP
+      - name: Generar PDF actualizado desde la presentacion restaurada
+        shell: bash
         run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME" ]; then echo "No browser found for PDF export"; exit 1; fi
+          echo "PDF browser: $CHROME"
+          OUT="$(pwd)/Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.pdf"
+          "$CHROME" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --no-pdf-header-footer --virtual-time-budget=5000 --print-to-pdf="$OUT" "file://$(pwd)/Trabajo_final_y_presentacion/Presentacion_RPM.html"
+          test -s "$OUT"
+          file "$OUT"
+          pdfinfo "$OUT" | grep 'Pages:'
+          PAGE_COUNT="$(pdfinfo "$OUT" | awk '/^Pages:/{print $2}')"
+          if [ "$PAGE_COUNT" -lt 21 ] || [ "$PAGE_COUNT" -gt 23 ]; then echo "Unexpected PDF page count: $PAGE_COUNT"; exit 1; fi
+          pdftotext "$OUT" - | grep -Fq '21,8' || { echo "Updated study results missing from PDF"; exit 1; }
+      - name: Incorporar PDF y empaquetar HTML mas PDF
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,base64
+          from zipfile import ZipFile,ZIP_DEFLATED
+          folder=Path("Trabajo_final_y_presentacion")
+          html=folder/"Presentacion_RPM.html"
+          pdf=folder/"Presentacion_RPM_actualizada.pdf"
+          s=html.read_text(encoding="utf-8")
+          encoded=base64.b64encode(pdf.read_bytes()).decode("ascii")
+          pattern=r'(<script id="rpm-pdf-snapshot" type="application/octet-stream">)[\s\S]*?(</script>)'
+          s,n=re.subn(pattern,lambda m:m.group(1)+encoded+m.group(2),s,count=1)
+          assert n==1
+          assert s.count("<footer>")==1 and s.count('<section class="slide')==21
+          assert "21,8 % (68 parejas completas de Gurobi)" in s
+          html.write_text(s,encoding="utf-8")
+          zip_path=folder/"Presentacion_RPM_actualizada.zip"
+          with ZipFile(zip_path,"w",compression=ZIP_DEFLATED,compresslevel=9) as archive:
+              archive.write(html,arcname=html.name)
+              archive.write(pdf,arcname="Presentacion_RPM.pdf")
+          with ZipFile(zip_path) as verify:
+              assert set(verify.namelist())=={"Presentacion_RPM.html","Presentacion_RPM.pdf"}
+              assert b'id="printBtn"' in verify.read("Presentacion_RPM.html")
+          print("Updated PDF embedded and ZIP repacked:",zip_path.stat().st_size)
+          PY
+      - name: Publicar archivo HTML, PDF y ZIP corregidos
+        shell: bash
+        run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
-          git commit -m "Publicar presentacion HTML en ZIP descargable"
-          git push
+          git add Trabajo_final_y_presentacion/Presentacion_RPM.html Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.pdf Trabajo_final_y_presentacion/Presentacion_RPM_actualizada.zip
+          if ! git diff --cached --quiet; then
+            git commit -m "Restaurar barra de navegacion y PDF integrado con 100 instancias"
+            git push
+          fi
